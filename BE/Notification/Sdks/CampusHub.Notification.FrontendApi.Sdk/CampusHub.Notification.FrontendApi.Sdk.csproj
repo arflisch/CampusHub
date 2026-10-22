@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;net11.0</TargetFrameworks>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" />
+		<PackageReference Include="System.ComponentModel.Annotations" />
+		<PackageReference Include="Google.Protobuf" />
+		<PackageReference Include="Grpc" />
+		<PackageReference Include="Grpc.Tools" PrivateAssets="All" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="../../CampusHub.Notification.FrontendApi/**/*.proto" GrpcServices="Client" AdditionalImportDirs="../../CampusHub.Notification.FrontendApi/Protos" Visible="false" />
+	</ItemGroup>
+
+</Project>

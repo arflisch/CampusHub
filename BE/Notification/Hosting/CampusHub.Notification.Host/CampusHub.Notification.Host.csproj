@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <PackageReference Include="Arc4u.AspNetCore.gRpc" />
+    <PackageReference Include="Arc4u.Configuration.Decryptor" />
+    <PackageReference Include="Arc4u.gRPC" />
+    <PackageReference Include="Dapr.AspNetCore" />
+    <PackageReference Include="Arc4u" />
+    <PackageReference Include="Arc4u.Authorization" />
+    <PackageReference Include="Arc4u.Caching.Memory" />
+    <PackageReference Include="Arc4u.Caching.Redis" />
+    <PackageReference Include="Arc4u.Caching.Dapr" />
+    <PackageReference Include="Arc4u.Configuration" />
+    <PackageReference Include="Arc4u.Diagnostics.Serilog" />
+    <PackageReference Include="Arc4u.Dispatcher" />
+    <PackageReference Include="Arc4u.OAuth2.AspNetCore.Authentication" />
+    <PackageReference Include="Arc4u.OAuth2.AspNetCore" />
+    <PackageReference Include="Arc4u.Serializer.JSon" />
+    <PackageReference Include="Grpc.AspNetCore" />
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="NSwag.AspNetCore" />
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NSwag.MSBuild">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" />
+    <PackageReference Include="AspNetCore.HealthChecks.Publisher.Seq" />
+    <PackageReference Include="AspNetCore.HealthChecks.Uris" />
+    <PackageReference Include="Arc4u.Dependency.Tool">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Arc4u.MongoDB" />
+    <PackageReference Include="Arc4u.AspNetCore.Versioning" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <!-- Feed Content items (Configs\appsettings.json) to the Arc4u.Dependency.Tool source
+         generator as additional files, without declaring a separate AdditionalFiles project
+         item. A duplicate AdditionalFiles item makes Rider collapse the appsettings.json node
+         (and Visible="false" hides it entirely, since Rider merges items by physical path).
+         This property keeps a single, correctly-nested appsettings.json node in the IDE. -->
+    <AdditionalFileItemNames>$(AdditionalFileItemNames);Content</AdditionalFileItemNames>
+  </PropertyGroup>
+
+  <!-- Build-time OpenAPI document generation (Microsoft.AspNetCore.OpenApi). In Debug it emits
+       CampusHub.Notification.Host_frontend.json / CampusHub.Notification.Host_service.json into obj (build artifacts,
+       not source) before Build completes, which the NSwagFrontend / NSwagService targets feed into client codegen.
+       Those targets are added by the CLI with the FrontendApi (add-frontend-api) and the ServiceApi (add-service-api). -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OpenApiGenerateDocumentsOnBuild>true</OpenApiGenerateDocumentsOnBuild>
+    <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/obj</OpenApiDocumentsDirectory>
+  </PropertyGroup>
+
+  <!-- The build-time document generator (dotnet-getdocument) boots the app to read its OpenAPI
+       documents. Like the old NSwag launcher, it must run as Development with NSwag=true, otherwise
+       AddCertificateDecryptorConfiguration tries to decrypt real config secrets and startup throws.
+       Set the env vars in the MSBuild process so the child getdocument process inherits them. -->
+  <UsingTask TaskName="SetProcessEnvironmentVariable" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Name ParameterType="System.String" Required="true" />
+      <Value ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">System.Environment.SetEnvironmentVariable(Name, Value);</Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="SetOpenApiToolEnvironment" BeforeTargets="GenerateOpenApiDocuments" Condition=" '$(Configuration)' == 'Debug' ">
+    <SetProcessEnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="Development" />
+    <SetProcessEnvironmentVariable Name="NSwag" Value="true" />
+  </Target>
+
+  <ItemGroup>
+    <Content Update="Configs\appsettings.Development.json">
+      <DependentUpon>appsettings.json</DependentUpon>
+    </Content>
+    <Content Update="Configs\appsettings.Staging.json">
+      <DependentUpon>appsettings.json</DependentUpon>
+    </Content>
+    <Content Update="Configs\appsettings.Production.json">
+      <DependentUpon>appsettings.json</DependentUpon>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\CampusHub.Notification.UseCases\CampusHub.Notification.UseCases.csproj" />
+    <ProjectReference Include="..\..\CampusHub.Notification.Domain\CampusHub.Notification.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\ServiceDefaults\CampusHub.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\..\CampusHub.Notification.FrontendApi\CampusHub.Notification.FrontendApi.csproj" />
+    <ProjectReference Include="..\..\CampusHub.Notification.Infrastructure.Notifications\CampusHub.Notification.Infrastructure.Notifications.csproj" />
+    <ProjectReference Include="..\..\CampusHub.Notification.ServiceApi\CampusHub.Notification.ServiceApi.csproj" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Content Update="Configs\appsettings.Development.json">
+      <DependentUpon>appsettings.json</DependentUpon>
+    </Content>
+    <Content Update="Configs\appsettings.Staging.json">
+      <DependentUpon>appsettings.json</DependentUpon>
+    </Content>
+    <Content Update="Configs\appsettings.Production.json">
+      <DependentUpon>appsettings.json</DependentUpon>
+    </Content>
+    <Content Update="Configs\reverseproxy.Development.json">
+      <DependentUpon>reverseproxy.json</DependentUpon>
+    </Content>
+    <Content Update="Configs\reverseproxy.Staging.json">
+      <DependentUpon>reverseproxy.json</DependentUpon>
+    </Content>
+    <Content Update="Configs\reverseproxy.Production.json">
+      <DependentUpon>reverseproxy.json</DependentUpon>
+    </Content>
+  </ItemGroup>
+
+
+  <Target Name="NSwagFrontend" AfterTargets="Build" Condition=" '$(Configuration)' == 'Debug' and '$(OpenApiGenerateDocumentsOnBuild)' == 'true' " Inputs="$(ProjectDir)obj/CampusHub.Notification.Host_frontend.json;$(ProjectDir)../../Sdks/CampusHub.Notification.FrontendApi.Sdk/Generator/frontend.nswag" Outputs="$(ProjectDir)../../Sdks/CampusHub.Notification.FrontendApi.Sdk/CampusHubNotificationFrontendApiClient.cs">
+    <Exec WorkingDirectory="$(ProjectDir)" Command="$(NSwagExe_Net100) run ../../Sdks/CampusHub.Notification.FrontendApi.Sdk/Generator/frontend.nswag  /variables:Configuration=$(Configuration)" />
+    <Touch Files="$(ProjectDir)../../Sdks/CampusHub.Notification.FrontendApi.Sdk/CampusHubNotificationFrontendApiClient.cs" />
+  </Target>
+
+
+  <Target Name="NSwagService" AfterTargets="Build" Condition=" '$(Configuration)' == 'Debug' and '$(OpenApiGenerateDocumentsOnBuild)' == 'true' " Inputs="$(ProjectDir)obj/CampusHub.Notification.Host_service.json;$(ProjectDir)../../Sdks/CampusHub.Notification.ServiceApi.Sdk/Generator/service.nswag" Outputs="$(ProjectDir)../../Sdks/CampusHub.Notification.ServiceApi.Sdk/CampusHubNotificationServiceApiClient.cs">
+    <Exec WorkingDirectory="$(ProjectDir)" Command="$(NSwagExe_Net100) run ../../Sdks/CampusHub.Notification.ServiceApi.Sdk/Generator/service.nswag  /variables:Configuration=$(Configuration)" />
+    <Touch Files="$(ProjectDir)../../Sdks/CampusHub.Notification.ServiceApi.Sdk/CampusHubNotificationServiceApiClient.cs" />
+  </Target>
+
+</Project>

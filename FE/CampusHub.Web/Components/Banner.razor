@@ -1,0 +1,17 @@
+@* An error or information message with an optional dismiss button. *@
+@if (!string.IsNullOrEmpty(Message))
+{
+    <div class="banner banner-@Kind" role="@(Kind == "error" ? "alert" : "status")">
+        <span>@Message</span>
+        @if (OnDismiss.HasDelegate)
+        {
+            <button type="button" class="banner-close" aria-label="Dismiss" @onclick="OnDismiss">×</button>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public string? Message { get; set; }
+    [Parameter] public string Kind { get; set; } = "error";
+    [Parameter] public EventCallback OnDismiss { get; set; }
+}

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AnalysisLevel>latest-All</AnalysisLevel>
+    <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
+ 	</PropertyGroup>
+
+	<ItemGroup>
+    <PackageReference Include="Arc4u.gRPC" />
+    <PackageReference Include="Arc4u.AspNetCore.gRpc" />
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc" />
+    <PackageReference Include="Grpc.Tools" PrivateAssets="All" />
+    <PackageReference Include="Arc4u.AspNetCore.Versioning" />
+    <PackageReference Include="Dapr.AspNetCore" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="**/*.proto" GrpcServices="Server" />
+	</ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Shared\CampusHub.Shared.Domain\CampusHub.Shared.Domain.csproj" />
+    <ProjectReference Include="..\CampusHub.Notification.UseCases\CampusHub.Notification.UseCases.csproj" />
+    <ProjectReference Include="..\CampusHub.Notification.Domain\CampusHub.Notification.Domain.csproj" />
+    <!-- Contract of the events this service subscribes to. -->
+    <ProjectReference Include="..\..\Enrollment\Sdks\CampusHub.Enrollment.IntegrationEvents\CampusHub.Enrollment.IntegrationEvents.csproj" />
+  </ItemGroup>
+
+</Project>

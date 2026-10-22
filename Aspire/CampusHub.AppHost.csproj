@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Aspire.AppHost.Sdk" Version="13.6.0" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsAspireHost>true</IsAspireHost>
+    <AspireUseCliBundle>true</AspireUseCliBundle>
+    <!-- Aspire persists the generated passwords (MongoDB, RabbitMQ, Redis, Dapr API token) in these user secrets.
+         Without it they change on every run while the data volumes keep the first ones: authentication fails. -->
+    <UserSecretsId>f54dd65e-6477-4ae6-9e3e-f091e80ba9ef</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.MongoDB" />
+    <PackageReference Include="Aspire.Hosting.RabbitMQ" />
+    <PackageReference Include="Aspire.Hosting.Redis" />
+    <PackageReference Include="CommunityToolkit.Aspire.Hosting.Dapr" />
+    <PackageReference Include="CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BE\Gtw\CampusHub.Gtw.Host\CampusHub.Gtw.Host.csproj" />
+    <ProjectReference Include="..\BE\Catalog\Hosting\CampusHub.Catalog.Host\CampusHub.Catalog.Host.csproj" />
+    <ProjectReference Include="..\BE\Enrollment\Hosting\CampusHub.Enrollment.Host\CampusHub.Enrollment.Host.csproj" />
+    <ProjectReference Include="..\BE\Billing\Hosting\CampusHub.Billing.Host\CampusHub.Billing.Host.csproj" />
+    <ProjectReference Include="..\BE\Grading\Hosting\CampusHub.Grading.Host\CampusHub.Grading.Host.csproj" />
+    <ProjectReference Include="..\BE\Notification\Hosting\CampusHub.Notification.Host\CampusHub.Notification.Host.csproj" />
+  </ItemGroup>
+</Project>

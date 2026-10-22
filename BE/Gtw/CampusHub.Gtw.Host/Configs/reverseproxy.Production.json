@@ -1,0 +1,82 @@
+{
+  "ReverseProxy": {
+    "Routes": {},
+    "Clusters": {
+      "catalog": {
+        "HttpClient": {
+          "MaxConnectionsPerServer": 16
+        },
+        "HttpRequest": {
+          "Version": "2.0",
+          "VersionPolicy": "RequestVersionOrHigher",
+          "ActivityTimeout": "00:10:00"
+        },
+        "Destinations": {
+          "catalog/destination1": {
+            "Address": "https://campushub.prod.arc4u.net/"
+          }
+        }
+      },
+      "enrollment": {
+        "HttpClient": {
+          "MaxConnectionsPerServer": 16
+        },
+        "HttpRequest": {
+          "Version": "2.0",
+          "VersionPolicy": "RequestVersionOrHigher",
+          "ActivityTimeout": "00:10:00"
+        },
+        "Destinations": {
+          "enrollment/destination1": {
+            "Address": "https://campushub.prod.arc4u.net/"
+          }
+        }
+      },
+      "billing": {
+        "HttpClient": {
+          "MaxConnectionsPerServer": 16
+        },
+        "HttpRequest": {
+          "Version": "2.0",
+          "VersionPolicy": "RequestVersionOrHigher",
+          "ActivityTimeout": "00:10:00"
+        },
+        "Destinations": {
+          "billing/destination1": {
+            "Address": "https://campushub.prod.arc4u.net/"
+          }
+        }
+      },
+      "grading": {
+        "HttpClient": {
+          "MaxConnectionsPerServer": 16
+        },
+        "HttpRequest": {
+          "Version": "2.0",
+          "VersionPolicy": "RequestVersionOrHigher",
+          "ActivityTimeout": "00:10:00"
+        },
+        "Destinations": {
+          "grading/destination1": {
+            "Address": "https://campushub.prod.arc4u.net/"
+          }
+        }
+      },
+      "notification": {
+        "HttpClient": {
+          "MaxConnectionsPerServer": 16
+        },
+        "HttpRequest": {
+          "Version": "2.0",
+          "VersionPolicy": "RequestVersionOrHigher",
+          "ActivityTimeout": "00:10:00"
+        },
+        "Destinations": {
+          "notification/destination1": {
+            "Address": "https://campushub.prod.arc4u.net/"
+          }
+        }
+      }
+    }
+  }
+}

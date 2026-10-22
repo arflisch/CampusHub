@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ProjectType>DomainModel</ProjectType>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Arc4u" />
+    <PackageReference Include="Arc4u.Results" />
+  </ItemGroup>
+
+</Project>

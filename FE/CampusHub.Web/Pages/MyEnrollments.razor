@@ -1,0 +1,51 @@
+@page "/enrollments"
+@inherits ViewModelComponentBase<MyEnrollmentsViewModel>
+
+<PageTitle>My enrollments · CampusHub</PageTitle>
+
+<div class="page-head">
+    <div>
+        <h1>My enrollments</h1>
+        <p class="muted">
+            Each request runs a saga: hold a seat, then confirm it.
+            @if (ViewModel.IsPolling)
+            {
+                <span class="live"><span class="dot"></span>Updating live</span>
+            }
+        </p>
+    </div>
+    <CommandButton Command="ViewModel.LoadCommand" CssClass="btn btn-ghost" BusyText="Refreshing…">Refresh</CommandButton>
+</div>
+
+<Banner Message="@ViewModel.ErrorMessage" OnDismiss="() => ViewModel.DismissErrorCommand.Execute(null)" />
+
+@if (ViewModel.IsEmpty && !ViewModel.LoadCommand.IsRunning)
+{
+    <div class="empty">You have not requested any enrollment yet. <a href="">Browse the catalogue</a>.</div>
+}
+else
+{
+    <ul class="list">
+        @foreach (var enrollment in ViewModel.Enrollments)
+        {
+            <li class="row" @key="enrollment.Id">
+                <div>
+                    <div class="row-title">@(enrollment.CourseTitle ?? "Course")</div>
+                    <div class="muted small">
+                        Requested @enrollment.RequestedAt.ToLocalTime().ToString("g")
+                        @if (enrollment.State == EnrollmentState.Rejected)
+                        {
+                            <span> · @MyEnrollmentsViewModel.DescribeRejection(enrollment)</span>
+                        }
+                    </div>
+                </div>
+                <div class="steps" aria-label="Saga progress">
+                    <span class="step @(enrollment.State != EnrollmentState.Rejected ? "done" : "failed")">Requested</span>
+                    <span class="step @(enrollment.State is EnrollmentState.SeatHeld or EnrollmentState.Confirmed ? "done" : string.Empty)">Seat held</span>
+                    <span class="step @(enrollment.State == EnrollmentState.Confirmed ? "done" : string.Empty)">Confirmed</span>
+                </div>
+                <StatusBadge Enrollment="enrollment.State" />
+            </li>
+        }
+    </ul>
+}

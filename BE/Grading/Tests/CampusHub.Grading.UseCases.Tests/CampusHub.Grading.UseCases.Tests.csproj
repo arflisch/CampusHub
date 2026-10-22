@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.msbuild">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Arc4u" />
+    <PackageReference Include="Arc4u.Caching.Memory" />
+    <PackageReference Include="Arc4u.Configuration" />
+    <PackageReference Include="Arc4u.Diagnostics.Serilog" />
+    <PackageReference Include="Arc4u.OAuth2.AspNetCore" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="AutoFixture.AutoMoq" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Sinks.Async" />
+    <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="Serilog.Sinks.Seq" />
+    <PackageReference Include="Serilog.Sinks.Xunit2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\CampusHub.Grading.UseCases\CampusHub.Grading.UseCases.csproj" />
+    <ProjectReference Include="..\..\CampusHub.Grading.Domain\CampusHub.Grading.Domain.csproj" />
+    <ProjectReference Include="..\..\Hosting\CampusHub.Grading.Host\CampusHub.Grading.Host.csproj" />
+    <ProjectReference Include="..\..\CampusHub.Grading.FrontendApi\CampusHub.Grading.FrontendApi.csproj" />
+  </ItemGroup>
+
+</Project>

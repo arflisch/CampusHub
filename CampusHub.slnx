@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Solution>
+   <Folder Name="/Aspire/">
+      <Project Path="Aspire/CampusHub.AppHost.csproj" />
+  </Folder>
+  <Folder Name="/BE/">
+  </Folder>
+  <Folder Name="/FE/">
+    <Project Path="FE/CampusHub.Web.Presentation/CampusHub.Web.Presentation.csproj" />
+    <Project Path="FE/CampusHub.Web/CampusHub.Web.csproj" />
+  </Folder>
+  <Folder Name="/FE/Tests/">
+    <Project Path="FE/Tests/CampusHub.Web.Presentation.Tests/CampusHub.Web.Presentation.Tests.csproj" />
+  </Folder>
+    <Folder Name="/Shared/">
+     <Project Path="Shared/CampusHub.Shared.Domain/CampusHub.Shared.Domain.csproj" />
+     <Project Path="Shared/ServiceDefaults/CampusHub.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+  </Folder>
+  <Folder Name="/BE/Gtw/">
+    <Project Path="BE/Gtw/CampusHub.Gtw.Domain/CampusHub.Gtw.Domain.csproj" />
+    <Project Path="BE/Gtw/CampusHub.Gtw.Host/CampusHub.Gtw.Host.csproj" />
+    <Project Path="BE/Gtw/CampusHub.Gtw.UseCases/CampusHub.Gtw.UseCases.csproj" />
+  
+    <Project Path="BE/Gtw/CampusHub.Gtw.FrontendApi/CampusHub.Gtw.FrontendApi.csproj" />
+  </Folder>
+  <Folder Name="/BE/Gtw/Tests/">
+    <Project Path="BE/Gtw/Tests/CampusHub.Gtw.Domain.Tests/CampusHub.Gtw.Domain.Tests.csproj" />
+    <Project Path="BE/Gtw/Tests/CampusHub.Gtw.UseCases.Tests/CampusHub.Gtw.UseCases.Tests.csproj" />
+  </Folder>
+  <Folder Name="/BE/Gtw/Sdks/">
+    <Project Path="BE/Gtw/Sdks/CampusHub.Gtw.FrontendApi.Sdk/CampusHub.Gtw.FrontendApi.Sdk.csproj" />
+  </Folder>
+  <Folder Name="/Dapr/" />
+  <Folder Name="/Dapr/Development/">
+    <File Path="Dapr/Development/CampusHub-Enrollment-pubsub-PubSub.yaml" />
+  
+    <File Path="Dapr/Development/CampusHub-Catalog-pubsub-PubSub.yaml" />
+  
+    <File Path="Dapr/Development/CampusHub-Billing-pubsub-PubSub.yaml" />
+  
+    <File Path="Dapr/Development/CampusHub-Grading-pubsub-PubSub.yaml" />
+  
+    <File Path="Dapr/Development/CampusHub-Notification-pubsub-PubSub.yaml" />
+  
+    <File Path="Dapr/Development/CampusHub-store-secrets-Secret.yaml" />
+  
+    <File Path="Dapr/Development/resiliency.yaml" />
+  
+    <File Path="Dapr/Development/CampusHub-Enrollment-workflowstate-StateStore.yaml" />
+  
+    <File Path="Dapr/Development/CampusHub-Notification-enrollment-confirmed-Subscription.yaml" />
+  
+    <File Path="Dapr/Development/CampusHub-Grading-enrollment-confirmed-Subscription.yaml" />
+  </Folder>
+  <Folder Name="/Dapr/Staging/">
+    <File Path="Dapr/Staging/CampusHub-Enrollment-pubsub-PubSub.yaml" />
+  
+    <File Path="Dapr/Staging/CampusHub-Catalog-pubsub-PubSub.yaml" />
+  
+    <File Path="Dapr/Staging/CampusHub-Billing-pubsub-PubSub.yaml" />
+  
+    <File Path="Dapr/Staging/CampusHub-Grading-pubsub-PubSub.yaml" />
+  
+    <File Path="Dapr/Staging/CampusHub-Notification-pubsub-PubSub.yaml" />
+  
+    <File Path="Dapr/Staging/CampusHub-store-secrets-Secret.yaml" />
+  
+    <File Path="Dapr/Staging/resiliency.yaml" />
+  
+    <File Path="Dapr/Staging/CampusHub-Enrollment-workflowstate-StateStore.yaml" />
+  
+    <File Path="Dapr/Staging/CampusHub-Notification-enrollment-confirmed-Subscription.yaml" />
+  
+    <File Path="Dapr/Staging/CampusHub-Grading-enrollment-confirmed-Subscription.yaml" />
+  </Folder>
+  <Folder Name="/Dapr/Production/">
+    <File Path="Dapr/Production/CampusHub-Enrollment-pubsub-PubSub.yaml" />
+  
+    <File Path="Dapr/Production/CampusHub-Catalog-pubsub-PubSub.yaml" />
+  
+    <File Path="Dapr/Production/CampusHub-Billing-pubsub-PubSub.yaml" />
+  
+    <File Path="Dapr/Production/CampusHub-Grading-pubsub-PubSub.yaml" />
+  
+    <File Path="Dapr/Production/CampusHub-Notification-pubsub-PubSub.yaml" />
+  
+    <File Path="Dapr/Production/CampusHub-store-secrets-Secret.yaml" />
+  
+    <File Path="Dapr/Production/resiliency.yaml" />
+  
+    <File Path="Dapr/Production/CampusHub-Enrollment-workflowstate-StateStore.yaml" />
+  
+    <File Path="Dapr/Production/CampusHub-Notification-enrollment-confirmed-Subscription.yaml" />
+  
+    <File Path="Dapr/Production/CampusHub-Grading-enrollment-confirmed-Subscription.yaml" />
+  </Folder>
+  <Folder Name="/BE/Catalog/">
+    <Project Path="BE/Catalog/CampusHub.Catalog.Domain/CampusHub.Catalog.Domain.csproj" />
+    <Project Path="BE/Catalog/CampusHub.Catalog.UseCases/CampusHub.Catalog.UseCases.csproj" />
+  
+    <Project Path="BE/Catalog/CampusHub.Catalog.FrontendApi/CampusHub.Catalog.FrontendApi.csproj" />
+  
+    <Project Path="BE/Catalog/CampusHub.Catalog.ServiceApi/CampusHub.Catalog.ServiceApi.csproj" />
+  
+    <Project Path="BE/Catalog/CampusHub.Catalog.Infrastructure.Courses/CampusHub.Catalog.Infrastructure.Courses.csproj" />
+  </Folder>
+  <Folder Name="/BE/Catalog/Hosting/">
+    <Project Path="BE/Catalog/Hosting/CampusHub.Catalog.Host/CampusHub.Catalog.Host.csproj" />
+  </Folder>
+  <Folder Name="/BE/Catalog/Tests/">
+    <Project Path="BE/Catalog/Tests/CampusHub.Catalog.Domain.Tests/CampusHub.Catalog.Domain.Tests.csproj" />
+    <Project Path="BE/Catalog/Tests/CampusHub.Catalog.UseCases.Tests/CampusHub.Catalog.UseCases.Tests.csproj" />
+  </Folder>
+  <Folder Name="/BE/Enrollment/">
+    <Project Path="BE/Enrollment/CampusHub.Enrollment.Domain/CampusHub.Enrollment.Domain.csproj" />
+    <Project Path="BE/Enrollment/CampusHub.Enrollment.UseCases/CampusHub.Enrollment.UseCases.csproj" />
+  
+    <Project Path="BE/Enrollment/CampusHub.Enrollment.FrontendApi/CampusHub.Enrollment.FrontendApi.csproj" />
+  
+    <Project Path="BE/Enrollment/CampusHub.Enrollment.Infrastructure.Enrollments/CampusHub.Enrollment.Infrastructure.Enrollments.csproj" />
+  
+    <Project Path="BE/Enrollment/CampusHub.Enrollment.Jobs/CampusHub.Enrollment.Jobs.csproj" />
+  
+    <Project Path="BE/Enrollment/CampusHub.Enrollment.Infrastructure.Catalog/CampusHub.Enrollment.Infrastructure.Catalog.csproj" />
+  </Folder>
+  <Folder Name="/BE/Enrollment/Hosting/">
+    <Project Path="BE/Enrollment/Hosting/CampusHub.Enrollment.Host/CampusHub.Enrollment.Host.csproj" />
+  </Folder>
+  <Folder Name="/BE/Enrollment/Tests/">
+    <Project Path="BE/Enrollment/Tests/CampusHub.Enrollment.Domain.Tests/CampusHub.Enrollment.Domain.Tests.csproj" />
+    <Project Path="BE/Enrollment/Tests/CampusHub.Enrollment.UseCases.Tests/CampusHub.Enrollment.UseCases.Tests.csproj" />
+    <Project Path="BE/Enrollment/Tests/CampusHub.Enrollment.Infrastructure.Tests/CampusHub.Enrollment.Infrastructure.Tests.csproj" />
+  </Folder>
+  <Folder Name="/BE/Billing/">
+    <Project Path="BE/Billing/CampusHub.Billing.Domain/CampusHub.Billing.Domain.csproj" />
+    <Project Path="BE/Billing/CampusHub.Billing.UseCases/CampusHub.Billing.UseCases.csproj" />
+  
+    <Project Path="BE/Billing/CampusHub.Billing.FrontendApi/CampusHub.Billing.FrontendApi.csproj" />
+  
+    <Project Path="BE/Billing/CampusHub.Billing.ServiceApi/CampusHub.Billing.ServiceApi.csproj" />
+  
+    <Project Path="BE/Billing/CampusHub.Billing.Infrastructure.Payments/CampusHub.Billing.Infrastructure.Payments.csproj" />
+  </Folder>
+  <Folder Name="/BE/Billing/Hosting/">
+    <Project Path="BE/Billing/Hosting/CampusHub.Billing.Host/CampusHub.Billing.Host.csproj" />
+  </Folder>
+  <Folder Name="/BE/Billing/Tests/">
+    <Project Path="BE/Billing/Tests/CampusHub.Billing.Domain.Tests/CampusHub.Billing.Domain.Tests.csproj" />
+    <Project Path="BE/Billing/Tests/CampusHub.Billing.UseCases.Tests/CampusHub.Billing.UseCases.Tests.csproj" />
+  </Folder>
+  <Folder Name="/BE/Grading/">
+    <Project Path="BE/Grading/CampusHub.Grading.Domain/CampusHub.Grading.Domain.csproj" />
+    <Project Path="BE/Grading/CampusHub.Grading.UseCases/CampusHub.Grading.UseCases.csproj" />
+  
+    <Project Path="BE/Grading/CampusHub.Grading.FrontendApi/CampusHub.Grading.FrontendApi.csproj" />
+  
+    <Project Path="BE/Grading/CampusHub.Grading.Infrastructure.Grades/CampusHub.Grading.Infrastructure.Grades.csproj" />
+  
+    <Project Path="BE/Grading/CampusHub.Grading.Jobs/CampusHub.Grading.Jobs.csproj" />
+  
+    <Project Path="BE/Grading/CampusHub.Grading.ServiceApi/CampusHub.Grading.ServiceApi.csproj" />
+  </Folder>
+  <Folder Name="/BE/Grading/Hosting/">
+    <Project Path="BE/Grading/Hosting/CampusHub.Grading.Host/CampusHub.Grading.Host.csproj" />
+  </Folder>
+  <Folder Name="/BE/Grading/Tests/">
+    <Project Path="BE/Grading/Tests/CampusHub.Grading.Domain.Tests/CampusHub.Grading.Domain.Tests.csproj" />
+    <Project Path="BE/Grading/Tests/CampusHub.Grading.UseCases.Tests/CampusHub.Grading.UseCases.Tests.csproj" />
+  </Folder>
+  <Folder Name="/BE/Notification/">
+    <Project Path="BE/Notification/CampusHub.Notification.Domain/CampusHub.Notification.Domain.csproj" />
+    <Project Path="BE/Notification/CampusHub.Notification.UseCases/CampusHub.Notification.UseCases.csproj" />
+  
+    <Project Path="BE/Notification/CampusHub.Notification.FrontendApi/CampusHub.Notification.FrontendApi.csproj" />
+  
+    <Project Path="BE/Notification/CampusHub.Notification.Infrastructure.Notifications/CampusHub.Notification.Infrastructure.Notifications.csproj" />
+  
+    <Project Path="BE/Notification/CampusHub.Notification.ServiceApi/CampusHub.Notification.ServiceApi.csproj" />
+  </Folder>
+  <Folder Name="/BE/Notification/Hosting/">
+    <Project Path="BE/Notification/Hosting/CampusHub.Notification.Host/CampusHub.Notification.Host.csproj" />
+  </Folder>
+  <Folder Name="/BE/Notification/Tests/">
+    <Project Path="BE/Notification/Tests/CampusHub.Notification.Domain.Tests/CampusHub.Notification.Domain.Tests.csproj" />
+    <Project Path="BE/Notification/Tests/CampusHub.Notification.UseCases.Tests/CampusHub.Notification.UseCases.Tests.csproj" />
+  </Folder>
+  <Folder Name="/BE/Catalog/Sdks/">
+    <Project Path="BE/Catalog/Sdks/CampusHub.Catalog.FrontendApi.Sdk/CampusHub.Catalog.FrontendApi.Sdk.csproj" />
+  
+    <Project Path="BE/Catalog/Sdks/CampusHub.Catalog.ServiceApi.Sdk/CampusHub.Catalog.ServiceApi.Sdk.csproj" />
+  </Folder>
+  <Folder Name="/BE/Enrollment/Sdks/">
+    <Project Path="BE/Enrollment/Sdks/CampusHub.Enrollment.FrontendApi.Sdk/CampusHub.Enrollment.FrontendApi.Sdk.csproj" />
+    <Project Path="BE/Enrollment/Sdks/CampusHub.Enrollment.IntegrationEvents/CampusHub.Enrollment.IntegrationEvents.csproj" />
+  </Folder>
+  <Folder Name="/BE/Billing/Sdks/">
+    <Project Path="BE/Billing/Sdks/CampusHub.Billing.FrontendApi.Sdk/CampusHub.Billing.FrontendApi.Sdk.csproj" />
+  
+    <Project Path="BE/Billing/Sdks/CampusHub.Billing.ServiceApi.Sdk/CampusHub.Billing.ServiceApi.Sdk.csproj" />
+  </Folder>
+  <Folder Name="/BE/Grading/Sdks/">
+    <Project Path="BE/Grading/Sdks/CampusHub.Grading.FrontendApi.Sdk/CampusHub.Grading.FrontendApi.Sdk.csproj" />
+  
+    <Project Path="BE/Grading/Sdks/CampusHub.Grading.ServiceApi.Sdk/CampusHub.Grading.ServiceApi.Sdk.csproj" />
+  </Folder>
+  <Folder Name="/BE/Notification/Sdks/">
+    <Project Path="BE/Notification/Sdks/CampusHub.Notification.FrontendApi.Sdk/CampusHub.Notification.FrontendApi.Sdk.csproj" />
+  
+    <Project Path="BE/Notification/Sdks/CampusHub.Notification.ServiceApi.Sdk/CampusHub.Notification.ServiceApi.Sdk.csproj" />
+  </Folder>
+  <Folder Name="/BE/Catalog/Tools/">
+    <Project Path="BE/Catalog/Tools/Courses.MigrationTool/CampusHub.Catalog.Infrastructure.Courses.MigrationTool.csproj" />
+  </Folder>
+  <Folder Name="/BE/Enrollment/Tools/">
+    <Project Path="BE/Enrollment/Tools/Enrollments.MigrationTool/CampusHub.Enrollment.Infrastructure.Enrollments.MigrationTool.csproj" />
+  </Folder>
+  <Folder Name="/BE/Billing/Tools/">
+    <Project Path="BE/Billing/Tools/Payments.MigrationTool/CampusHub.Billing.Infrastructure.Payments.MigrationTool.csproj" />
+  </Folder>
+  <Folder Name="/BE/Grading/Tools/">
+    <Project Path="BE/Grading/Tools/Grades.MigrationTool/CampusHub.Grading.Infrastructure.Grades.MigrationTool.csproj" />
+  </Folder>
+  <Folder Name="/BE/Notification/Tools/">
+    <Project Path="BE/Notification/Tools/Notifications.MigrationTool/CampusHub.Notification.Infrastructure.Notifications.MigrationTool.csproj" />
+  </Folder>
+</Solution>

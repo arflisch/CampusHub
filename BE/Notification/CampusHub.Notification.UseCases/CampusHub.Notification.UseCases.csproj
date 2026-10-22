@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<ItemGroup>
+	  <PackageReference Include="Arc4u.FluentValidation" />
+    <PackageReference Include="Arc4u.Dependency.Tool">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Dapr.Client" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <ProjectReference Include="..\CampusHub.Notification.Domain\CampusHub.Notification.Domain.csproj" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <!-- Use cases are internal: only the ports (IGetEnvironmentInfo, ...) are visible outside
+         this assembly. The Arc4u.Dependency.Tool generator emits RegisterUseCasesTypes() into
+         this same assembly, so DI still resolves them. Tests need the implementations. -->
+    <InternalsVisibleTo Include="CampusHub.Notification.UseCases.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <EmbeddedResource Update="Resources\ErrorRes.resx">
+	    <Generator>ResXFileCodeGenerator</Generator>
+	    <LastGenOutput>ErrorRes.Designer.cs</LastGenOutput>
+	  </EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Resources\ErrorRes.Designer.cs">
+	    <DesignTime>True</DesignTime>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>ErrorRes.resx</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\ErrorRes.fr.resx">
+      <DependentUpon>ErrorRes.resx</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\ErrorRes.nl.resx">
+      <DependentUpon>ErrorRes.resx</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

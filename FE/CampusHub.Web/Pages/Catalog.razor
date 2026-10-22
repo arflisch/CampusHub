@@ -1,0 +1,66 @@
+@page "/"
+@inherits ViewModelComponentBase<CatalogViewModel>
+
+<PageTitle>Catalogue · CampusHub</PageTitle>
+
+<div class="page-head">
+    <div>
+        <h1>Course catalogue</h1>
+        <p class="muted">Courses open for enrollment. Seats are limited: a request holds a seat, then confirms it.</p>
+    </div>
+    <CommandButton Command="ViewModel.LoadCommand" CssClass="btn btn-ghost" BusyText="Refreshing…">Refresh</CommandButton>
+</div>
+
+<Banner Message="@ViewModel.ErrorMessage" OnDismiss="() => ViewModel.DismissErrorCommand.Execute(null)" />
+<Banner Message="@ViewModel.InfoMessage" Kind="info" />
+
+@if (ViewModel.LoadCommand.IsRunning && ViewModel.IsEmpty)
+{
+    <div class="grid">
+        @for (var i = 0; i < 3; i++)
+        {
+            <div class="card skeleton"></div>
+        }
+    </div>
+}
+else if (ViewModel.IsEmpty)
+{
+    <div class="empty">No course is open for enrollment yet.</div>
+}
+else
+{
+    <div class="grid">
+        @foreach (var course in ViewModel.Courses)
+        {
+            <article class="card" @key="course.Id">
+                <div class="card-top">
+                    <span class="code">@course.Code</span>
+                    <span class="seats @(course.IsFull ? "seats-full" : string.Empty)">
+                        @(course.IsFull ? "Full" : $"{course.SeatsLeft} / {course.Capacity} seats left")
+                    </span>
+                </div>
+                <h2 class="card-title">@course.Title</h2>
+                <div class="meter" aria-hidden="true">
+                    <span style="width:@(Fill(course))%"></span>
+                </div>
+                <div class="card-actions">
+                    @if (ViewModel.WasRequested(course))
+                    {
+                        <a class="btn btn-ghost" href="enrollments">Follow my request →</a>
+                    }
+                    else
+                    {
+                        <CommandButton Command="ViewModel.EnrollCommand" Parameter="course" CssClass="btn btn-primary" BusyText="Sending…">
+                            Enroll
+                        </CommandButton>
+                    }
+                </div>
+            </article>
+        }
+    </div>
+}
+
+@code {
+    private static int Fill(CourseItem course) =>
+        course.Capacity == 0 ? 100 : (int)Math.Round(100.0 * (course.Capacity - course.SeatsLeft) / course.Capacity);
+}

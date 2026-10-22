@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Presentation layer of the Blazor front (MVVM): ViewModels, UI models and the ports they call.
+    It deliberately references no Blazor/ASP.NET Core assembly, so the compiler guarantees that ViewModels stay
+    plain C# - unit-testable without a browser - and the views (CampusHub.Web) stay thin.
+  -->
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="FluentResults" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CampusHub.Web.Presentation.Tests" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,69 @@
+apiVersion: dapr.io/v1alpha1
+kind: Resiliency
+metadata:
+  name: campushub-resiliency
+
+spec:
+  policies:
+    # timeouts are simple named durations.
+    timeouts:
+      general: 5s
+      important: 60s
+      largeResponse: 10s
+
+    # retries are named templates for retry configurations and are instantiated for life of the operation.
+    retries:
+      pubsubRetry:
+        policy: constant
+        duration: 5s
+        maxRetries: 10
+
+      retryForever:
+        policy: exponential
+        maxInterval: 15s
+        maxRetries: -1 # retry indefinitely
+
+    # circuit breakers are automatically instantiated per component and app instance.
+    # circuit breakers maintain counters that live as long as the Dapr sidecar is running. They are not persisted.
+    circuitBreakers:
+
+      pubsubCB:
+        maxRequests: 1
+        interval: 8s
+        timeout: 30s
+        trip: consecutiveFailures > 8
+
+  # targets are what named policies are applied to. Inbound retries redeliver failed events to the
+  # subscribers before they go to the dead-letter topic; outbound retries and the circuit breaker protect publishing.
+  targets:
+    components:
+      campushub-catalog-pubsub-pubsub:
+        outbound:
+          retry: pubsubRetry
+          circuitBreaker: pubsubCB
+        inbound:
+          retry: pubsubRetry
+      campushub-enrollment-pubsub-pubsub:
+        outbound:
+          retry: pubsubRetry
+          circuitBreaker: pubsubCB
+        inbound:
+          retry: pubsubRetry
+      campushub-billing-pubsub-pubsub:
+        outbound:
+          retry: pubsubRetry
+          circuitBreaker: pubsubCB
+        inbound:
+          retry: pubsubRetry
+      campushub-grading-pubsub-pubsub:
+        outbound:
+          retry: pubsubRetry
+          circuitBreaker: pubsubCB
+        inbound:
+          retry: pubsubRetry
+      campushub-notification-pubsub-pubsub:
+        outbound:
+          retry: pubsubRetry
+          circuitBreaker: pubsubCB
+        inbound:
+          retry: pubsubRetry

@@ -1,0 +1,25 @@
+@using Dev4u.CampusHub.Web.Presentation.Models
+
+<span class="badge badge-@Css">@Text</span>
+
+@code {
+    [Parameter] public EnrollmentState? Enrollment { get; set; }
+    [Parameter] public CourseState? Course { get; set; }
+
+    private string Css => Enrollment switch
+    {
+        EnrollmentState.Requested or EnrollmentState.SeatHeld => "pending",
+        EnrollmentState.Confirmed => "success",
+        EnrollmentState.Rejected => "danger",
+        _ => Course == CourseState.Published ? "success" : "neutral",
+    };
+
+    private string Text => Enrollment switch
+    {
+        EnrollmentState.Requested => "Requested",
+        EnrollmentState.SeatHeld => "Seat held",
+        EnrollmentState.Confirmed => "Confirmed",
+        EnrollmentState.Rejected => "Rejected",
+        _ => Course?.ToString() ?? string.Empty,
+    };
+}

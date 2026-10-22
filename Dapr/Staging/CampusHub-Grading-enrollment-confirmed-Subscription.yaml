@@ -1,0 +1,14 @@
+apiVersion: dapr.io/v2alpha1
+kind: Subscription
+metadata:
+  name: campushub-grading-enrollment-confirmed-subscription
+spec:
+  topic: campushub.enrollment
+  pubsubname: campushub-grading-pubsub-pubsub
+  routes:
+    rules:
+      - match: event.type == "campushub.enrollment.enrollment.confirmed"
+        path: /Dapr/Enrollment/Confirmed
+  deadLetterTopic: grading.enrollment.deadletter
+scopes:
+- campushub-grading

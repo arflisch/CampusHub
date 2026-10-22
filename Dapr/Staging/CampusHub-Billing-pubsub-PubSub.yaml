@@ -1,0 +1,97 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: campushub-billing-pubsub-pubsub
+spec:
+  type: pubsub.rabbitmq
+  version: v1
+  metadata:
+  - name: connectionString
+    value: "amqps://machost:5671/"
+  - name: consumerID
+    value: campushub-billing
+  - name: durable
+    value: true
+  - name: deletedWhenUnused
+    value: false
+  - name: autoAck
+    value: false
+  - name: deliveryMode
+    value: "2"
+  - name: requeueInFailure
+    value: false
+  - name: prefetchCount
+    value: "10"
+  - name: reconnectWait
+    value: 0
+  - name: concurrencyMode
+    value: parallel
+  - name: publisherConfirm
+    value: true
+  - name: enableDeadLetter # Optional enable dead Letter or not
+    value: "true"
+  - name: maxLen # Optional max message count in a queue
+    value: 3000
+  - name: maxLenBytes # Optional maximum length in bytes of a queue.
+    value: 10485760
+  - name: exchangeKind
+    value: fanout
+  - name: saslExternal
+    value: true
+  - name: caCert
+    value: |
+      -----BEGIN CERTIFICATE-----
+      MIIC8DCCAdigAwIBAgIUUqdIDfHQ1/L38SdHtSrgi9QKIOQwDQYJKoZIhvcNAQEL
+      BQAwEzERMA8GA1UEAwwITXlUZXN0Q0EwHhcNMjQxMDA4MjEyOTU2WhcNMjUxMDA4
+      MjEyOTU2WjATMREwDwYDVQQDDAhNeVRlc3RDQTCCASIwDQYJKoZIhvcNAQEBBQAD
+      ggEPADCCAQoCggEBAMPNASvdD4Hw0MWXn2KEi7He/CsAzBDTC977rDG8TPl+4b2v
+      odUnMq02c2vg9/d4Uv47eqy5MGINBcv2yHC+B7vizaeVbPRt7MuzQDB6IPLx61Gp
+      gzPofhsmcwK5MvRrQNDGcKJDu2AXv8dBDuMx9VZklAV3TWr69uNAPMjr42VrS1hc
+      iXzy/pk4nDG/9tg+tvytwsgnvLppWther5YoF/fiZPhMts/7yQhKaJNsTerBe+Nv
+      DN9TKMLETE4zA12cti3mOeGd31Mpjyg5xtXuvemcLLsKItE0s5nvjCRSinx/WJ9P
+      yma2fsGdjI6Ij0CJSz/RK6HiI+cQMHLPvM5pn4kCAwEAAaM8MDowDAYDVR0TBAUw
+      AwEB/zALBgNVHQ8EBAMCAQYwHQYDVR0OBBYEFJKb1J/r7uXJCCiQ0pHYLgkUpqSI
+      MA0GCSqGSIb3DQEBCwUAA4IBAQBnCJk6IakN8zde1z6HIpz0rGNqPd57VV+QLo2r
+      AnZLSnAlAb4cwKHA3qkMH2gAyEpzi5L1uTtEQMzZSaYRNhNvJJA86WHfHxE1DDKi
+      If8TSlh+0QJvvYhBxsMIgJLQvGchPfVzmFyA48xdWMtlaGZJokd0O97dDhy/TqZu
+      xhF6lrKypYOwhSdmKqnfMOz0QffCMJIf3SsQAOsmZj3OTEQejCS1UebYZh78w/b8
+      8ASl4EqWv0HG0jSBof0Y/VoW6JrsF4aQ9hq4i7ZrIhlCNszMhgFyAh3W/0ykkPNa
+      1JJtvxcsL7WONbhcmNZL5jEXSoGk7iPsIdLBQQZfwmpDTi90
+      -----END CERTIFICATE-----
+  - name: clientCert
+    value: |
+      -----BEGIN CERTIFICATE-----
+      MIIDIDCCAgigAwIBAgIBAjANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhNeVRl
+      c3RDQTAeFw0yNDEwMDgyMTI5NTdaFw0yNTEwMDgyMTI5NTdaMCMxEDAOBgNVBAMM
+      B3N2Y2RlbW8xDzANBgNVBAoMBmNsaWVudDCCASIwDQYJKoZIhvcNAQEBBQADggEP
+      ADCCAQoCggEBAJA1Vgo85IWmCOvzv4CiXURkwEDsv4IviYbCoUAR6sonKgu5ogZg
+      hf1iGBqmMUc4Iv64/4FYUly5wYR+ngXsW5Kknjdu0YvXan3UVtu1+GhOMzM+RjH6
+      ooeCrwmr5y+ii1bm3lZUwFtdGD38v+PCQ3tmXcnPZRKLzpoc+Y9QUfwBwWwKNGOW
+      n7Epy7nm4D7HW6KcaFqvVirnFAoZhpt3laoW4wUDTNuY+63VFurMJXV8WzPATWRU
+      olck5vGo9YdhqEs1gj+RrxzZPrvL7i/aZkZ5lQdLFVTPXvZpJr+dsLziYmetvUCg
+      majoYCbloA5xc/iMav6CTKD6QfVSwTrhJGkCAwEAAaNvMG0wCQYDVR0TBAIwADAL
+      BgNVHQ8EBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwHQYDVR0OBBYEFN9Qf2Jx
+      fUMHl0s3SksrIOnwvbOkMB8GA1UdIwQYMBaAFJKb1J/r7uXJCCiQ0pHYLgkUpqSI
+      MA0GCSqGSIb3DQEBCwUAA4IBAQApwJBuSBk0jv5CjEiPoy8Mb+dA8DiO4MoXjgTH
+      YNNiFIOp8H3Q3mFAW/X/9D9Vj5+O/bEI5tgvJtgkTAzEVhxDV2KVbLJVHy1PowIk
+      OIC7cc3sOTYv1xJDFvlr/rYm3yB6jD82xxvHDeVCPg3ncj0KVHSTNJ93Wa56dNDf
+      V7q8/BKg9HCRLS/asYaC8+Klv4ig1QHw7G3+VQMTHP60zb2E+X/+meXgz5X3W67D
+      bFCD8sK3aRioWwNsfkW9qf5ToAt4UODbmVuadNorr3K2IR7mP2CtWliUuNhv3Ngc
+      9bW48/JyBNxz1FGMHmdcIIX5L10uLqPNz2bVEcpXUEM5FNhh
+      -----END CERTIFICATE-----
+  - name: clientKey
+    value: 
+    secretKeyRef:
+      name: rabbitmq-client-key
+      key:  rabbitmq-client-key   
+  - name: clientName
+    value: CampusHub-Billing
+  - name: heartBeat
+    value: 60s
+scopes:
+- campushub-billing
+auth:
+  secretStore: store-secrets
+arc4u:
+  - name: rabbitmq-client-key
+    value: "Decrypt:???" # encrypted client key of the environment, not committed

@@ -1,0 +1,34 @@
+@page "/notifications"
+@inherits ViewModelComponentBase<NotificationsViewModel>
+
+<PageTitle>Notifications · CampusHub</PageTitle>
+
+<div class="page-head">
+    <div>
+        <h1>Notifications</h1>
+        <p class="muted">Written by the Notification service when it receives an event (e.g. an enrollment confirmed).</p>
+    </div>
+    <CommandButton Command="ViewModel.LoadCommand" CssClass="btn btn-ghost" BusyText="Refreshing…">Refresh</CommandButton>
+</div>
+
+<Banner Message="@ViewModel.ErrorMessage" OnDismiss="() => ViewModel.DismissErrorCommand.Execute(null)" />
+
+@if (ViewModel.IsEmpty && !ViewModel.LoadCommand.IsRunning)
+{
+    <div class="empty">No notification yet.</div>
+}
+else
+{
+    <ul class="list">
+        @foreach (var notification in ViewModel.Notifications)
+        {
+            <li class="row" @key="notification.Id">
+                <div>
+                    <div class="row-title">@notification.Title</div>
+                    <div class="muted small">@notification.Message</div>
+                </div>
+                <span class="muted small">@notification.CreatedAt.ToLocalTime().ToString("g")</span>
+            </li>
+        }
+    </ul>
+}

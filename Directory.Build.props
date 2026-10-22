@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <Company>Dev4u</Company>
+    <SolutionName>CampusHub</SolutionName>
+    <StsProvider>Logto</StsProvider>
+    <GuidanceVersion>2026.1.0</GuidanceVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AnalysisLevel>latest-All</AnalysisLevel>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Dev4u.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <IsSdk Condition="$(MSBuildProjectName.EndsWith('.Sdk'))">true</IsSdk>
+    <IsAdminTool Condition="$(MSBuildProjectName.Equals('AdminTool'))">true</IsAdminTool>
+    <IsPackable Condition="$(IsSdk) == true OR $(IsAdminTool) == true">true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release' AND $(IsPackable) == true">
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Company>Dev4u</Company>
+    <Copyright>Dev4u $([System.DateTime]::Now.Year)</Copyright>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>Dev4u.CampusHub</PackageTags>
+    <LangVersion>latest</LangVersion>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <!-- We need lock files for the SonarQube dependency analysis -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <!-- Only release builds (so CI builds) should use the lock files to restore for repeatable restores/builds -->
+    <RestoreLockedMode Condition="'$(Configuration)' == 'Release'">true</RestoreLockedMode>
+  </PropertyGroup>
+  
+  <ItemGroup Condition="'$(Configuration)'=='Release' AND $(IsSdk) == 'true'">
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\..\..\LICENSE" Pack="true" PackagePath="\" />
+    <None Include="..\..\..\..\Dev4u.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'=='Release' AND $(IsAdminTool) == true">
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+    <None Include="..\..\Dev4u.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <PackageReference Include="SonarAnalyzer.CSharp">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Always set to true when GitHub Actions is running the workflow -->
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+</Project>

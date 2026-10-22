@@ -1,0 +1,41 @@
+# OpenTelemetry Collector used by the Aspire AppHost. Every project (and the Dapr sidecar) sends its
+# telemetry here; the collector fans it out to the Aspire dashboard and to Seq.
+# ASPIRE_ENDPOINT / ASPIRE_API_KEY are injected by the collector integration, SEQ_ENDPOINT by Program.cs.
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+
+exporters:
+  otlp_grpc/aspire:
+    endpoint: ${env:ASPIRE_ENDPOINT}
+    headers:
+      x-otlp-api-key: ${env:ASPIRE_API_KEY}
+    tls:
+      # The dashboard uses the ASP.NET Core dev certificate, which the container does not trust.
+      insecure_skip_verify: true
+  otlp_http/seq:
+    # The exporter appends /v1/logs and /v1/traces itself.
+    endpoint: ${env:SEQ_ENDPOINT}/ingest/otlp
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp_grpc/aspire, otlp_http/seq]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp_grpc/aspire, otlp_http/seq]
+    # Seq does not ingest OTLP metrics, so they only go to the dashboard.
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp_grpc/aspire]

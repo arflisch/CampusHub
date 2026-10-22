@@ -1,0 +1,74 @@
+@page "/teaching"
+@inherits ViewModelComponentBase<TeachingViewModel>
+
+<PageTitle>Teaching · CampusHub</PageTitle>
+
+<div class="page-head">
+    <div>
+        <h1>Teaching</h1>
+        <p class="muted">Create a course as a draft, then publish it to open enrollments.</p>
+    </div>
+</div>
+
+<Banner Message="@ViewModel.ErrorMessage" OnDismiss="() => ViewModel.DismissErrorCommand.Execute(null)" />
+<Banner Message="@ViewModel.InfoMessage" Kind="info" />
+
+<section class="panel">
+    <h2>New course</h2>
+    <form class="form" @onsubmit="CreateAsync" @onsubmit:preventDefault>
+        <label>
+            <span>Code</span>
+            <input @bind="ViewModel.Code" @bind:event="oninput" placeholder="DOTNET-101" maxlength="20" autocomplete="off" />
+            <small class="field-error">@ViewModel.CodeError</small>
+        </label>
+        <label class="grow">
+            <span>Title</span>
+            <input @bind="ViewModel.Title" @bind:event="oninput" placeholder="Modern .NET from scratch" maxlength="200" />
+            <small class="field-error">@ViewModel.TitleError</small>
+        </label>
+        <label>
+            <span>Seats</span>
+            <input type="number" min="1" max="@TeachingViewModel.MaxCapacity" @bind="ViewModel.Capacity" @bind:event="oninput" />
+            <small class="field-error">@ViewModel.CapacityError</small>
+        </label>
+        <CommandButton Command="ViewModel.CreateCommand" CssClass="btn btn-primary" BusyText="Creating…" Type="submit">Create</CommandButton>
+    </form>
+</section>
+
+<section>
+    <h2>My courses</h2>
+    @if (ViewModel.IsEmpty && !ViewModel.LoadCommand.IsRunning)
+    {
+        <div class="empty">You don't teach any course yet.</div>
+    }
+    else
+    {
+        <ul class="list">
+            @foreach (var course in ViewModel.MyCourses)
+            {
+                <li class="row" @key="course.Id">
+                    <div>
+                        <div class="row-title"><span class="code">@course.Code</span> @course.Title</div>
+                        <div class="muted small">@course.Capacity seats · @(course.Capacity - course.SeatsLeft) taken</div>
+                    </div>
+                    <StatusBadge Course="course.State" />
+                    @if (course.State == CourseState.Draft)
+                    {
+                        <CommandButton Command="ViewModel.PublishCommand" Parameter="course" CssClass="btn btn-primary" BusyText="Publishing…">Publish</CommandButton>
+                    }
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+@code {
+    // Submitting with Enter goes through the command too, so CanExecute is honoured either way.
+    private async Task CreateAsync()
+    {
+        if (ViewModel.CreateCommand.CanExecute(null))
+        {
+            await ViewModel.CreateCommand.ExecuteAsync(null);
+        }
+    }
+}

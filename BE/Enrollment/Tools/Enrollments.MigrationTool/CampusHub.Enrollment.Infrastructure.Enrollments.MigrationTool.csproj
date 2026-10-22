@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configs\appsettings.*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!--
+    MongoDBMigrations 2.x is built against the 2.x MongoDB driver, and the solution's central
+    PackageVersion for MongoDB.Driver is the 3.x one Arc4u.MongoDB needs - so this one project overrides it.
+    2.19.0 is the lowest 2.x without GHSA-7j9m-j397-g4wx; the assembly MongoDBMigrations was compiled
+    against (2.14.1.0) no longer satisfies the compiler past the 2.19 line, so do not raise it further
+    without rebuilding this project first.
+  -->
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" VersionOverride="2.19.0" />
+    <PackageReference Include="Arc4u.Configuration.Decryptor" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="MongoDBMigrations" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="SharpCompress" />
+    <PackageReference Include="Snappier" />
+    <PackageReference Include="SSH.NET" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
+  </ItemGroup>
+
+  <!--
+    MongoDBMigrations, McMaster.Extensions.CommandLineUtils, Arc4u.Configuration.Decryptor and
+    Microsoft.Extensions.Configuration.Json come from the Infrastructure.MongoDBMigration set, installed by
+    the CLI. That set also pins the transitive packages MongoDBMigrations drags in through its 2.x driver,
+    its SSH tunnel support and Buildalyzer (its scheme validator) - Microsoft.Build.Tasks.Core, Newtonsoft.Json,
+    SharpCompress, Snappier, SSH.NET and System.Security.Cryptography.Xml - which Central Package Management
+    does not lift on its own. This is
+    an operator tool that never reaches the published service, but it shares the solution's restore audit,
+    so it is pinned for the same reason InfrastructureMigrationTool.csproj pins System.Security.Cryptography.Xml.
+
+    Unlike the EF Core migration tool, this project does NOT reference CampusHub.Enrollment.Infrastructure.Enrollments, and that
+    is deliberate rather than an omission. One project cannot resolve both the 2.x driver above and the 3.x
+    one the adapter is on, so the migrations here talk to the database through BsonDocument instead of the
+    adapter's mapped entities. That is also the honest shape of the job: a migration reshapes documents that
+    were written by an older version of the entity, which the current mapping can no longer deserialize.
+  -->
+
+</Project>

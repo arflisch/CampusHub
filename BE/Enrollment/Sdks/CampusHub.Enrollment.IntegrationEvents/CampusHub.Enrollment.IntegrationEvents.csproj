@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Public contract of the events the Enrollment service publishes. Subscribers reference this project (or
+    its package) only - never the Enrollment domain. Contracts evolve additively; a breaking change is a new
+    type and a new event type name (".v2"), published side by side until every subscriber has moved.
+  -->
+
+</Project>

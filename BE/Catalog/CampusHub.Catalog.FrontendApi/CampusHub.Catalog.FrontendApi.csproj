@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AnalysisLevel>latest-All</AnalysisLevel>
+    <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Arc4u.AspNetCore.Results" />
+    <PackageReference Include="Arc4u.AspNetCore.gRpc" />
+    <PackageReference Include="Arc4u.gRPC" />
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc" />
+    <PackageReference Include="Grpc.Tools" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="**/*.proto" GrpcServices="Server" />
+    <None Remove="Protos\Environment.proto" />
+  </ItemGroup>
+
+    <ItemGroup>
+    <ProjectReference Include="..\..\..\Shared\CampusHub.Shared.Domain\CampusHub.Shared.Domain.csproj" />
+    <ProjectReference Include="..\CampusHub.Catalog.Domain\CampusHub.Catalog.Domain.csproj" />
+    <ProjectReference Include="..\CampusHub.Catalog.UseCases\CampusHub.Catalog.UseCases.csproj" />
+  </ItemGroup>
+  
+</Project>

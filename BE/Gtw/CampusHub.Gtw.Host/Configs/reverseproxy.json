@@ -1,0 +1,294 @@
+{
+  "ReverseProxy": {
+    "Routes": {
+      "catalog/openapi": {
+        "ClusterId": "catalog",
+        "AuthorizationPolicy": "CanSeeSwaggerFrontendApi",
+        "Match": {
+          "Path": "/catalog/openapi/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/openapi/{**remainder}"
+          },
+          {
+            "X-Forwarded": "Set",
+            "Prefix": "Off"
+          },
+          {
+            "RequestHeader": "X-Forwarded-Prefix",
+            "Set": "/catalog"
+          }
+        ]
+      },
+      "catalog/healthz": {
+        "ClusterId": "catalog",
+        "Match": {
+          "Path": "/catalog/healthz/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/healthz/{**remainder}"
+          }
+        ]
+      },
+      "enrollment/openapi": {
+        "ClusterId": "enrollment",
+        "AuthorizationPolicy": "CanSeeSwaggerFrontendApi",
+        "Match": {
+          "Path": "/enrollment/openapi/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/openapi/{**remainder}"
+          },
+          {
+            "X-Forwarded": "Set",
+            "Prefix": "Off"
+          },
+          {
+            "RequestHeader": "X-Forwarded-Prefix",
+            "Set": "/enrollment"
+          }
+        ]
+      },
+      "enrollment/healthz": {
+        "ClusterId": "enrollment",
+        "Match": {
+          "Path": "/enrollment/healthz/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/healthz/{**remainder}"
+          }
+        ]
+      },
+      "billing/openapi": {
+        "ClusterId": "billing",
+        "AuthorizationPolicy": "CanSeeSwaggerFrontendApi",
+        "Match": {
+          "Path": "/billing/openapi/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/openapi/{**remainder}"
+          },
+          {
+            "X-Forwarded": "Set",
+            "Prefix": "Off"
+          },
+          {
+            "RequestHeader": "X-Forwarded-Prefix",
+            "Set": "/billing"
+          }
+        ]
+      },
+      "billing/healthz": {
+        "ClusterId": "billing",
+        "Match": {
+          "Path": "/billing/healthz/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/healthz/{**remainder}"
+          }
+        ]
+      },
+      "grading/openapi": {
+        "ClusterId": "grading",
+        "AuthorizationPolicy": "CanSeeSwaggerFrontendApi",
+        "Match": {
+          "Path": "/grading/openapi/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/openapi/{**remainder}"
+          },
+          {
+            "X-Forwarded": "Set",
+            "Prefix": "Off"
+          },
+          {
+            "RequestHeader": "X-Forwarded-Prefix",
+            "Set": "/grading"
+          }
+        ]
+      },
+      "grading/healthz": {
+        "ClusterId": "grading",
+        "Match": {
+          "Path": "/grading/healthz/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/healthz/{**remainder}"
+          }
+        ]
+      },
+      "notification/openapi": {
+        "ClusterId": "notification",
+        "AuthorizationPolicy": "CanSeeSwaggerFrontendApi",
+        "Match": {
+          "Path": "/notification/openapi/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/openapi/{**remainder}"
+          },
+          {
+            "X-Forwarded": "Set",
+            "Prefix": "Off"
+          },
+          {
+            "RequestHeader": "X-Forwarded-Prefix",
+            "Set": "/notification"
+          }
+        ]
+      },
+      "notification/healthz": {
+        "ClusterId": "notification",
+        "Match": {
+          "Path": "/notification/healthz/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/healthz/{**remainder}"
+          }
+        ]
+      },
+      "catalog/environment": {
+        "ClusterId": "catalog",
+        "AuthorizationPolicy": "AccessApplication",
+        "Match": {
+          "Path": "/catalog/frontend/environment/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/frontend/environment/{**remainder}"
+          }
+        ]
+      },
+      "enrollment/environment": {
+        "ClusterId": "enrollment",
+        "AuthorizationPolicy": "AccessApplication",
+        "Match": {
+          "Path": "/enrollment/frontend/environment/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/frontend/environment/{**remainder}"
+          }
+        ]
+      },
+      "billing/environment": {
+        "ClusterId": "billing",
+        "AuthorizationPolicy": "AccessApplication",
+        "Match": {
+          "Path": "/billing/frontend/environment/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/frontend/environment/{**remainder}"
+          }
+        ]
+      },
+      "grading/environment": {
+        "ClusterId": "grading",
+        "AuthorizationPolicy": "AccessApplication",
+        "Match": {
+          "Path": "/grading/frontend/environment/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/frontend/environment/{**remainder}"
+          }
+        ]
+      },
+      "notification/environment": {
+        "ClusterId": "notification",
+        "AuthorizationPolicy": "AccessApplication",
+        "Match": {
+          "Path": "/notification/frontend/environment/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/frontend/environment/{**remainder}"
+          }
+        ]
+      },
+      "enrollment/jobs": {
+        "ClusterId": "enrollment",
+        "AuthorizationPolicy": "AccessApplication",
+        "Match": {
+          "Path": "/enrollment/jobs/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/enrollment/jobs/{**remainder}"
+          }
+        ]
+      },
+      "grading/jobs": {
+        "ClusterId": "grading",
+        "AuthorizationPolicy": "AccessApplication",
+        "Match": {
+          "Path": "/grading/jobs/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/grading/jobs/{**remainder}"
+          }
+        ]
+      },
+      "catalog/courses": {
+        "ClusterId": "catalog",
+        "AuthorizationPolicy": "AccessApplication",
+        "Match": {
+          "Path": "/catalog/frontend/courses/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/frontend/courses/{**remainder}"
+          }
+        ]
+      },
+      "catalog/service": {
+        "ClusterId": "catalog",
+        "AuthorizationPolicy": "AccessApplication",
+        "Match": {
+          "Path": "/catalog/service/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/service/{**remainder}"
+          }
+        ]
+      },
+      "enrollment/enrollments": {
+        "ClusterId": "enrollment",
+        "AuthorizationPolicy": "AccessApplication",
+        "Match": {
+          "Path": "/enrollment/frontend/enrollments/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/frontend/enrollments/{**remainder}"
+          }
+        ]
+      },
+      "notification/notifications": {
+        "ClusterId": "notification",
+        "AuthorizationPolicy": "AccessApplication",
+        "Match": {
+          "Path": "/notification/frontend/notifications/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/frontend/notifications/{**remainder}"
+          }
+        ]
+      }
+    },
+    "Clusters": {}
+  }
+}

@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Arc4u.OAuth2.Client" />
+    <PackageReference Include="Hangfire.Core" />
+    <!-- Hangfire.Core drags in Newtonsoft.Json 11.0.1, which carries GHSA-5crp-9r3c-p9vr (NU1903).
+         Central Package Management does not lift transitive versions here, so reference it directly
+         to pin the patched 13.x from Directory.Packages.props. -->
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Arc4u.Dependency.Tool">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Shared\CampusHub.Shared.Domain\CampusHub.Shared.Domain.csproj" />
+    <ProjectReference Include="..\CampusHub.Enrollment.UseCases\CampusHub.Enrollment.UseCases.csproj" />
+    <ProjectReference Include="..\CampusHub.Enrollment.Domain\CampusHub.Enrollment.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

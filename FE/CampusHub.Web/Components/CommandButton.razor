@@ -1,0 +1,15 @@
+@*
+    Binds a button to an IAsyncRelayCommand. Blazor ignores ICommand, so this component does what XAML would do:
+    disabled while CanExecute is false or the command runs (no double submit), re-rendered on CanExecuteChanged.
+*@
+<button type="@Type" class="@CssClass" disabled="@(!Command.CanExecute(Parameter))" @onclick="ExecuteAsync" title="@Title">
+    @if (Command.IsRunning && BusyText is not null)
+    {
+        <span class="spinner" aria-hidden="true"></span>
+        @BusyText
+    }
+    else
+    {
+        @ChildContent
+    }
+</button>

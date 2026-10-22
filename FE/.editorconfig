@@ -1,0 +1,12 @@
+# Front-end (Blazor WebAssembly) rules, on top of the solution .editorconfig.
+
+[*.cs]
+# ViewModels and components must resume on the renderer's synchronization context: ConfigureAwait(false) would make
+# property changes and StateHasChanged run off the UI context. So the "always ConfigureAwait" rule is off here.
+dotnet_diagnostic.CA2007.severity = none
+
+[CampusHub.Web/**.cs]
+# Types created by the DI container or by the JSON deserializer (adapters, wire records) look "never instantiated".
+dotnet_diagnostic.CA1812.severity = none
+# Razor components are generated public, so the types they derive from or expose must be public too.
+dotnet_diagnostic.CA1515.severity = none

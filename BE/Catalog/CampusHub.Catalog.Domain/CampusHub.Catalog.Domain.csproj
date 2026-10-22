@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ProjectType>DomainModel</ProjectType>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Arc4u" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Shared\CampusHub.Shared.Domain\CampusHub.Shared.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

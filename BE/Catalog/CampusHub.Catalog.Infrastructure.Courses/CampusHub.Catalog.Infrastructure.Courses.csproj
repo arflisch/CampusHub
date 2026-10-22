@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Arc4u.Dependency.Tool">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Arc4u.MongoDB" />
+    <PackageReference Include="SharpCompress" />
+  </ItemGroup>
+
+  <!--
+    Arc4u.MongoDB - which brings MongoDB.Driver and Arc4u.Dependency along with it - is installed by the CLI
+    from the Infrastructure.MongoDB set in nugets.json, which registers its central version in
+    Directory.Packages.props at the same time. It cannot be listed here: Central Package Management rejects a
+    versionless reference to a package it has no PackageVersion for.
+
+    SharpCompress comes from that same set and is deliberately referenced even though no code here calls it:
+    MongoDB.Driver depends on a SharpCompress old enough to be flagged by NuGet audit, and the transitive
+    version is what the restore would otherwise pick. The PackageVersion the set writes lifts every project in
+    the solution to the patched version (they resolve it as CentralTransitive); this direct reference is what
+    makes the pin visible in the project that actually drags the dependency in.
+
+    The reference on CampusHub.Catalog.Domain is added by the CLI as well. It is the only project
+    reference this assembly is allowed to take - it is an outward adapter, so nothing but the Host references
+    it back and every dependency arrow points inwards.
+  -->
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\CampusHub.Catalog.Domain\CampusHub.Catalog.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

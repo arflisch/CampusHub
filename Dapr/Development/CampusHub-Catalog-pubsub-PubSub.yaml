@@ -1,0 +1,47 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: campushub-catalog-pubsub-pubsub
+spec:
+  type: pubsub.rabbitmq
+  version: v1
+  metadata:
+  # Local RabbitMQ started by the Aspire AppHost; the connection string is injected into the sidecar's
+  # environment by the AppHost and read through the env secret store (never written in this file).
+  - name: connectionString
+    secretKeyRef:
+      name: CAMPUSHUB_RABBITMQ_CONNECTION
+      key: CAMPUSHUB_RABBITMQ_CONNECTION
+  # One consumer id per service: subscribers of the same topic in different services must each get every
+  # message (a shared consumer id would make them compete for the same queue).
+  - name: consumerID
+    value: campushub-catalog
+  - name: durable
+    value: "true"
+  - name: deletedWhenUnused
+    value: "false"
+  - name: autoAck
+    value: "false"
+  # 2 = persistent: messages survive a broker restart.
+  - name: deliveryMode
+    value: "2"
+  # Failures are handled by the Dapr resiliency policy then the dead-letter topic, not by an endless requeue.
+  - name: requeueInFailure
+    value: "false"
+  # Bounded number of in-flight messages per consumer = backpressure.
+  - name: prefetchCount
+    value: "10"
+  - name: publisherConfirm
+    value: "true"
+  - name: enableDeadLetter
+    value: "true"
+  - name: exchangeKind
+    value: fanout
+  - name: clientName
+    value: CampusHub-Catalog
+  - name: heartBeat
+    value: 60s
+scopes:
+- campushub-catalog
+auth:
+  secretStore: store-secrets

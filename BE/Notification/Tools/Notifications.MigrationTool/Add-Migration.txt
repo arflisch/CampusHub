@@ -1,0 +1,77 @@
+Migrations for CampusHub.Notification.Infrastructure.Notifications
+========================================
+
+MongoDB has no schema to migrate, so there is no scaffolding step and no dotnet-ef equivalent: a migration is
+a class you write, in this project, CampusHub.Notification.Infrastructure.Notifications.MigrationTool. What it is for is the state a release does
+depend on - the indexes a query plan needs, and documents written by an older shape of an entity.
+
+Run the commands below from the solution root.
+
+Paths
+-----
+
+    Project           : BE/Notification/Tools/Notifications.MigrationTool
+    Migrations        : BE/Notification/Tools/Notifications.MigrationTool/Migrations
+    Connection string : ConnectionStrings:CampusHub_Notification
+    Database          : CampusHub_Notification
+    History           : the Notifications__MigrationsHistory collection of that database
+
+
+Add a migration
+---------------
+
+Copy Migrations/InitialMigration.cs, give the copy a new class name and a Version above every version already
+released, and write Up (and Down, when there is something to undo). Ordering is by Version, not by file name,
+and two migrations must never share one.
+
+Collections are addressed as BsonDocument, not through the CampusHub.Notification.Infrastructure.Notifications entities. That is what
+keeps a migration replayable years later: it reshapes documents the current mapping can no longer deserialize.
+This project therefore does not reference the adapter at all - it cannot, the two need different major
+versions of the MongoDB driver (see the csproj).
+
+A migration runs once per database and is never edited again once it has run anywhere, so write Up so that it
+is safe on a database that already holds documents: CreateOne on an index that already exists with the same
+keys and options is a no-op, an unconditional InsertOne is not.
+
+
+Apply the migrations
+--------------------
+
+    dotnet run --project BE/Notification/Tools/Notifications.MigrationTool -- apply-all
+
+Up to one specific version only:
+
+    dotnet run --project BE/Notification/Tools/Notifications.MigrationTool -- apply --version 1.2.0
+
+
+See what would run
+------------------
+
+    dotnet run --project BE/Notification/Tools/Notifications.MigrationTool -- list-pendings
+    dotnet run --project BE/Notification/Tools/Notifications.MigrationTool -- list-applied
+    dotnet run --project BE/Notification/Tools/Notifications.MigrationTool -- list-all
+
+Pass --help for the full list.
+
+
+Targeting another environment
+-----------------------------
+
+Development is the default and reads the connection string from this project's own appsettings.json. Any
+other environment reads Configs/appsettings.<env>.json, where the CLI left the key empty for deployment to
+fill in - with a plain URI, or with a "Decrypt:..." value the tool decrypts through the configured
+certificate:
+
+    DOTNET_ENVIRONMENT=Acceptance dotnet run --project BE/Notification/Tools/Notifications.MigrationTool -- list-pendings
+
+On Windows (PowerShell):
+
+    $env:DOTNET_ENVIRONMENT = "Acceptance"
+
+
+The connection string names the database
+----------------------------------------
+
+MongoDB carries the database in the path of the URI, so ConnectionStrings:CampusHub_Notification must end in
+/CampusHub_Notification - the same URI the Host registers the adapter with. Without it the tool has no database to
+migrate and says so rather than picking a default.
