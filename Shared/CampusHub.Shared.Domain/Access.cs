@@ -8,9 +8,17 @@ namespace Dev4u.CampusHub.Rights;
 /// </summary>
 public enum Access
 {
+    /// <summary>Any signed-in user: browse the catalogue, enroll, read their notifications.</summary>
     AccessApplication = 0,
+
+    /// <summary>Administrators: the Swagger pages.</summary>
     CanSeeSwaggerFrontendApi = 1,
+
+    /// <summary>Administrators: the Hangfire dashboards.</summary>
     CanSeeJobs = 2,
+
+    /// <summary>Teachers: create, publish and list the courses they teach.</summary>
+    CanTeach = 3,
 }
 
 public static class Operations

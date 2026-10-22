@@ -6,11 +6,14 @@ using Dev4u.CampusHub.Web.Presentation.Services;
 
 namespace Dev4u.CampusHub.Web.Presentation.ViewModels;
 
-/// <summary>State of the application shell: who is signed in.</summary>
+/// <summary>State of the application shell: who is signed in, and which menus they get.</summary>
 public sealed partial class ShellViewModel(ICurrentUserService currentUser) : ViewModelBase
 {
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsTeacher))]
     public partial CurrentUser? User { get; private set; }
+
+    public bool IsTeacher => User?.IsTeacher == true;
 
     public override Task InitializeAsync(CancellationToken cancellationToken) => LoadCommand.ExecuteAsync(null);
 

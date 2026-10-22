@@ -105,6 +105,7 @@
     <ProjectReference Include="..\..\..\..\Shared\ServiceDefaults\CampusHub.ServiceDefaults.csproj" />
     <ProjectReference Include="..\..\CampusHub.Grading.FrontendApi\CampusHub.Grading.FrontendApi.csproj" />
     <ProjectReference Include="..\..\CampusHub.Grading.Infrastructure.Grades\CampusHub.Grading.Infrastructure.Grades.csproj" />
+    <ProjectReference Include="..\..\Sdks\CampusHub.Grading.IntegrationEvents\CampusHub.Grading.IntegrationEvents.csproj" />
     <ProjectReference Include="..\..\CampusHub.Grading.Jobs\CampusHub.Grading.Jobs.csproj" />
     <ProjectReference Include="..\..\CampusHub.Grading.ServiceApi\CampusHub.Grading.ServiceApi.csproj" />
   </ItemGroup>

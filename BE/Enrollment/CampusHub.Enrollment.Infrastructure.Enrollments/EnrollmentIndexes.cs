@@ -24,10 +24,19 @@ public static class EnrollmentIndexes
         ], cancellationToken).ConfigureAwait(false);
 
         var enrollments = clientFactory.GetCollection<EnrollmentDocument>();
-        await enrollments.Indexes.CreateOneAsync(
+        await enrollments.Indexes.CreateManyAsync(
+        [
             new CreateIndexModel<EnrollmentDocument>(
                 Builders<EnrollmentDocument>.IndexKeys.Ascending(e => e.StudentId).Descending(e => e.RequestedAtUtc),
                 new CreateIndexOptions { Name = "student_requests" }),
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            // The stalled-saga sweep: unsettled enrollments, oldest change first.
+            new CreateIndexModel<EnrollmentDocument>(
+                Builders<EnrollmentDocument>.IndexKeys.Ascending(e => e.Status).Ascending(e => e.UpdatedAtUtc),
+                new CreateIndexOptions { Name = "status_updated" }),
+            // The class reminders: confirmed enrollments not reminded yet, by course start.
+            new CreateIndexModel<EnrollmentDocument>(
+                Builders<EnrollmentDocument>.IndexKeys.Ascending(e => e.Status).Ascending(e => e.ReminderSentAtUtc).Ascending(e => e.CourseStartsAtUtc),
+                new CreateIndexOptions { Name = "reminders_due" }),
+        ], cancellationToken).ConfigureAwait(false);
     }
 }

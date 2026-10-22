@@ -46,10 +46,21 @@ var daprAppToken = builder.AddParameter("dapr-app-api-token",
                                         new GenerateParameterDefault { MinLength = 32, Special = false },
                                         secret: true, persist: true);
 
+// Teachers and administrators while the identity provider grants no CampusHub permission: user ids (the token's
+// "sub", shown on the Teaching page) separated by commas, or "*" for everyone. Kept in the AppHost's user secrets:
+//   dotnet user-secrets set CampusHub:Teachers "<user id>" --project Aspire
+// and given to every service, whose claims filler turns them into rights (see ServiceDefaults/CampusHubRoles.cs).
+var teachers = builder.Configuration["CampusHub:Teachers"] ?? string.Empty;
+var admins = builder.Configuration["CampusHub:Admins"] ?? string.Empty;
+
+IResourceBuilder<ProjectResource> WithRoles(IResourceBuilder<ProjectResource> project) =>
+    project.WithEnvironment("Authorization__Roles__Teachers", teachers)
+           .WithEnvironment("Authorization__Roles__Admins", admins);
+
 // A service with its Dapr sidecar. The sidecar gets the API token and, through the env secret store
 // (Dapr/Development/CampusHub-store-secrets-Secret.yaml), the broker connection string and the Redis password.
 IResourceBuilder<ProjectResource> WithDapr(IResourceBuilder<ProjectResource> project, string appId, int appPort) =>
-    project.WithEnvironment("APP_API_TOKEN", daprAppToken)
+    WithRoles(project).WithEnvironment("APP_API_TOKEN", daprAppToken)
            .WithDaprSidecar(sidecar => sidecar
                .WithOptions(new DaprSidecarOptions
                {
@@ -88,7 +99,7 @@ var grading = WithDapr(builder.AddProject<Projects.CampusHub_Grading_Host>("Grad
 var notification = WithDapr(builder.AddProject<Projects.CampusHub_Notification_Host>("Notification"), "campushub-notification", 7261)
     .WithReference(notificationDb, "CampusHub_Notification");
 
-var gateway = builder.AddProject<Projects.CampusHub_Gtw_Host>("Gtw")
+var gateway = WithRoles(builder.AddProject<Projects.CampusHub_Gtw_Host>("Gtw"))
        .WithReference(catalog)
        .WithReference(enrollment)
        .WithReference(billing)

@@ -37,4 +37,24 @@ internal sealed class DaprEnrollmentSaga(DaprWorkflowClient workflows, ILogger<D
             return Result.Fail(EnrollmentErrors.SagaUnavailable(enrollmentId));
         }
     }
+
+    public async Task<Result<EnrollmentSagaState>> GetStateAsync(Guid enrollmentId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var state = await workflows.GetWorkflowStateAsync(EnrollmentSaga.InstanceIdFor(enrollmentId), getInputsAndOutputs: false,
+                                                              cancellationToken).ConfigureAwait(false);
+            return Result.Ok(state switch
+            {
+                { Exists: false } => EnrollmentSagaState.NotFound,
+                { IsWorkflowCompleted: true } => EnrollmentSagaState.Ended, // completed, failed or terminated
+                _ => EnrollmentSagaState.Running,
+            });
+        }
+        catch (Exception ex) when (ex is RpcException or DaprException or HttpRequestException)
+        {
+            logger.LogSagaStateUnavailable(ex, enrollmentId);
+            return Result.Fail<EnrollmentSagaState>(EnrollmentErrors.SagaUnavailable(enrollmentId));
+        }
+    }
 }

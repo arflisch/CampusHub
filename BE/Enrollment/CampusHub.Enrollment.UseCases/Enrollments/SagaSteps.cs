@@ -40,7 +40,7 @@ public sealed class ReserveSeatForEnrollment(IEnrollmentRepository enrollments, 
                 return hold.ToResult();
             }
 
-            var marked = enrollment.MarkSeatReserved(hold.Value.ReservationId, hold.Value.CourseTitle, timeProvider.GetUtcNow());
+            var marked = enrollment.MarkSeatReserved(hold.Value, timeProvider.GetUtcNow());
             return marked.IsFailed
                 ? marked
                 : await enrollments.SaveAsync(enrollment, ct).ConfigureAwait(false);

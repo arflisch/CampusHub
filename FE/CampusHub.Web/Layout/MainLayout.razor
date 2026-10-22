@@ -2,19 +2,7 @@
 @inject AppMode Mode
 
 <div class="shell">
-    <header class="topbar">
-        <a class="brand" href="">
-            <img src="favicon.svg" alt="" width="28" height="28" />
-            <span>CampusHub</span>
-        </a>
-        <nav class="nav" aria-label="Main">
-            <NavLink href="" Match="NavLinkMatch.All">Catalogue</NavLink>
-            <NavLink href="enrollments">My enrollments</NavLink>
-            <NavLink href="teaching">Teaching</NavLink>
-            <NavLink href="notifications">Notifications</NavLink>
-        </nav>
-        <UserBadge />
-    </header>
+    <TopBar />
 
     @if (Mode.IsDemo)
     {

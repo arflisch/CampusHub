@@ -23,7 +23,10 @@ using Arc4u.Results.Logging;
 using Arc4u.Security.CustomRootCA;
 using Arc4u.Security.Principal;
 using Arc4u.Serializer;
+using Arc4u.MongoDB;
 using Dev4u.CampusHub.Grading.Domain;
+using Dev4u.CampusHub.Grading.Infrastructure.Grades;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Dev4u.CampusHub.Grading.FrontendApi;
 using Dev4u.CampusHub.Grading.Host;
 using Dev4u.CampusHub.Grading.Host.Infrastructure;
@@ -117,6 +120,10 @@ try
     var gradingMongoUrl = MongoUrl.Create(configuration.GetConnectionString("CampusHub_Grading"));
     services.AddMongoDatabase<Dev4u.CampusHub.Grading.Infrastructure.Grades.DatabaseContext>(configuration, "CampusHub_Grading",
         settings => settings.DirectConnection = gradingMongoUrl.DirectConnection);
+    // In the background: the host must not wait for MongoDB to start.
+    services.AddRetryingStartupTask("grading-mongodb-indexes", (sp, ct) =>
+        GradingIndexes.EnsureAsync(sp.GetRequiredService<IMongoClientFactory<Dev4u.CampusHub.Grading.Infrastructure.Grades.DatabaseContext>>(), ct));
+    services.TryAddSingleton(TimeProvider.System);
     services.AddResultLogger();
 
     services.AddCustomRootCA(configuration);

@@ -32,6 +32,49 @@ public sealed class NotifyEnrollmentConfirmed(INotificationRepository notificati
     }
 }
 
+public sealed record NotifyClassStartsSoonCommand(Guid EventId, string StudentId, string CourseTitle, DateTimeOffset CourseStartsAt, DateTimeOffset OccurredAt);
+
+/// <summary>Reacts to ClassReminderDue: the student is reminded that the course starts soon. Idempotent like the others.</summary>
+[Export, Scoped]
+public sealed class NotifyClassStartsSoon(INotificationRepository notifications)
+{
+    public async Task<Result<bool>> ExecuteAsync(NotifyClassStartsSoonCommand command, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        if (command.EventId == Guid.Empty || string.IsNullOrWhiteSpace(command.StudentId) || string.IsNullOrWhiteSpace(command.CourseTitle))
+        {
+            return Result.Fail<bool>(AppErrors.Validation("notification.invalid_event", "The ClassReminderDue event is incomplete."));
+        }
+
+        var notification = UserNotification.ClassStartsSoon(command.EventId, command.StudentId, command.CourseTitle, command.CourseStartsAt,
+                                                            command.OccurredAt);
+        return Result.Ok(await notifications.AddIfAbsentAsync(notification, cancellationToken).ConfigureAwait(false));
+    }
+}
+
+public sealed record NotifyCertificateIssuedCommand(Guid EventId, string StudentId, string CourseTitle, string CertificateNumber, DateTimeOffset OccurredAt);
+
+/// <summary>Reacts to CertificateIssued (Grading): the student learns that the certificate is available. Idempotent.</summary>
+[Export, Scoped]
+public sealed class NotifyCertificateIssued(INotificationRepository notifications)
+{
+    public async Task<Result<bool>> ExecuteAsync(NotifyCertificateIssuedCommand command, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        if (command.EventId == Guid.Empty || string.IsNullOrWhiteSpace(command.StudentId)
+            || string.IsNullOrWhiteSpace(command.CourseTitle) || string.IsNullOrWhiteSpace(command.CertificateNumber))
+        {
+            return Result.Fail<bool>(AppErrors.Validation("notification.invalid_event", "The CertificateIssued event is incomplete."));
+        }
+
+        var notification = UserNotification.CertificateIssued(command.EventId, command.StudentId, command.CourseTitle, command.CertificateNumber,
+                                                              command.OccurredAt);
+        return Result.Ok(await notifications.AddIfAbsentAsync(notification, cancellationToken).ConfigureAwait(false));
+    }
+}
+
 /// <summary>The current user's latest notifications.</summary>
 [Export, Scoped]
 public sealed class ListMyNotifications(INotificationRepository notifications)

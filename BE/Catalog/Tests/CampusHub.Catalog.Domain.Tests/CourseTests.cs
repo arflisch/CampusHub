@@ -10,10 +10,12 @@ public class CourseTests
     private const string Teacher = "teacher-1";
     private static readonly DateTimeOffset Now = new(2026, 10, 22, 8, 0, 0, TimeSpan.Zero);
     private static readonly TimeSpan Hold = TimeSpan.FromMinutes(15);
+    private static readonly DateTimeOffset Starts = Now.AddDays(7);
+    private static readonly DateTimeOffset Ends = Starts.AddDays(30);
 
     private static Course PublishedCourse(int capacity = 2)
     {
-        var course = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro to .NET", capacity, Teacher, Now).Value;
+        var course = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro to .NET", capacity, Starts, Ends, Teacher, Now).Value;
         course.Publish(Teacher, Now).IsSuccess.Should().BeTrue();
         return course;
     }
@@ -21,7 +23,7 @@ public class CourseTests
     [Fact]
     public void Create_normalizes_the_code_and_starts_in_draft()
     {
-        var result = Course.Create(Guid.NewGuid(), " dotnet-101 ", " Intro ", 30, Teacher, Now);
+        var result = Course.Create(Guid.NewGuid(), " dotnet-101 ", " Intro ", 30, Starts, Ends, Teacher, Now);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Code.Should().Be("DOTNET-101");
@@ -32,7 +34,7 @@ public class CourseTests
     [Fact]
     public void Create_reports_every_invalid_field_at_once()
     {
-        var result = Course.Create(Guid.NewGuid(), "x", "", 0, Teacher, Now);
+        var result = Course.Create(Guid.NewGuid(), "x", "", 0, Starts, Ends, Teacher, Now);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().HaveCount(3);
@@ -41,10 +43,34 @@ public class CourseTests
         result.Errors.HasCode("course.invalid_capacity").Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData(-1, 30)]   // starts in the past
+    [InlineData(7, 0)]     // ends when it starts
+    [InlineData(7, 400)]   // lasts more than a year
+    public void Create_refuses_an_impossible_schedule(int startsInDays, int lastsDays)
+    {
+        var startsAt = Now.AddDays(startsInDays);
+
+        var result = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro", 10, startsAt, startsAt.AddDays(lastsDays), Teacher, Now);
+
+        result.Errors.HasCode("course.invalid_schedule").Should().BeTrue();
+    }
+
+    [Fact]
+    public void Enrollments_close_when_the_course_starts()
+    {
+        var course = PublishedCourse();
+
+        var result = course.ReserveSeat("student-1", "key-1", Starts, Hold);
+
+        result.Errors.HasCode("course.started").Should().BeTrue();
+        course.Reservations.Should().BeEmpty();
+    }
+
     [Fact]
     public void Only_the_teacher_can_publish()
     {
-        var course = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro", 10, Teacher, Now).Value;
+        var course = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro", 10, Starts, Ends, Teacher, Now).Value;
 
         var result = course.Publish("someone-else", Now);
 
@@ -55,7 +81,7 @@ public class CourseTests
     [Fact]
     public void A_draft_course_refuses_reservations()
     {
-        var course = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro", 10, Teacher, Now).Value;
+        var course = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro", 10, Starts, Ends, Teacher, Now).Value;
 
         var result = course.ReserveSeat("student-1", "key-1", Now, Hold);
 

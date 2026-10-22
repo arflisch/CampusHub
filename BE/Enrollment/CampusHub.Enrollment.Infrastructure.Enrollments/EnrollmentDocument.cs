@@ -22,7 +22,13 @@ public sealed class EnrollmentDocument
 
     public string? CourseTitle { get; set; }
 
+    public DateTime? CourseStartsAtUtc { get; set; }
+
+    public DateTime? CourseEndsAtUtc { get; set; }
+
     public string? RejectionCode { get; set; }
+
+    public DateTime? ReminderSentAtUtc { get; set; }
 
     public DateTime RequestedAtUtc { get; set; }
 
@@ -41,7 +47,10 @@ internal static class EnrollmentDocumentMapping
         Status = enrollment.Status,
         ReservationId = enrollment.ReservationId,
         CourseTitle = enrollment.CourseTitle,
+        CourseStartsAtUtc = enrollment.CourseStartsAt?.UtcDateTime,
+        CourseEndsAtUtc = enrollment.CourseEndsAt?.UtcDateTime,
         RejectionCode = enrollment.RejectionCode,
+        ReminderSentAtUtc = enrollment.ReminderSentAt?.UtcDateTime,
         RequestedAtUtc = enrollment.RequestedAt.UtcDateTime,
         UpdatedAtUtc = enrollment.UpdatedAt.UtcDateTime,
         Version = version,
@@ -49,8 +58,11 @@ internal static class EnrollmentDocumentMapping
 
     public static StudentEnrollment ToDomain(this EnrollmentDocument document) =>
         StudentEnrollment.Rehydrate(document.Id, document.CourseId, document.StudentId, document.Status, document.ReservationId,
-                                    document.CourseTitle, document.RejectionCode, AsUtc(document.RequestedAtUtc),
+                                    document.CourseTitle, AsUtc(document.CourseStartsAtUtc), AsUtc(document.CourseEndsAtUtc),
+                                    document.RejectionCode, AsUtc(document.ReminderSentAtUtc), AsUtc(document.RequestedAtUtc),
                                     AsUtc(document.UpdatedAtUtc), document.Version);
 
     private static DateTimeOffset AsUtc(DateTime value) => new(DateTime.SpecifyKind(value, DateTimeKind.Utc));
+
+    private static DateTimeOffset? AsUtc(DateTime? value) => value is { } date ? AsUtc(date) : null;
 }

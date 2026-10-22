@@ -1,5 +1,6 @@
 using Arc4u.AspNetCore.Results;
 using Arc4u.Results;
+using Arc4u.Security.Principal;
 using Dev4u.CampusHub.Gtw.Domain;
 using Dev4u.CampusHub.Gtw.UseCases;
 using Dev4u.CampusHub.Rights;
@@ -66,13 +67,17 @@ public static partial class ApiDefinitions
            .AllowAnonymous()
            .ExcludeFromDescription();
 
-        // Who is signed in, for the front's header. The token itself never reaches the browser.
+        // Who is signed in and what they may do, for the front (menus, pages). The token itself never reaches the
+        // browser, and the services check the same rights again on every call.
         app.MapGet("frontend/me", (HttpContext httpContext) =>
             {
                 var user = httpContext.User;
                 var userId = user.FindFirst("sub")?.Value ?? string.Empty;
                 var displayName = user.FindFirst("name")?.Value ?? user.FindFirst("preferred_username")?.Value ?? userId;
-                return TypedResults.Ok(new CurrentUserInfo(userId, displayName));
+                var principal = user as AppPrincipal;
+                return TypedResults.Ok(new CurrentUserInfo(userId, displayName,
+                    IsTeacher: principal?.IsAuthorized(Access.CanTeach) == true,
+                    IsAdmin: principal?.IsAuthorized(Access.CanSeeJobs) == true));
             })
            .WithGroupName("frontend")
            .WithTags("Environment")
@@ -98,4 +103,4 @@ public static partial class ApiDefinitions
 }
 
 /// <summary>The signed-in user as shown by the front.</summary>
-public sealed record CurrentUserInfo(string UserId, string DisplayName);
+public sealed record CurrentUserInfo(string UserId, string DisplayName, bool IsTeacher, bool IsAdmin);

@@ -33,6 +33,10 @@ else
                     <div class="row-title">@(enrollment.CourseTitle ?? "Course")</div>
                     <div class="muted small">
                         Requested @enrollment.RequestedAt.ToLocalTime().ToString("g")
+                        @if (enrollment.CourseStartsAt is { } startsAt)
+                        {
+                            <span> · starts @startsAt.ToString("d MMM yyyy")</span>
+                        }
                         @if (enrollment.State == EnrollmentState.Rejected)
                         {
                             <span> · @MyEnrollmentsViewModel.DescribeRejection(enrollment)</span>

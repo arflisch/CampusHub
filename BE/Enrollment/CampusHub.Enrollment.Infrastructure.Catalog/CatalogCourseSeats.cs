@@ -29,7 +29,8 @@ public sealed class CatalogCourseSeats(IHttpClientFactory httpClientFactory, ILo
         {
             var reservation = await Client.ReserveAsync(courseId, ApiVersion, api_version: null,
                 new ReserveSeatCommand { StudentId = studentId, IdempotencyKey = idempotencyKey }, cancellationToken).ConfigureAwait(false);
-            return Result.Ok(new SeatHold(reservation.ReservationId, reservation.CourseTitle));
+            return Result.Ok(new SeatHold(reservation.ReservationId, reservation.CourseTitle,
+                                          AsUtc(reservation.CourseStartsAt), AsUtc(reservation.CourseEndsAt)));
         }
         catch (Exception ex) when (TryTranslate(ex, cancellationToken, out var error))
         {
@@ -65,6 +66,10 @@ public sealed class CatalogCourseSeats(IHttpClientFactory httpClientFactory, ILo
             return Result.Fail(error);
         }
     }
+
+    // The generated client exposes dates as DateTime; the service sends them in UTC.
+    private static DateTimeOffset AsUtc(DateTime value) =>
+        new(value.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(value, DateTimeKind.Utc) : value.ToUniversalTime());
 
     private static bool TryTranslate(Exception exception, CancellationToken cancellationToken, out IError error)
     {

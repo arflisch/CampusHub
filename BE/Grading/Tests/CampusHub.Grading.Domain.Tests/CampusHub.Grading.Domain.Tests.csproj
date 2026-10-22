@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <!-- Test names are sentences (Given_when_then style); test types are public for xUnit. -->
+    <NoWarn>$(NoWarn);CA1707;CA1515</NoWarn>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

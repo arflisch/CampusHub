@@ -579,6 +579,12 @@ namespace Dev4u.CampusHub.Gtw.FrontendApi.Sdk
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string DisplayName { get; set; } = default!;
 
+        [System.Text.Json.Serialization.JsonPropertyName("isTeacher")]
+        public bool IsTeacher { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("isAdmin")]
+        public bool IsAdmin { get; set; } = default!;
+
         private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
 
         [System.Text.Json.Serialization.JsonExtensionData]

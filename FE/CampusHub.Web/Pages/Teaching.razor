@@ -13,6 +13,25 @@
 <Banner Message="@ViewModel.ErrorMessage" OnDismiss="() => ViewModel.DismissErrorCommand.Execute(null)" />
 <Banner Message="@ViewModel.InfoMessage" Kind="info" />
 
+@if (ViewModel.IsTeacher is null)
+{
+    return; @* the user is still loading: show nothing rather than a form that may not apply *@
+}
+
+@if (ViewModel.IsTeacher == false)
+{
+    <section class="panel">
+        <h2>Teachers only</h2>
+        <p class="muted">
+            Your account doesn't have the teacher role yet. An administrator grants it in the identity provider
+            (permission <span class="code">campushub:teach</span>) or, in development, by adding your user id to the
+            AppHost secret <span class="code">CampusHub:Teachers</span>.
+        </p>
+        <p>Your user id: <span class="code">@ViewModel.UserId</span></p>
+    </section>
+    return;
+}
+
 <section class="panel">
     <h2>New course</h2>
     <form class="form" @onsubmit="CreateAsync" @onsubmit:preventDefault>
@@ -25,6 +44,15 @@
             <span>Title</span>
             <input @bind="ViewModel.Title" @bind:event="oninput" placeholder="Modern .NET from scratch" maxlength="200" />
             <small class="field-error">@ViewModel.TitleError</small>
+        </label>
+        <label>
+            <span>First day</span>
+            <input type="date" @bind="ViewModel.StartsOn" @bind:event="oninput" />
+        </label>
+        <label>
+            <span>Last day</span>
+            <input type="date" @bind="ViewModel.EndsOn" @bind:event="oninput" />
+            <small class="field-error">@ViewModel.ScheduleError</small>
         </label>
         <label>
             <span>Seats</span>
@@ -49,7 +77,10 @@
                 <li class="row" @key="course.Id">
                     <div>
                         <div class="row-title"><span class="code">@course.Code</span> @course.Title</div>
-                        <div class="muted small">@course.Capacity seats · @(course.Capacity - course.SeatsLeft) taken</div>
+                        <div class="muted small">
+                            @course.StartsAt.ToString("d MMM yyyy") → @course.EndsAt.ToString("d MMM yyyy")
+                            · @course.Capacity seats · @(course.Capacity - course.SeatsLeft) taken
+                        </div>
                     </div>
                     <StatusBadge Course="course.State" />
                     @if (course.State == CourseState.Draft)

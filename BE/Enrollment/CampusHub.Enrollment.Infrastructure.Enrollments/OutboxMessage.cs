@@ -64,9 +64,23 @@ internal static class OutboxMessages
                 EnrollmentId: confirmed.EnrollmentId,
                 CourseId: confirmed.CourseId,
                 CourseTitle: confirmed.CourseTitle,
-                StudentId: confirmed.StudentId),
+                StudentId: confirmed.StudentId,
+                CourseStartsAt: confirmed.CourseStartsAt,
+                CourseEndsAt: confirmed.CourseEndsAt),
             e => e.EventId,
             confirmed.OccurredAt),
+        ClassReminderDue reminder => Create(
+            EnrollmentEvents.ClassReminderDueV1Type,
+            new ClassReminderDueV1(
+                EventId: DeterministicId(reminder.EnrollmentId, EnrollmentEvents.ClassReminderDueV1Type),
+                OccurredAt: reminder.OccurredAt,
+                EnrollmentId: reminder.EnrollmentId,
+                CourseId: reminder.CourseId,
+                CourseTitle: reminder.CourseTitle,
+                CourseStartsAt: reminder.CourseStartsAt,
+                StudentId: reminder.StudentId),
+            e => e.EventId,
+            reminder.OccurredAt),
         _ => null, // domain events that are not published outside the service
     };
 
@@ -81,8 +95,8 @@ internal static class OutboxMessages
     };
 
     /// <summary>
-    /// One enrollment is confirmed once: deriving the event id from the aggregate id and the event type means a
-    /// replayed saga step can never produce a second, different event (the outbox insert collides on _id).
+    /// One enrollment is confirmed once and reminded once: deriving the event id from the aggregate id and the event
+    /// type means a replayed step can never produce a second, different event (the outbox insert collides on _id).
     /// </summary>
     private static Guid DeterministicId(Guid aggregateId, string eventType)
     {

@@ -14,7 +14,8 @@ namespace Dev4u.CampusHub.Catalog.FrontendApi;
 public static partial class ApiDefinitions
 {
     /// <summary>
-    /// Registers the course endpoints used by the UIs: browse the catalogue, create and publish a course.
+    /// Registers the course endpoints used by the UIs: browse the catalogue (any signed-in user), create, publish
+    /// and list one's courses (teachers only; publishing is further limited to the course's own teacher).
     /// </summary>
     public static void RegisterCoursesApis(this WebApplication app)
     {
@@ -34,6 +35,7 @@ public static partial class ApiDefinitions
             ToOkOrProblem(await useCase.ExecuteAsync(user.GetUserId() ?? string.Empty, cancellationToken).ConfigureAwait(false)))
             .WithName("Courses_ListMine")
             .WithSummary("List the courses I teach, drafts included.")
+            .RequireAuthorization(nameof(Access.CanTeach))
             .Produces<IReadOnlyList<CourseDto>>(StatusCodes.Status200OK);
 
         courses.MapGet("{courseId:guid}", async (Guid courseId, ClaimsPrincipal user, [FromServices] GetCourse useCase,
@@ -58,7 +60,8 @@ public static partial class ApiDefinitions
                     : TypedResults.Problem(result.ToProblemDetails());
             })
             .WithName("Courses_Create")
-            .WithSummary("Create a course in Draft; the caller becomes its teacher.");
+            .WithSummary("Create a course in Draft; the caller becomes its teacher.")
+            .RequireAuthorization(nameof(Access.CanTeach));
 
         courses.MapPost("{courseId:guid}/publish", async Task<Results<Ok<CourseDto>, ProblemHttpResult>> (
                 Guid courseId, ClaimsPrincipal user, [FromServices] PublishCourse useCase, CancellationToken cancellationToken) =>
@@ -71,7 +74,8 @@ public static partial class ApiDefinitions
                 return ToOkOrProblem(await useCase.ExecuteAsync(courseId, userId, cancellationToken).ConfigureAwait(false));
             })
             .WithName("Courses_Publish")
-            .WithSummary("Open a course for enrollment (its teacher only).");
+            .WithSummary("Open a course for enrollment (its teacher only).")
+            .RequireAuthorization(nameof(Access.CanTeach));
     }
 
     private static Results<Ok<T>, ProblemHttpResult> ToOkOrProblem<T>(Result<T> result) =>

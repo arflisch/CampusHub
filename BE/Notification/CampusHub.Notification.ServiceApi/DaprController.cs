@@ -1,5 +1,6 @@
 using Dev4u.CampusHub.Enrollment.IntegrationEvents;
 using Dev4u.CampusHub.Errors;
+using Dev4u.CampusHub.Grading.IntegrationEvents;
 using Dev4u.CampusHub.Notification.UseCases.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,21 +38,64 @@ public sealed class DaprController(ILogger<DaprController> logger) : ControllerB
         var result = await useCase.ExecuteAsync(
             new NotifyEnrollmentConfirmedCommand(integrationEvent.EventId, integrationEvent.StudentId, integrationEvent.CourseTitle, integrationEvent.OccurredAt),
             cancellationToken).ConfigureAwait(false);
+        return Acknowledge(EnrollmentEvents.EnrollmentConfirmedV1Type, integrationEvent.EventId, result);
+    }
 
+    /// <summary>A course the student is enrolled in starts soon: remind the student.</summary>
+    /// <param name="integrationEvent">The CloudEvent data published by the Enrollment service.</param>
+    /// <param name="useCase">The use case creating the notification.</param>
+    /// <param name="cancellationToken">Signalled when the sidecar gives up on the call.</param>
+    [HttpPost("Enrollment/ClassReminder")]
+    public async Task<IActionResult> ClassReminderDue([FromBody] ClassReminderDueV1 integrationEvent,
+                                                      [FromServices] NotifyClassStartsSoon useCase,
+                                                      CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(integrationEvent);
+        ArgumentNullException.ThrowIfNull(useCase);
+
+        var result = await useCase.ExecuteAsync(
+            new NotifyClassStartsSoonCommand(integrationEvent.EventId, integrationEvent.StudentId, integrationEvent.CourseTitle,
+                                             integrationEvent.CourseStartsAt, integrationEvent.OccurredAt),
+            cancellationToken).ConfigureAwait(false);
+        return Acknowledge(EnrollmentEvents.ClassReminderDueV1Type, integrationEvent.EventId, result);
+    }
+
+    /// <summary>A student received a certificate: tell the student.</summary>
+    /// <param name="integrationEvent">The CloudEvent data published by the Grading service.</param>
+    /// <param name="useCase">The use case creating the notification.</param>
+    /// <param name="cancellationToken">Signalled when the sidecar gives up on the call.</param>
+    [HttpPost("Grading/CertificateIssued")]
+    public async Task<IActionResult> CertificateIssued([FromBody] CertificateIssuedV1 integrationEvent,
+                                                       [FromServices] NotifyCertificateIssued useCase,
+                                                       CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(integrationEvent);
+        ArgumentNullException.ThrowIfNull(useCase);
+
+        var result = await useCase.ExecuteAsync(
+            new NotifyCertificateIssuedCommand(integrationEvent.EventId, integrationEvent.StudentId, integrationEvent.CourseTitle,
+                                               integrationEvent.CertificateNumber, integrationEvent.OccurredAt),
+            cancellationToken).ConfigureAwait(false);
+        return Acknowledge(GradingEvents.CertificateIssuedV1Type, integrationEvent.EventId, result);
+    }
+
+    // 200 when processed (or a duplicate), RETRY for a transient failure, DROP for an event that can never succeed.
+    private OkObjectResult Acknowledge(string eventType, Guid eventId, FluentResults.Result<bool> result)
+    {
         if (result.IsSuccess)
         {
-            logger.LogEventProcessed(EnrollmentEvents.EnrollmentConfirmedV1Type, integrationEvent.EventId, duplicate: !result.Value);
-            return Ok();
+            logger.LogEventProcessed(eventType, eventId, duplicate: !result.Value);
+            return Ok(new { status = "SUCCESS" });
         }
 
         var code = result.Errors.FirstCode();
         if (result.Errors.AreTransient())
         {
-            logger.LogEventRetried(EnrollmentEvents.EnrollmentConfirmedV1Type, integrationEvent.EventId, code);
+            logger.LogEventRetried(eventType, eventId, code);
             return Ok(new { status = "RETRY" });
         }
 
-        logger.LogEventDropped(EnrollmentEvents.EnrollmentConfirmedV1Type, integrationEvent.EventId, code);
+        logger.LogEventDropped(eventType, eventId, code);
         return Ok(new { status = "DROP" });
     }
 }

@@ -17,6 +17,12 @@ public static class CourseErrors
     public static ProblemDetailError InvalidCapacity() =>
         AppErrors.Validation("course.invalid_capacity", $"The capacity must be between 1 and {Course.MaxCapacity}.");
 
+    public static ProblemDetailError InvalidSchedule(string detail) =>
+        AppErrors.Validation("course.invalid_schedule", detail);
+
+    public static ProblemDetailError Started(Guid courseId) =>
+        AppErrors.BusinessRule("course.started", $"Course '{courseId}' has already started: enrollments are closed.");
+
     public static ProblemDetailError NotFound(Guid courseId) =>
         AppErrors.NotFound("course.not_found", $"Course '{courseId}' was not found.");
 

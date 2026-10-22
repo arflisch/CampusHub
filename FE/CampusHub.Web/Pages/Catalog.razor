@@ -40,6 +40,7 @@ else
                     </span>
                 </div>
                 <h2 class="card-title">@course.Title</h2>
+                <div class="muted small">@course.StartsAt.ToString("d MMM yyyy") → @course.EndsAt.ToString("d MMM yyyy")</div>
                 <div class="meter" aria-hidden="true">
                     <span style="width:@(Fill(course))%"></span>
                 </div>

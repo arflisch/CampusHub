@@ -27,6 +27,7 @@
     <ProjectReference Include="..\..\..\Shared\CampusHub.Shared.Domain\CampusHub.Shared.Domain.csproj" />
     <ProjectReference Include="..\CampusHub.Grading.UseCases\CampusHub.Grading.UseCases.csproj" />
     <ProjectReference Include="..\CampusHub.Grading.Domain\CampusHub.Grading.Domain.csproj" />
+    <ProjectReference Include="..\..\Enrollment\Sdks\CampusHub.Enrollment.IntegrationEvents\CampusHub.Enrollment.IntegrationEvents.csproj" />
   </ItemGroup>
 
 </Project>

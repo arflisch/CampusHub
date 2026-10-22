@@ -38,7 +38,7 @@ public class RequestEnrollmentTests
     public async Task A_retried_request_returns_the_existing_enrollment_without_storing_it_again()
     {
         var existing = StudentEnrollment.Request(Guid.NewGuid(), Guid.NewGuid(), "student-1", DateTimeOffset.UtcNow).Value;
-        existing.MarkSeatReserved(Guid.NewGuid(), "Intro", DateTimeOffset.UtcNow);
+        existing.MarkSeatReserved(new SeatHold(Guid.NewGuid(), "Intro", DateTimeOffset.UtcNow.AddDays(7), DateTimeOffset.UtcNow.AddDays(37)), DateTimeOffset.UtcNow);
         _repository.Setup(r => r.GetAsync(existing.Id, It.IsAny<CancellationToken>())).ReturnsAsync(existing);
 
         var result = await _sut.ExecuteAsync(new RequestEnrollmentCommand(existing.Id, existing.CourseId), "student-1", CancellationToken.None);

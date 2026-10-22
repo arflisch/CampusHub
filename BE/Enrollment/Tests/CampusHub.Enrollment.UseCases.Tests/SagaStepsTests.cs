@@ -25,7 +25,7 @@ public class SagaStepsTests
     {
         var reservationId = Guid.NewGuid();
         _seats.Setup(s => s.ReserveAsync(_enrollment.CourseId, "student-1", $"enrollment:{_enrollment.Id}", It.IsAny<CancellationToken>()))
-              .ReturnsAsync(Result.Ok(new SeatHold(reservationId, "Intro to .NET")));
+              .ReturnsAsync(Result.Ok(new SeatHold(reservationId, "Intro to .NET", DateTimeOffset.UtcNow.AddDays(7), DateTimeOffset.UtcNow.AddDays(37))));
 
         var result = await new ReserveSeatForEnrollment(_repository.Object, _seats.Object, TimeProvider.System).ExecuteAsync(_enrollment.Id, CancellationToken.None);
 
@@ -52,7 +52,7 @@ public class SagaStepsTests
     {
         var reservationId = Guid.NewGuid();
         _seats.Setup(s => s.ReserveAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-              .ReturnsAsync(Result.Ok(new SeatHold(reservationId, "Intro")));
+              .ReturnsAsync(Result.Ok(new SeatHold(reservationId, "Intro", DateTimeOffset.UtcNow.AddDays(7), DateTimeOffset.UtcNow.AddDays(37))));
         _repository.SetupSequence(r => r.GetAsync(_enrollment.Id, It.IsAny<CancellationToken>()))
                    .ReturnsAsync(Copy(_enrollment))
                    .ReturnsAsync(Copy(_enrollment));
@@ -70,7 +70,7 @@ public class SagaStepsTests
     public async Task Confirming_confirms_the_seat_then_saves_the_event()
     {
         var reservationId = Guid.NewGuid();
-        _enrollment.MarkSeatReserved(reservationId, "Intro", DateTimeOffset.UtcNow);
+        _enrollment.MarkSeatReserved(new SeatHold(reservationId, "Intro", DateTimeOffset.UtcNow.AddDays(7), DateTimeOffset.UtcNow.AddDays(37)), DateTimeOffset.UtcNow);
         _seats.Setup(s => s.ConfirmAsync(_enrollment.CourseId, reservationId, It.IsAny<CancellationToken>())).ReturnsAsync(Result.Ok());
 
         var result = await new ConfirmEnrollment(_repository.Object, _seats.Object, TimeProvider.System).ExecuteAsync(_enrollment.Id, CancellationToken.None);
@@ -90,5 +90,6 @@ public class SagaStepsTests
     }
 
     private static StudentEnrollment Copy(StudentEnrollment e) =>
-        StudentEnrollment.Rehydrate(e.Id, e.CourseId, e.StudentId, e.Status, e.ReservationId, e.CourseTitle, e.RejectionCode, e.RequestedAt, e.UpdatedAt, e.Version);
+        StudentEnrollment.Rehydrate(e.Id, e.CourseId, e.StudentId, e.Status, e.ReservationId, e.CourseTitle, e.CourseStartsAt, e.CourseEndsAt,
+                                    e.RejectionCode, e.ReminderSentAt, e.RequestedAt, e.UpdatedAt, e.Version);
 }

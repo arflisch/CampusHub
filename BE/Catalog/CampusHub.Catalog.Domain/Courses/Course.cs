@@ -17,7 +17,7 @@ public sealed class Course
 
     private readonly List<SeatReservation> _reservations;
 
-    private Course(Guid id, string code, string title, string teacherId, int capacity, CourseStatus status,
+    private Course(Guid id, string code, string title, string teacherId, int capacity, CourseSchedule schedule, CourseStatus status,
                    DateTimeOffset createdAt, DateTimeOffset? publishedAt, IEnumerable<SeatReservation> reservations, long version)
     {
         Id = id;
@@ -25,6 +25,7 @@ public sealed class Course
         Title = title;
         TeacherId = teacherId;
         Capacity = capacity;
+        Schedule = schedule;
         Status = status;
         CreatedAt = createdAt;
         PublishedAt = publishedAt;
@@ -44,6 +45,8 @@ public sealed class Course
 
     public int Capacity { get; }
 
+    public CourseSchedule Schedule { get; }
+
     public CourseStatus Status { get; private set; }
 
     public DateTimeOffset CreatedAt { get; }
@@ -55,7 +58,8 @@ public sealed class Course
 
     public IReadOnlyList<SeatReservation> Reservations => _reservations;
 
-    public static Result<Course> Create(Guid id, string? code, string? title, int capacity, string teacherId, DateTimeOffset now)
+    public static Result<Course> Create(Guid id, string? code, string? title, int capacity, DateTimeOffset startsAt, DateTimeOffset endsAt,
+                                        string teacherId, DateTimeOffset now)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(teacherId);
 
@@ -78,19 +82,23 @@ public sealed class Course
             errors.Add(CourseErrors.InvalidCapacity());
         }
 
+        var schedule = CourseSchedule.Create(startsAt, endsAt, now);
+        errors.AddRange(schedule.Errors);
+
         if (errors.Count > 0)
         {
             return Result.Fail<Course>(errors);
         }
 
-        return Result.Ok(new Course(id, trimmedCode.ToUpperInvariant(), trimmedTitle, teacherId, capacity,
+        return Result.Ok(new Course(id, trimmedCode.ToUpperInvariant(), trimmedTitle, teacherId, capacity, schedule.Value,
                                     CourseStatus.Draft, now, publishedAt: null, reservations: [], version: 0));
     }
 
     /// <summary>Rebuilds a course from storage. Persistence only: no rule is checked.</summary>
-    public static Course Rehydrate(Guid id, string code, string title, string teacherId, int capacity, CourseStatus status,
-                                   DateTimeOffset createdAt, DateTimeOffset? publishedAt, IEnumerable<SeatReservation> reservations, long version) =>
-        new(id, code, title, teacherId, capacity, status, createdAt, publishedAt, reservations, version);
+    public static Course Rehydrate(Guid id, string code, string title, string teacherId, int capacity, CourseSchedule schedule,
+                                   CourseStatus status, DateTimeOffset createdAt, DateTimeOffset? publishedAt,
+                                   IEnumerable<SeatReservation> reservations, long version) =>
+        new(id, code, title, teacherId, capacity, schedule, status, createdAt, publishedAt, reservations, version);
 
     public bool IsTaughtBy(string userId) => string.Equals(TeacherId, userId, StringComparison.Ordinal);
 
@@ -140,6 +148,11 @@ public sealed class Course
         if (Status != CourseStatus.Published)
         {
             return Result.Fail<SeatReservation>(CourseErrors.NotOpen(Id));
+        }
+
+        if (Schedule.HasStarted(now))
+        {
+            return Result.Fail<SeatReservation>(CourseErrors.Started(Id));
         }
 
         if (_reservations.Any(r => string.Equals(r.StudentId, studentId, StringComparison.Ordinal) && r.Occupies(now)))

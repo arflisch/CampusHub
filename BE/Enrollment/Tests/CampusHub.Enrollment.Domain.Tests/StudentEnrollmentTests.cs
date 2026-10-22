@@ -25,7 +25,7 @@ public class StudentEnrollmentTests
         var enrollment = Requested();
         var reservationId = Guid.NewGuid();
 
-        enrollment.MarkSeatReserved(reservationId, "Intro to .NET", Now).IsSuccess.Should().BeTrue();
+        enrollment.MarkSeatReserved(new SeatHold(reservationId, "Intro to .NET", Now.AddDays(7), Now.AddDays(37)), Now).IsSuccess.Should().BeTrue();
         enrollment.Confirm(Now).IsSuccess.Should().BeTrue();
         enrollment.Confirm(Now.AddSeconds(1)).IsSuccess.Should().BeTrue(); // replayed activity
 
@@ -42,9 +42,9 @@ public class StudentEnrollmentTests
         var enrollment = Requested();
         var reservationId = Guid.NewGuid();
 
-        enrollment.MarkSeatReserved(reservationId, "Intro", Now).IsSuccess.Should().BeTrue();
-        enrollment.MarkSeatReserved(reservationId, "Intro", Now).IsSuccess.Should().BeTrue();
-        enrollment.MarkSeatReserved(Guid.NewGuid(), "Intro", Now).Errors.HasCode("enrollment.invalid_transition").Should().BeTrue();
+        enrollment.MarkSeatReserved(new SeatHold(reservationId, "Intro", Now.AddDays(7), Now.AddDays(37)), Now).IsSuccess.Should().BeTrue();
+        enrollment.MarkSeatReserved(new SeatHold(reservationId, "Intro", Now.AddDays(7), Now.AddDays(37)), Now).IsSuccess.Should().BeTrue();
+        enrollment.MarkSeatReserved(new SeatHold(Guid.NewGuid(), "Intro", Now.AddDays(7), Now.AddDays(37)), Now).Errors.HasCode("enrollment.invalid_transition").Should().BeTrue();
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class StudentEnrollmentTests
     public void A_confirmed_enrollment_can_no_longer_be_rejected()
     {
         var enrollment = Requested();
-        enrollment.MarkSeatReserved(Guid.NewGuid(), "Intro", Now);
+        enrollment.MarkSeatReserved(new SeatHold(Guid.NewGuid(), "Intro", Now.AddDays(7), Now.AddDays(37)), Now);
         enrollment.Confirm(Now);
 
         enrollment.Reject("course.full", Now).Errors.HasCode("enrollment.invalid_transition").Should().BeTrue();
@@ -76,5 +76,49 @@ public class StudentEnrollmentTests
 
         enrollment.Status.Should().Be(EnrollmentStatus.Rejected);
         enrollment.RejectionCode.Should().Be("course.full");
+    }
+
+    private static StudentEnrollment Confirmed()
+    {
+        var enrollment = Requested();
+        enrollment.MarkSeatReserved(new SeatHold(Guid.NewGuid(), "Intro", Now.AddDays(1), Now.AddDays(30)), Now);
+        enrollment.Confirm(Now);
+        enrollment.ClearDomainEvents();
+        return enrollment;
+    }
+
+    [Fact]
+    public void The_confirmation_event_carries_the_course_dates()
+    {
+        var enrollment = Requested();
+        enrollment.MarkSeatReserved(new SeatHold(Guid.NewGuid(), "Intro", Now.AddDays(1), Now.AddDays(30)), Now);
+
+        enrollment.Confirm(Now);
+
+        var confirmed = enrollment.DomainEvents.OfType<EnrollmentConfirmed>().Single();
+        confirmed.CourseStartsAt.Should().Be(Now.AddDays(1));
+        confirmed.CourseEndsAt.Should().Be(Now.AddDays(30));
+    }
+
+    [Fact]
+    public void A_confirmed_student_is_reminded_of_the_class_exactly_once()
+    {
+        var enrollment = Confirmed();
+
+        enrollment.RemindOfClass(Now).IsSuccess.Should().BeTrue();
+        enrollment.RemindOfClass(Now.AddHours(1)).IsSuccess.Should().BeTrue(); // next run of the job
+
+        var reminder = enrollment.DomainEvents.OfType<ClassReminderDue>().Should().ContainSingle().Subject;
+        reminder.CourseStartsAt.Should().Be(Now.AddDays(1));
+        enrollment.ReminderSentAt.Should().Be(Now);
+    }
+
+    [Fact]
+    public void Only_a_confirmed_enrollment_gets_a_reminder()
+    {
+        var enrollment = Requested();
+
+        enrollment.RemindOfClass(Now).Errors.HasCode("enrollment.not_confirmed").Should().BeTrue();
+        enrollment.DomainEvents.Should().BeEmpty();
     }
 }

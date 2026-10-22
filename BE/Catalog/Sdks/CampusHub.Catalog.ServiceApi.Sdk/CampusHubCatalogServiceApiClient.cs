@@ -626,6 +626,14 @@ namespace Dev4u.CampusHub.Catalog.ServiceApi.Sdk
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string CourseTitle { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("courseStartsAt", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public System.DateTime CourseStartsAt { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("courseEndsAt", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public System.DateTime CourseEndsAt { get; set; } = default!;
+
         [Newtonsoft.Json.JsonProperty("studentId", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string StudentId { get; set; } = default!;

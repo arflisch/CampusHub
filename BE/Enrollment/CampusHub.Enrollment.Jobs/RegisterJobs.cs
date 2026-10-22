@@ -11,7 +11,9 @@ public static class RegisterJobs
     public static void Register(IRecurringJobManager recurringJobs)
     {
         ArgumentNullException.ThrowIfNull(recurringJobs);
-        recurringJobs.AddOrUpdate<ReleaseExpiredReservationsJob>("ReleaseExpiredReservationsJob", job => job.ExecuteAsync(), "*/5 * * * *");
-        recurringJobs.AddOrUpdate<ClassRemindersJob>("ClassRemindersJob", job => job.ExecuteAsync(), Cron.Daily());
+        // CancellationToken.None is a placeholder: Hangfire passes its own token, cancelled at shutdown.
+        recurringJobs.AddOrUpdate<ReleaseExpiredReservationsJob>("ReleaseExpiredReservationsJob", job => job.ExecuteAsync(CancellationToken.None), "*/5 * * * *");
+        // Hourly with a one-day window: every course gets its reminder about a day before it starts.
+        recurringJobs.AddOrUpdate<ClassRemindersJob>("ClassRemindersJob", job => job.ExecuteAsync(CancellationToken.None), Cron.Hourly());
     }
 }

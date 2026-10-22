@@ -15,6 +15,8 @@ public sealed record CourseItem(
     string TeacherId,
     int Capacity,
     int SeatsLeft,
+    DateTimeOffset StartsAt,
+    DateTimeOffset EndsAt,
     CourseState State,
     DateTimeOffset? PublishedAt)
 {
@@ -34,6 +36,7 @@ public sealed record EnrollmentItem(
     Guid Id,
     Guid CourseId,
     string? CourseTitle,
+    DateTimeOffset? CourseStartsAt,
     EnrollmentState State,
     string? RejectionCode,
     DateTimeOffset RequestedAt,
@@ -45,4 +48,5 @@ public sealed record EnrollmentItem(
 
 public sealed record NotificationItem(Guid Id, string Title, string Message, DateTimeOffset CreatedAt, bool IsRead);
 
-public sealed record CurrentUser(string UserId, string DisplayName);
+/// <summary>The signed-in user and what the gateway says they may do (the services check the rights again).</summary>
+public sealed record CurrentUser(string UserId, string DisplayName, bool IsTeacher = false, bool IsAdmin = false);

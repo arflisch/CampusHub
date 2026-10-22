@@ -238,6 +238,9 @@
       "campushub.enrollment.integrationevents": {
         "type": "Project"
       },
+      "campushub.grading.integrationevents": {
+        "type": "Project"
+      },
       "campushub.notification.domain": {
         "type": "Project",
         "dependencies": {

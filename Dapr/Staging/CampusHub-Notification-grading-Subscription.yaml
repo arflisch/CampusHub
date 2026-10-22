@@ -1,0 +1,14 @@
+apiVersion: dapr.io/v2alpha1
+kind: Subscription
+metadata:
+  name: campushub-notification-grading-subscription
+spec:
+  topic: campushub.grading
+  pubsubname: campushub-notification-pubsub-pubsub
+  routes:
+    rules:
+      - match: event.type == "campushub.grading.certificate.issued"
+        path: /Dapr/Grading/CertificateIssued
+  deadLetterTopic: notification.grading.deadletter
+scopes:
+- campushub-notification

@@ -8,6 +8,8 @@ public sealed record CourseDto(
     string TeacherId,
     int Capacity,
     int SeatsLeft,
+    DateTimeOffset StartsAt,
+    DateTimeOffset EndsAt,
     string Status,
     DateTimeOffset? PublishedAt);
 
@@ -16,6 +18,8 @@ public sealed record SeatReservationDto(
     Guid ReservationId,
     Guid CourseId,
     string CourseTitle,
+    DateTimeOffset CourseStartsAt,
+    DateTimeOffset CourseEndsAt,
     string StudentId,
     string Status,
     DateTimeOffset HeldUntil);

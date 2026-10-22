@@ -18,17 +18,18 @@ using Microsoft.Extensions.Options;
 
 namespace Dev4u.CampusHub.ServiceDefaults;
 
-// TODO (authorization blueprint): this IClaimsFiller is intentionally permissive. It grants every
-// Access operation and the "User" role (empty scope) to any authenticated identity so the service
-// runs end-to-end out of the box. This is a blueprint default — the team owns the real authorization
-// strategy. Replace BuildAuthorization below with the project's actual token -> rights mapping before
-// any non-development deployment; as-is it authorizes all authenticated users for everything.
+/// <summary>
+/// Builds the Arc4u authorization claim of the caller from its access token: every signed-in user gets the "User"
+/// role, teachers and administrators are recognised by <see cref="CampusHubRoles"/> (token permissions or the
+/// user ids configured in <see cref="RoleOptions"/>). An identity without token claims gets no operation at all.
+/// </summary>
 [Export(typeof(IClaimsFiller)), Scoped]
 public sealed class OAuthFiller(
                             IServiceProvider container,
                             ILogger<OAuthFiller> logger,
                             JsonSerializerContext serializationCtx,
-                            IOptionsMonitor<SimpleKeyValueSettings> settings)
+                            IOptionsMonitor<SimpleKeyValueSettings> settings,
+                            IOptionsMonitor<RoleOptions> roleOptions)
                             : IClaimsFiller
 {
     public async Task<IEnumerable<ClaimDto>> GetAsync(IIdentity identity)
@@ -82,14 +83,9 @@ public sealed class OAuthFiller(
             logger.Technical().LogException(ex);
         }
 
-        if (claims.Count != 0)
+        result.Add(BuildAuthorizationClaim(CampusHubRoles.RolesOf(claims, roleOptions.CurrentValue)));
+        if (claims.Count == 0)
         {
-            result.Add(GetAuthorization());
-        }
-        else
-        {
-            var allOperations = new List<Operation>();
-            result.Add(BuildAuthorizationClaim(allOperations));
             return result;
         }
 
@@ -110,33 +106,19 @@ public sealed class OAuthFiller(
         return result;
     }
 
-    private ClaimDto GetAuthorization()
+    private ClaimDto BuildAuthorizationClaim(IReadOnlyList<string> roles)
     {
         var allOperations = Enum.GetValues<Access>().Select(o => new Operation { Name = o.GetValue(), ID = (int)o }).ToList();
-
-        return BuildAuthorizationClaim(allOperations);
-    }
-
-    private ClaimDto BuildAuthorizationClaim(List<Operation> allOperations)
-    {
-        var authorization = BuildAuthorization(allOperations);
+        var authorization = new Authorization
+        {
+            Operations = [new ScopedOperations { Operations = CampusHubRoles.OperationsOf(roles).Cast<int>().ToList(), Scope = "" }],
+            AllOperations = allOperations,
+            Roles = [new ScopedRoles { Roles = [.. roles], Scope = "" }],
+            Scopes = []
+        };
 
         var value = JsonSerializer.Serialize(authorization, typeof(Authorization), serializationCtx);
         return new ClaimDto { ClaimType = Arc4u.IdentityModel.Claims.ClaimTypes.Authorization, Value = value };
-    }
-
-    private static Authorization BuildAuthorization(List<Operation> allOperations)
-    {
-        // TODO (authorization blueprint): grants all operations + "User" role to everyone. Replace with real rights.
-        var authorization = new Authorization
-        {
-            Operations =
-                [new ScopedOperations { Operations = Enum.GetValues<Access>().Cast<int>().ToList(), Scope = "" }],
-            AllOperations = allOperations,
-            Roles = [new ScopedRoles { Roles = ["User"], Scope = "" }],
-            Scopes = []
-        };
-        return authorization;
     }
 
     private static string ExtractClaimValue(IEnumerable<Claim> claims, params string[] claimTypes)

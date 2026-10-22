@@ -16,6 +16,9 @@
      <Project Path="Shared/CampusHub.Shared.Domain/CampusHub.Shared.Domain.csproj" />
      <Project Path="Shared/ServiceDefaults/CampusHub.ServiceDefaults.csproj" />
   </Folder>
+  <Folder Name="/Shared/Tests/">
+    <Project Path="Shared/Tests/CampusHub.ServiceDefaults.Tests/CampusHub.ServiceDefaults.Tests.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/">
   </Folder>
   <Folder Name="/BE/Gtw/">
@@ -50,7 +53,9 @@
   
     <File Path="Dapr/Development/CampusHub-Enrollment-workflowstate-StateStore.yaml" />
   
-    <File Path="Dapr/Development/CampusHub-Notification-enrollment-confirmed-Subscription.yaml" />
+    <File Path="Dapr/Development/CampusHub-Notification-enrollment-Subscription.yaml" />
+  
+    <File Path="Dapr/Development/CampusHub-Notification-grading-Subscription.yaml" />
   
     <File Path="Dapr/Development/CampusHub-Grading-enrollment-confirmed-Subscription.yaml" />
   </Folder>
@@ -71,7 +76,9 @@
   
     <File Path="Dapr/Staging/CampusHub-Enrollment-workflowstate-StateStore.yaml" />
   
-    <File Path="Dapr/Staging/CampusHub-Notification-enrollment-confirmed-Subscription.yaml" />
+    <File Path="Dapr/Staging/CampusHub-Notification-enrollment-Subscription.yaml" />
+  
+    <File Path="Dapr/Staging/CampusHub-Notification-grading-Subscription.yaml" />
   
     <File Path="Dapr/Staging/CampusHub-Grading-enrollment-confirmed-Subscription.yaml" />
   </Folder>
@@ -92,7 +99,9 @@
   
     <File Path="Dapr/Production/CampusHub-Enrollment-workflowstate-StateStore.yaml" />
   
-    <File Path="Dapr/Production/CampusHub-Notification-enrollment-confirmed-Subscription.yaml" />
+    <File Path="Dapr/Production/CampusHub-Notification-enrollment-Subscription.yaml" />
+  
+    <File Path="Dapr/Production/CampusHub-Notification-grading-Subscription.yaml" />
   
     <File Path="Dapr/Production/CampusHub-Grading-enrollment-confirmed-Subscription.yaml" />
   </Folder>
@@ -202,6 +211,7 @@
   </Folder>
   <Folder Name="/BE/Grading/Sdks/">
     <Project Path="BE/Grading/Sdks/CampusHub.Grading.FrontendApi.Sdk/CampusHub.Grading.FrontendApi.Sdk.csproj" />
+    <Project Path="BE/Grading/Sdks/CampusHub.Grading.IntegrationEvents/CampusHub.Grading.IntegrationEvents.csproj" />
   
     <Project Path="BE/Grading/Sdks/CampusHub.Grading.ServiceApi.Sdk/CampusHub.Grading.ServiceApi.Sdk.csproj" />
   </Folder>

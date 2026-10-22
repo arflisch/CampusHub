@@ -29,6 +29,7 @@
     <ProjectReference Include="..\CampusHub.Notification.Domain\CampusHub.Notification.Domain.csproj" />
     <!-- Contract of the events this service subscribes to. -->
     <ProjectReference Include="..\..\Enrollment\Sdks\CampusHub.Enrollment.IntegrationEvents\CampusHub.Enrollment.IntegrationEvents.csproj" />
+    <ProjectReference Include="..\..\Grading\Sdks\CampusHub.Grading.IntegrationEvents\CampusHub.Grading.IntegrationEvents.csproj" />
   </ItemGroup>
 
 </Project>

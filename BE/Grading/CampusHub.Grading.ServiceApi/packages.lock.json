@@ -235,10 +235,14 @@
           "Microsoft.IdentityModel.Logging": "8.23.0"
         }
       },
+      "campushub.enrollment.integrationevents": {
+        "type": "Project"
+      },
       "campushub.grading.domain": {
         "type": "Project",
         "dependencies": {
           "Arc4u": "[9.0.0-preview38, )",
+          "CampusHub.Shared.Domain": "[1.0.0, )",
           "MongoDB.Bson": "[3.12.0, )"
         }
       },

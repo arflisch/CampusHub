@@ -1,0 +1,36 @@
+@inherits ViewModelComponentBase<ShellViewModel>
+@inject AppMode Mode
+
+@* Navigation and signed-in user. The Teaching menu is only shown to teachers; the services check the right again. *@
+<header class="topbar">
+    <a class="brand" href="">
+        <img src="favicon.svg" alt="" width="28" height="28" />
+        <span>CampusHub</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+        <NavLink href="" Match="NavLinkMatch.All">Catalogue</NavLink>
+        <NavLink href="enrollments">My enrollments</NavLink>
+        @if (ViewModel.IsTeacher)
+        {
+            <NavLink href="teaching">Teaching</NavLink>
+        }
+        <NavLink href="notifications">Notifications</NavLink>
+    </nav>
+    <div class="user">
+        @if (ViewModel.User is { } user)
+        {
+            <span class="avatar" aria-hidden="true">@Initials(user.DisplayName)</span>
+            <span class="user-name">@user.DisplayName</span>
+        }
+        @if (!Mode.IsDemo)
+        {
+            @* Ends the cookie session and the OpenID Connect session. *@
+            <a class="link-muted" href="frontend/Environment/logout?returnUrl=/">Sign out</a>
+        }
+    </div>
+</header>
+
+@code {
+    private static string Initials(string name) =>
+        string.Concat(name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(part => char.ToUpperInvariant(part[0])));
+}

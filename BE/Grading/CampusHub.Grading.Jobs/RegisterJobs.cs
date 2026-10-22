@@ -11,6 +11,7 @@ public static class RegisterJobs
     public static void Register(IRecurringJobManager recurringJobs)
     {
         ArgumentNullException.ThrowIfNull(recurringJobs);
-        recurringJobs.AddOrUpdate<IssueCertificatesJob>("IssueCertificatesJob", job => job.ExecuteAsync(), Cron.Daily());
+        // CancellationToken.None is a placeholder: Hangfire passes its own token, cancelled at shutdown.
+        recurringJobs.AddOrUpdate<IssueCertificatesJob>("IssueCertificatesJob", job => job.ExecuteAsync(CancellationToken.None), Cron.Hourly());
     }
 }

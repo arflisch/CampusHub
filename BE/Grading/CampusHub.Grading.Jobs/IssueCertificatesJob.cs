@@ -5,10 +5,15 @@ using Arc4u.Diagnostics;
 using Arc4u.OAuth2;
 using Arc4u.Results;
 using Arc4u.Security.Principal;
+using Dev4u.CampusHub.Grading.UseCases.Certificates;
 using Microsoft.Extensions.Logging;
 
 namespace Dev4u.CampusHub.Grading.Jobs;
 
+/// <summary>
+/// Every hour: issues the certificates of the courses that ended and announces them (see
+/// <see cref="IssueCertificates"/>). What fails is retried by the next run.
+/// </summary>
 [Export]
 public class IssueCertificatesJob(
             IServiceProvider scopedServiceProvider,
@@ -16,9 +21,10 @@ public class IssueCertificatesJob(
             IAppPrincipalFactory principalFactory,
             ILogger<IssueCertificatesJob> logger,
             IActivitySourceFactory activitySourceFactory,
-            IApplicationContext applicationContext)
+            IApplicationContext applicationContext,
+            IssueCertificates useCase)
 {
-    public async Task ExecuteAsync()
+    public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -35,10 +41,10 @@ public class IssueCertificatesJob(
                 .OnSuccessNotNull(principal => { applicationContext.SetPrincipal(principal); })
                 .ConfigureAwait(false);
 
-            // Call code here in the context of the service account name...
+            var report = await useCase.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+            logger.Technical().LogCertificatesReport(report.Issued, report.Announced, report.Failed);
 
             logger.Technical().LogJobExecuted("IssueCertificatesJob");
-
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

@@ -833,10 +833,14 @@
         "resolved": "0.7.3",
         "contentHash": "U9Ix4l4cl58Kzz1rJzj5hoVTjmbx1qGMwzAcbv1j/d3NzrFaESIurQyg+ow4mivCgkE3S413y+U9k4WdnEIkRA=="
       },
+      "campushub.enrollment.integrationevents": {
+        "type": "Project"
+      },
       "campushub.grading.domain": {
         "type": "Project",
         "dependencies": {
           "Arc4u": "[9.0.0-preview38, )",
+          "CampusHub.Shared.Domain": "[1.0.0, )",
           "MongoDB.Bson": "[3.12.0, )"
         }
       },
@@ -862,6 +866,9 @@
           "SharpCompress": "[0.50.4, )"
         }
       },
+      "campushub.grading.integrationevents": {
+        "type": "Project"
+      },
       "campushub.grading.jobs": {
         "type": "Project",
         "dependencies": {
@@ -879,6 +886,7 @@
           "Arc4u.AspNetCore.Versioning": "[9.0.0-preview38, )",
           "Arc4u.AspNetCore.gRpc": "[9.0.0-preview38, )",
           "Arc4u.gRPC": "[9.0.0-preview38, )",
+          "CampusHub.Enrollment.IntegrationEvents": "[1.0.0, )",
           "CampusHub.Grading.Domain": "[1.0.0, )",
           "CampusHub.Grading.UseCases": "[1.0.0, )",
           "CampusHub.Shared.Domain": "[1.0.0, )",

@@ -5,10 +5,15 @@ using Arc4u.Diagnostics;
 using Arc4u.OAuth2;
 using Arc4u.Results;
 using Arc4u.Security.Principal;
+using Dev4u.CampusHub.Enrollment.UseCases.Enrollments;
 using Microsoft.Extensions.Logging;
 
 namespace Dev4u.CampusHub.Enrollment.Jobs;
 
+/// <summary>
+/// Every hour: reminds the students whose course starts within a day (see <see cref="SendClassReminders"/>).
+/// What fails is retried by the next run.
+/// </summary>
 [Export]
 public class ClassRemindersJob(
             IServiceProvider scopedServiceProvider,
@@ -16,9 +21,10 @@ public class ClassRemindersJob(
             IAppPrincipalFactory principalFactory,
             ILogger<ClassRemindersJob> logger,
             IActivitySourceFactory activitySourceFactory,
-            IApplicationContext applicationContext)
+            IApplicationContext applicationContext,
+            SendClassReminders useCase)
 {
-    public async Task ExecuteAsync()
+    public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -28,17 +34,17 @@ public class ClassRemindersJob(
 
             using var activity = activitySource?.StartActivity("ClassRemindersJob", ActivityKind.Producer);
 
-            // Create a principal based on the service account.
+            // Create a principal based on the service account: the calls made by the use case (Catalog) carry its token.
             await principalFactory.CreatePrincipalAsync("Service")
                 .LogIfFailed()
                 .OnFailedAsync(_ => throw new AuthenticationException("Failed to create principal for service account."))
                 .OnSuccessNotNull(principal => { applicationContext.SetPrincipal(principal); })
                 .ConfigureAwait(false);
 
-            // Call code here in the context of the service account name...
+            var report = await useCase.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+            logger.Technical().LogMaintenanceReport("ClassRemindersJob", report.Examined, report.Handled, report.Skipped, report.Failed);
 
             logger.Technical().LogJobExecuted("ClassRemindersJob");
-
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

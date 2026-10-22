@@ -20,6 +20,9 @@ public static class EnrollmentErrors
     public static ProblemDetailError InvalidTransition(EnrollmentStatus from, EnrollmentStatus to) =>
         AppErrors.Conflict("enrollment.invalid_transition", $"An enrollment cannot go from {from} to {to}.");
 
+    public static ProblemDetailError NotConfirmed(Guid enrollmentId) =>
+        AppErrors.Conflict("enrollment.not_confirmed", $"Enrollment '{enrollmentId}' is not confirmed.");
+
     public static ProblemDetailError NoSeatReserved(Guid enrollmentId) =>
         AppErrors.Conflict("enrollment.no_seat", $"Enrollment '{enrollmentId}' has no reserved seat.");
 

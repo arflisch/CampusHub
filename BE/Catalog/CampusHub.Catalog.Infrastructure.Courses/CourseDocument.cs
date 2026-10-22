@@ -22,6 +22,10 @@ public sealed class CourseDocument
 
     public int Capacity { get; set; }
 
+    public DateTime StartsAtUtc { get; set; }
+
+    public DateTime EndsAtUtc { get; set; }
+
     [BsonRepresentation(BsonType.String)]
     public CourseStatus Status { get; set; }
 
@@ -62,6 +66,8 @@ internal static class CourseDocumentMapping
         Title = course.Title,
         TeacherId = course.TeacherId,
         Capacity = course.Capacity,
+        StartsAtUtc = course.Schedule.StartsAt.UtcDateTime,
+        EndsAtUtc = course.Schedule.EndsAt.UtcDateTime,
         Status = course.Status,
         CreatedAtUtc = course.CreatedAt.UtcDateTime,
         PublishedAtUtc = course.PublishedAt?.UtcDateTime,
@@ -84,6 +90,7 @@ internal static class CourseDocumentMapping
             document.Title,
             document.TeacherId,
             document.Capacity,
+            CourseSchedule.Rehydrate(AsUtc(document.StartsAtUtc), AsUtc(document.EndsAtUtc)),
             document.Status,
             AsUtc(document.CreatedAtUtc),
             document.PublishedAtUtc is { } published ? AsUtc(published) : null,

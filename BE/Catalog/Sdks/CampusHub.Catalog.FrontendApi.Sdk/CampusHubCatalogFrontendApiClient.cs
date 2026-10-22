@@ -1045,6 +1045,14 @@ namespace Dev4u.CampusHub.Catalog.FrontendApi.Sdk
         [System.ComponentModel.DataAnnotations.RegularExpression(@"^-?(?:0|[1-9]\d*)$")]
         public int SeatsLeft { get; set; } = default!;
 
+        [System.Text.Json.Serialization.JsonPropertyName("startsAt")]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public System.DateTime StartsAt { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("endsAt")]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public System.DateTime EndsAt { get; set; } = default!;
+
         [System.Text.Json.Serialization.JsonPropertyName("status")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Status { get; set; } = default!;
@@ -1077,6 +1085,14 @@ namespace Dev4u.CampusHub.Catalog.FrontendApi.Sdk
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [System.ComponentModel.DataAnnotations.RegularExpression(@"^-?(?:0|[1-9]\d*)$")]
         public int Capacity { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("startsAt")]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public System.DateTime StartsAt { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("endsAt")]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public System.DateTime EndsAt { get; set; } = default!;
 
         private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
 

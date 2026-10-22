@@ -36,6 +36,9 @@ public static class HostingExtensions
 
             builder.Services.AddServiceDiscovery();
 
+            // Teachers and administrators (see CampusHubRoles), read by the claims filler of every service.
+            builder.Services.Configure<RoleOptions>(builder.Configuration.GetSection(RoleOptions.SectionName));
+
             builder.Services.ConfigureHttpClientDefaults(http =>
             {
                 // Turn on resilience by default

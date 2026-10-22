@@ -35,6 +35,31 @@ public sealed class MongoEnrollmentRepository(IMongoClientFactory<DatabaseContex
         return [.. documents.Select(d => d.ToDomain())];
     }
 
+    public async Task<IReadOnlyList<StudentEnrollment>> ListStalledAsync(DateTimeOffset updatedBefore, int take, CancellationToken cancellationToken)
+    {
+        var limit = updatedBefore.UtcDateTime;
+        var documents = await Enrollments.Find(e => (e.Status == EnrollmentStatus.Requested || e.Status == EnrollmentStatus.SeatHeld)
+                                                     && e.UpdatedAtUtc < limit)
+                                         .SortBy(e => e.UpdatedAtUtc)
+                                         .Limit(take)
+                                         .ToListAsync(cancellationToken)
+                                         .ConfigureAwait(false);
+        return [.. documents.Select(d => d.ToDomain())];
+    }
+
+    public async Task<IReadOnlyList<StudentEnrollment>> ListDueForReminderAsync(DateTimeOffset from, DateTimeOffset to, int take,
+                                                                                CancellationToken cancellationToken)
+    {
+        var (start, end) = (from.UtcDateTime, to.UtcDateTime);
+        var documents = await Enrollments.Find(e => e.Status == EnrollmentStatus.Confirmed && e.ReminderSentAtUtc == null
+                                                     && e.CourseStartsAtUtc >= start && e.CourseStartsAtUtc < end)
+                                         .SortBy(e => e.CourseStartsAtUtc)
+                                         .Limit(take)
+                                         .ToListAsync(cancellationToken)
+                                         .ConfigureAwait(false);
+        return [.. documents.Select(d => d.ToDomain())];
+    }
+
     public async Task<Result> AddAsync(StudentEnrollment enrollment, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(enrollment);

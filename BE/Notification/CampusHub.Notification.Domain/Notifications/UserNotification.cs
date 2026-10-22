@@ -38,6 +38,28 @@ public sealed class UserNotification
                                     $"Your enrollment in \"{courseTitle}\" is confirmed.", occurredAt, readAt: null);
     }
 
+    public static UserNotification ClassStartsSoon(Guid sourceEventId, string studentId, string courseTitle, DateTimeOffset startsAt,
+                                                   DateTimeOffset occurredAt)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(studentId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(courseTitle);
+
+        var when = startsAt.UtcDateTime.ToString("dddd d MMMM yyyy 'at' HH:mm 'UTC'", System.Globalization.CultureInfo.InvariantCulture);
+        return new UserNotification(sourceEventId, studentId, "Your course starts soon",
+                                    $"\"{courseTitle}\" starts on {when}.", occurredAt, readAt: null);
+    }
+
+    public static UserNotification CertificateIssued(Guid sourceEventId, string studentId, string courseTitle, string certificateNumber,
+                                                     DateTimeOffset occurredAt)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(studentId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(courseTitle);
+        ArgumentException.ThrowIfNullOrWhiteSpace(certificateNumber);
+
+        return new UserNotification(sourceEventId, studentId, "Certificate issued",
+                                    $"You completed \"{courseTitle}\": certificate {certificateNumber}.", occurredAt, readAt: null);
+    }
+
     /// <summary>Rebuilds a notification from storage. Persistence only.</summary>
     public static UserNotification Rehydrate(Guid id, string recipientId, string title, string message, DateTimeOffset createdAt, DateTimeOffset? readAt) =>
         new(id, recipientId, title, message, createdAt, readAt);

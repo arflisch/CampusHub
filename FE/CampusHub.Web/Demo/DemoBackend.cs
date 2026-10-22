@@ -13,7 +13,7 @@ namespace Dev4u.CampusHub.Web.Demo;
 internal sealed class DemoCampus
 {
     public const string UserId = "demo-user";
-    public const string UserName = "Demo student";
+    public const string UserName = "Demo user";
 
     private static readonly TimeSpan Latency = TimeSpan.FromMilliseconds(250);
     private readonly TimeProvider _time;
@@ -27,29 +27,31 @@ internal sealed class DemoCampus
         var now = time.GetUtcNow();
         _courses =
         [
-            new("DOTNET-101", "Modern .NET from scratch", "prof-ada", 30, 12, CourseState.Published, now.AddDays(-3)),
-            new("DAPR-201", "Event-driven microservices with Dapr", "prof-ada", 20, 19, CourseState.Published, now.AddDays(-2)),
-            new("BLAZOR-110", "Blazor and MVVM in practice", "prof-grace", 25, 4, CourseState.Published, now.AddDays(-1)),
-            new("K8S-301", "Kubernetes for .NET developers", "prof-grace", 1, 1, CourseState.Published, now.AddHours(-5)),
-            new("OTEL-120", "Observability with OpenTelemetry", UserId, 40, 0, CourseState.Draft, null),
+            new("DOTNET-101", "Modern .NET from scratch", "prof-ada", 30, 12, Day(now, 7), Day(now, 37), CourseState.Published, now.AddDays(-3)),
+            new("DAPR-201", "Event-driven microservices with Dapr", "prof-ada", 20, 19, Day(now, 14), Day(now, 28), CourseState.Published, now.AddDays(-2)),
+            new("BLAZOR-110", "Blazor and MVVM in practice", "prof-grace", 25, 4, Day(now, 1), Day(now, 21), CourseState.Published, now.AddDays(-1)),
+            new("K8S-301", "Kubernetes for .NET developers", "prof-grace", 1, 1, Day(now, 30), Day(now, 60), CourseState.Published, now.AddHours(-5)),
+            new("OTEL-120", "Observability with OpenTelemetry", UserId, 40, 0, Day(now, 45), Day(now, 75), CourseState.Draft, null),
         ];
     }
 
     public Task DelayAsync(CancellationToken cancellationToken) => Task.Delay(Latency, _time, cancellationToken);
+
+    private static DateTimeOffset Day(DateTimeOffset now, int days) => new DateTimeOffset(now.UtcDateTime.Date, TimeSpan.Zero).AddDays(days).AddHours(9);
 
     public IReadOnlyList<CourseItem> Published() =>
         [.. _courses.Where(c => c.State == CourseState.Published).OrderByDescending(c => c.PublishedAt).Select(c => c.ToItem())];
 
     public IReadOnlyList<CourseItem> Mine() => [.. _courses.Where(c => c.TeacherId == UserId).Select(c => c.ToItem())];
 
-    public Result<CourseItem> Create(string code, string title, int capacity)
+    public Result<CourseItem> Create(string code, string title, int capacity, DateTimeOffset startsAt, DateTimeOffset endsAt)
     {
         if (_courses.Exists(c => string.Equals(c.Code, code, StringComparison.OrdinalIgnoreCase)))
         {
             return Result.Fail<CourseItem>(new UiError("course.code_taken", "Code already used."));
         }
 
-        var course = new DemoCourse(code.ToUpperInvariant(), title, UserId, capacity, 0, CourseState.Draft, null);
+        var course = new DemoCourse(code.ToUpperInvariant(), title, UserId, capacity, 0, startsAt, endsAt, CourseState.Draft, null);
         _courses.Insert(0, course);
         return Result.Ok(course.ToItem());
     }
@@ -86,7 +88,7 @@ internal sealed class DemoCampus
         }
 
         var now = _time.GetUtcNow();
-        var enrollment = new EnrollmentItem(requestId, courseId, course.Title, EnrollmentState.Requested, null, now, now);
+        var enrollment = new EnrollmentItem(requestId, courseId, course.Title, course.StartsAt, EnrollmentState.Requested, null, now, now);
         _enrollments[requestId] = enrollment;
         _ = RunSagaAsync(requestId, course); // demo only: the real saga runs in the Enrollment service
         return Result.Ok(enrollment);
@@ -122,7 +124,8 @@ internal sealed class DemoCampus
             UpdatedAt = _time.GetUtcNow(),
         };
 
-    private sealed class DemoCourse(string code, string title, string teacherId, int capacity, int taken, CourseState state, DateTimeOffset? publishedAt)
+    private sealed class DemoCourse(string code, string title, string teacherId, int capacity, int taken, DateTimeOffset startsAt,
+                                    DateTimeOffset endsAt, CourseState state, DateTimeOffset? publishedAt)
     {
         public Guid Id { get; } = Guid.NewGuid();
         public string Code { get; } = code;
@@ -130,10 +133,12 @@ internal sealed class DemoCampus
         public string TeacherId { get; } = teacherId;
         public int Capacity { get; } = capacity;
         public int Taken { get; set; } = taken;
+        public DateTimeOffset StartsAt { get; } = startsAt;
+        public DateTimeOffset EndsAt { get; } = endsAt;
         public CourseState State { get; set; } = state;
         public DateTimeOffset? PublishedAt { get; set; } = publishedAt;
 
-        public CourseItem ToItem() => new(Id, Code, Title, TeacherId, Capacity, Math.Max(0, Capacity - Taken), State, PublishedAt);
+        public CourseItem ToItem() => new(Id, Code, Title, TeacherId, Capacity, Math.Max(0, Capacity - Taken), StartsAt, EndsAt, State, PublishedAt);
     }
 }
 
@@ -151,10 +156,11 @@ internal sealed class DemoCourseCatalog(DemoCampus campus) : ICourseCatalog
         return Result.Ok(campus.Mine());
     }
 
-    public async Task<Result<CourseItem>> CreateAsync(string code, string title, int capacity, CancellationToken cancellationToken)
+    public async Task<Result<CourseItem>> CreateAsync(string code, string title, int capacity, DateTimeOffset startsAt, DateTimeOffset endsAt,
+                                                      CancellationToken cancellationToken)
     {
         await campus.DelayAsync(cancellationToken);
-        return campus.Create(code, title, capacity);
+        return campus.Create(code, title, capacity, startsAt, endsAt);
     }
 
     public async Task<Result<CourseItem>> PublishAsync(Guid courseId, CancellationToken cancellationToken)
@@ -191,7 +197,7 @@ internal sealed class DemoNotificationService(DemoCampus campus) : INotification
 internal sealed class DemoCurrentUserService : ICurrentUserService
 {
     public Task<Result<CurrentUser>> GetAsync(CancellationToken cancellationToken) =>
-        Task.FromResult(Result.Ok(new CurrentUser(DemoCampus.UserId, DemoCampus.UserName)));
+        Task.FromResult(Result.Ok(new CurrentUser(DemoCampus.UserId, DemoCampus.UserName, IsTeacher: true, IsAdmin: false)));
 }
 
 internal static class DemoBackend

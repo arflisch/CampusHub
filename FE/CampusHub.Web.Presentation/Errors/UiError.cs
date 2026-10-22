@@ -45,6 +45,8 @@ public static class UiErrors
     {
         "course.full" => "This course is full.",
         "course.not_open" => "This course is not open for enrollment.",
+        "course.started" => "This course has already started: enrollments are closed.",
+        "course.invalid_schedule" => "Check the dates: a course starts in the future and lasts at most a year.",
         "course.already_enrolled" => "You already hold a seat in this course.",
         "course.code_taken" => "A course with this code already exists.",
         "course.not_owner" => "Only the teacher of this course can change it.",
@@ -55,6 +57,7 @@ public static class UiErrors
         "enrollment.saga_unavailable" => "Your request could not be processed right now. Please try again.",
         "api.unavailable" => "The server can't be reached. Check your connection and try again.",
         "auth.session_expired" => "Your session expired. Reloading…",
+        "http.403" => "You are not allowed to do this.",
         _ => null,
     };
 }
