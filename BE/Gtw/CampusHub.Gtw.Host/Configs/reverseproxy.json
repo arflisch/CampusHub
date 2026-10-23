@@ -287,6 +287,30 @@
             "PathPattern": "/frontend/notifications/{**remainder}"
           }
         ]
+      },
+      "billing/service": {
+        "ClusterId": "billing",
+        "AuthorizationPolicy": "AccessApplication",
+        "Match": {
+          "Path": "/billing/service/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/service/{**remainder}"
+          }
+        ]
+      },
+      "billing/payments": {
+        "ClusterId": "billing",
+        "AuthorizationPolicy": "AccessApplication",
+        "Match": {
+          "Path": "/billing/frontend/payments/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/frontend/payments/{**remainder}"
+          }
+        ]
       }
     },
     "Clusters": {}

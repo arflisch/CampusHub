@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Arc4u.Dependency.Tool">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Arc4u" />
+    <PackageReference Include="Arc4u.Dependency" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+  </ItemGroup>
+
+  <!--
+    The packages above are the ones the Visual Studio extension put in a service agent project: Arc4u and
+    Arc4u.Dependency for the [Export] attributes the IoC scan looks for, Microsoft.Extensions.Http for the
+    IHttpClientFactory a remote call goes through. Unlike the EfCore and MongoDB adapters nothing has to be
+    installed by the CLI: all four already have a PackageVersion in Directory.Packages.props, so Central
+    Package Management resolves the versionless references listed here.
+
+    The reference on CampusHub.Enrollment.Domain is added by the CLI. It is the only project
+    reference this assembly is allowed to take - it is an outward adapter, so nothing but the Host references
+    it back and every dependency arrow points inwards. The port the agent implements (and the HttpClient it
+    resolves) are yours to add: the CLI leaves the project deliberately empty.
+  -->
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\CampusHub.Enrollment.Domain\CampusHub.Enrollment.Domain.csproj" />
+    <!-- Client generated from the Billing service API (NSwag), wrapped by the anti-corruption layer below. -->
+    <ProjectReference Include="..\..\Billing\Sdks\CampusHub.Billing.ServiceApi.Sdk\CampusHub.Billing.ServiceApi.Sdk.csproj" />
+  </ItemGroup>
+
+</Project>

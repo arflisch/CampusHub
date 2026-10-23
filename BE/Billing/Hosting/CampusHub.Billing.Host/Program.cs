@@ -16,7 +16,12 @@ using Arc4u.gRPC.Interceptors;
 using Arc4u.IdentityModel.Claims;
 using Arc4u.OAuth2.AspNetCore.Diagnostics;
 using Arc4u.OAuth2.AspNetCore.Filters;
+using Arc4u.MongoDB;
 using Arc4u.OAuth2.Extensions;
+using Dev4u.CampusHub.Billing.Infrastructure.Payments;
+using Dev4u.CampusHub.Billing.ServiceApi;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using MongoDB.Driver;
 using Arc4u.OAuth2.Middleware;
 using Arc4u.OAuth2.Token;
 using Arc4u.Results.Logging;
@@ -83,7 +88,16 @@ try
     services.AddApplicationConfig(configuration);
     services.AddHttpContextLoggingProperties();    
     services.AddApplicationContext();
-    services.AddMongoDatabase<Dev4u.CampusHub.Billing.Infrastructure.Payments.DatabaseContext>(configuration, "CampusHub_Billing");
+    // Arc4u copies most settings from the connection string but not directConnection, which a single-node
+    // replica set (the local Aspire MongoDB) needs: re-apply it explicitly.
+    var billingMongoUrl = MongoUrl.Create(configuration.GetConnectionString("CampusHub_Billing"));
+    services.AddMongoDatabase<Dev4u.CampusHub.Billing.Infrastructure.Payments.DatabaseContext>(configuration, "CampusHub_Billing",
+        settings => settings.DirectConnection = billingMongoUrl.DirectConnection);
+    // In the background: the host must not wait for MongoDB to start.
+    services.AddRetryingStartupTask("billing-mongodb-indexes", (sp, ct) =>
+        BillingIndexes.EnsureAsync(sp.GetRequiredService<IMongoClientFactory<Dev4u.CampusHub.Billing.Infrastructure.Payments.DatabaseContext>>(), ct));
+    services.TryAddSingleton(TimeProvider.System);
+    services.Configure<FakePaymentProviderOptions>(configuration.GetSection(FakePaymentProviderOptions.SectionName));
     services.AddResultLogger();
 
     services.AddCustomRootCA(configuration);
@@ -220,6 +234,8 @@ try
     app.UseWelcomePage("/");
 
     app.RegisterEnvironmentApis();
+    app.RegisterPaymentApis();
+    app.RegisterPaymentServiceApis();
 
     app.MapControllers();
     app.MapSubscribeHandler();

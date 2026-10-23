@@ -85,17 +85,31 @@ public class TeachingViewModelTests : IAsyncLifetime
         _sut.CreateCommand.CanExecute(null).Should().Be(expectedError is null);
     }
 
+    [Theory]
+    [InlineData("-1", "Between 0 (free) and 10000 €.")]
+    [InlineData("10000.01", "Between 0 (free) and 10000 €.")]
+    [InlineData("49.999", "Two decimals at most.")]
+    [InlineData("0", null)]
+    [InlineData("49.90", null)]
+    public void The_price_is_validated_as_the_user_types(string price, string? expectedError)
+    {
+        _sut.Price = decimal.Parse(price, System.Globalization.CultureInfo.InvariantCulture);
+
+        _sut.PriceError.Should().Be(expectedError);
+    }
+
     [Fact]
     public async Task A_created_course_is_listed_first_and_the_form_is_reset()
     {
         _sut.Code = " dotnet-101 ";
         _sut.Title = " Modern .NET ";
         _sut.Capacity = 25;
+        _sut.Price = 49.90m;
         _sut.CreateCommand.CanExecute(null).Should().BeTrue();
 
         await _sut.CreateCommand.ExecuteAsync(null);
 
-        _catalog.Created.Should().Be(("dotnet-101", "Modern .NET", 25,
+        _catalog.Created.Should().Be(("dotnet-101", "Modern .NET", 25, 4990,
             new DateTimeOffset(2026, 10, 29, 9, 0, 0, TimeSpan.Zero), new DateTimeOffset(2026, 11, 28, 17, 0, 0, TimeSpan.Zero)),
             "the default schedule starts next week, for a month, from 9:00 on the first day to 17:00 on the last (UTC)");
         _sut.MyCourses[0].Title.Should().Be("Modern .NET");

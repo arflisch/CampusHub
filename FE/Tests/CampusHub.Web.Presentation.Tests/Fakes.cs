@@ -13,11 +13,11 @@ internal static class TestData
     public static readonly DateTimeOffset CourseStart = new(2026, 11, 2, 9, 0, 0, TimeSpan.Zero);
 
     public static CourseItem Course(string title = "Clean architecture", int seatsLeft = 10, CourseState state = CourseState.Published) =>
-        new(Guid.NewGuid(), "ARCH-101", title, "teacher-1", 30, seatsLeft, CourseStart, CourseStart.AddDays(30), state,
+        new(Guid.NewGuid(), "ARCH-101", title, "teacher-1", 30, seatsLeft, 0, CourseStart, CourseStart.AddDays(30), state,
             state == CourseState.Draft ? null : DateTimeOffset.UnixEpoch);
 
     public static EnrollmentItem Enrollment(Guid id, EnrollmentState state) =>
-        new(id, Guid.NewGuid(), "Clean architecture", CourseStart, state, null, DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch);
+        new(id, Guid.NewGuid(), "Clean architecture", CourseStart, 0, state, null, DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch);
 
     public static Result<T> Transient<T>() => Result.Fail<T>(UiError.Unavailable());
 
@@ -79,7 +79,7 @@ internal sealed class FakeCourseCatalog : ICourseCatalog
 
     public Result<IReadOnlyList<CourseItem>> Mine { get; set; } = Result.Ok<IReadOnlyList<CourseItem>>([]);
 
-    public (string Code, string Title, int Capacity, DateTimeOffset StartsAt, DateTimeOffset EndsAt)? Created { get; private set; }
+    public (string Code, string Title, int Capacity, int PriceInCents, DateTimeOffset StartsAt, DateTimeOffset EndsAt)? Created { get; private set; }
 
     public Result<CourseItem>? CreateResult { get; set; }
 
@@ -87,12 +87,13 @@ internal sealed class FakeCourseCatalog : ICourseCatalog
 
     public Task<Result<IReadOnlyList<CourseItem>>> ListMineAsync(CancellationToken cancellationToken) => Task.FromResult(Mine);
 
-    public Task<Result<CourseItem>> CreateAsync(string code, string title, int capacity, DateTimeOffset startsAt, DateTimeOffset endsAt,
-                                                CancellationToken cancellationToken)
+    public Task<Result<CourseItem>> CreateAsync(string code, string title, int capacity, int priceInCents, DateTimeOffset startsAt,
+                                                DateTimeOffset endsAt, CancellationToken cancellationToken)
     {
-        Created = (code, title, capacity, startsAt, endsAt);
+        Created = (code, title, capacity, priceInCents, startsAt, endsAt);
         return Task.FromResult(CreateResult
-            ?? Result.Ok(new CourseItem(Guid.NewGuid(), code, title, "teacher-1", capacity, capacity, startsAt, endsAt, CourseState.Draft, null)));
+            ?? Result.Ok(new CourseItem(Guid.NewGuid(), code, title, "teacher-1", capacity, capacity, priceInCents, startsAt, endsAt,
+                                        CourseState.Draft, null)));
     }
 
     public Task<Result<CourseItem>> PublishAsync(Guid courseId, CancellationToken cancellationToken)

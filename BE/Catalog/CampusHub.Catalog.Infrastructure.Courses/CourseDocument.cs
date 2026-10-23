@@ -22,6 +22,9 @@ public sealed class CourseDocument
 
     public int Capacity { get; set; }
 
+    /// <summary>Missing in courses stored before prices existed: read as 0 (free).</summary>
+    public int PriceInCents { get; set; }
+
     public DateTime StartsAtUtc { get; set; }
 
     public DateTime EndsAtUtc { get; set; }
@@ -66,6 +69,7 @@ internal static class CourseDocumentMapping
         Title = course.Title,
         TeacherId = course.TeacherId,
         Capacity = course.Capacity,
+        PriceInCents = course.PriceInCents,
         StartsAtUtc = course.Schedule.StartsAt.UtcDateTime,
         EndsAtUtc = course.Schedule.EndsAt.UtcDateTime,
         Status = course.Status,
@@ -90,6 +94,7 @@ internal static class CourseDocumentMapping
             document.Title,
             document.TeacherId,
             document.Capacity,
+            document.PriceInCents,
             CourseSchedule.Rehydrate(AsUtc(document.StartsAtUtc), AsUtc(document.EndsAtUtc)),
             document.Status,
             AsUtc(document.CreatedAtUtc),

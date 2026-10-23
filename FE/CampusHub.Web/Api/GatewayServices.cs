@@ -7,18 +7,20 @@ namespace Dev4u.CampusHub.Web.Api;
 // Adapters of the presentation ports over the gateway. The wire records mirror the JSON of the services'
 // frontend APIs and are mapped to the UI models here, so a contract change stays local to this file.
 
-internal sealed record CourseWire(Guid Id, string Code, string Title, string TeacherId, int Capacity, int SeatsLeft,
+internal sealed record CourseWire(Guid Id, string Code, string Title, string TeacherId, int Capacity, int SeatsLeft, int PriceInCents,
                                    DateTimeOffset StartsAt, DateTimeOffset EndsAt, string Status, DateTimeOffset? PublishedAt)
 {
     public CourseItem ToItem() =>
-        new(Id, Code, Title, TeacherId, Capacity, SeatsLeft, StartsAt, EndsAt, Enum.Parse<CourseState>(Status, ignoreCase: true), PublishedAt);
+        new(Id, Code, Title, TeacherId, Capacity, SeatsLeft, PriceInCents, StartsAt, EndsAt,
+            Enum.Parse<CourseState>(Status, ignoreCase: true), PublishedAt);
 }
 
-internal sealed record EnrollmentWire(Guid Id, Guid CourseId, string? CourseTitle, DateTimeOffset? CourseStartsAt, string Status,
-                                       string? RejectionCode, DateTimeOffset RequestedAt, DateTimeOffset UpdatedAt)
+internal sealed record EnrollmentWire(Guid Id, Guid CourseId, string? CourseTitle, DateTimeOffset? CourseStartsAt, int CoursePriceInCents,
+                                       string Status, string? RejectionCode, DateTimeOffset RequestedAt, DateTimeOffset UpdatedAt)
 {
     public EnrollmentItem ToItem() =>
-        new(Id, CourseId, CourseTitle, CourseStartsAt, Enum.Parse<EnrollmentState>(Status, ignoreCase: true), RejectionCode, RequestedAt, UpdatedAt);
+        new(Id, CourseId, CourseTitle, CourseStartsAt, CoursePriceInCents, Enum.Parse<EnrollmentState>(Status, ignoreCase: true),
+            RejectionCode, RequestedAt, UpdatedAt);
 }
 
 internal sealed record NotificationWire(Guid Id, string Title, string Message, DateTimeOffset CreatedAt, DateTimeOffset? ReadAt);
@@ -39,9 +41,9 @@ internal sealed class GatewayCourseCatalog(IHttpClientFactory httpClientFactory)
         GatewayApi.SendAsync<List<CourseWire>, IReadOnlyList<CourseItem>>(Http, () => GatewayApi.Get($"{Courses}/mine"),
             wire => [.. wire.Select(c => c.ToItem())], cancellationToken);
 
-    public Task<Result<CourseItem>> CreateAsync(string code, string title, int capacity, DateTimeOffset startsAt, DateTimeOffset endsAt,
-                                                CancellationToken cancellationToken) =>
-        GatewayApi.SendAsync<CourseWire, CourseItem>(Http, () => GatewayApi.Post(Courses, new { code, title, capacity, startsAt, endsAt }),
+    public Task<Result<CourseItem>> CreateAsync(string code, string title, int capacity, int priceInCents, DateTimeOffset startsAt,
+                                                DateTimeOffset endsAt, CancellationToken cancellationToken) =>
+        GatewayApi.SendAsync<CourseWire, CourseItem>(Http, () => GatewayApi.Post(Courses, new { code, title, capacity, priceInCents, startsAt, endsAt }),
             wire => wire.ToItem(), cancellationToken);
 
     public Task<Result<CourseItem>> PublishAsync(Guid courseId, CancellationToken cancellationToken) =>

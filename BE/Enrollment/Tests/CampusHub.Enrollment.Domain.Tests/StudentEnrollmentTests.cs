@@ -121,4 +121,39 @@ public class StudentEnrollmentTests
         enrollment.RemindOfClass(Now).Errors.HasCode("enrollment.not_confirmed").Should().BeTrue();
         enrollment.DomainEvents.Should().BeEmpty();
     }
+
+    [Fact]
+    public void A_paid_course_must_be_paid_before_the_pivot()
+    {
+        var enrollment = Requested();
+        enrollment.MarkSeatReserved(new SeatHold(Guid.NewGuid(), "Intro", Now.AddDays(1), Now.AddDays(30), CoursePriceInCents: 4900), Now);
+
+        enrollment.Confirm(Now).Errors.HasCode("enrollment.invalid_transition").Should().BeTrue("not paid yet");
+        enrollment.MarkPaid(Now).IsSuccess.Should().BeTrue();
+        enrollment.MarkPaid(Now).IsSuccess.Should().BeTrue(); // replayed activity
+        enrollment.Confirm(Now).IsSuccess.Should().BeTrue();
+
+        enrollment.Status.Should().Be(EnrollmentStatus.Confirmed);
+    }
+
+    [Fact]
+    public void A_free_course_has_no_payment_step()
+    {
+        var enrollment = Requested();
+        enrollment.MarkSeatReserved(new SeatHold(Guid.NewGuid(), "Intro", Now.AddDays(1), Now.AddDays(30)), Now);
+
+        enrollment.RequiresPayment.Should().BeFalse();
+        enrollment.MarkPaid(Now).Errors.HasCode("enrollment.invalid_transition").Should().BeTrue();
+        enrollment.Confirm(Now).IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public void A_paid_enrollment_can_still_be_compensated()
+    {
+        var enrollment = Requested();
+        enrollment.MarkSeatReserved(new SeatHold(Guid.NewGuid(), "Intro", Now.AddDays(1), Now.AddDays(30), CoursePriceInCents: 4900), Now);
+        enrollment.MarkPaid(Now);
+
+        enrollment.Reject("enrollment.confirmation_failed", Now).IsSuccess.Should().BeTrue();
+    }
 }

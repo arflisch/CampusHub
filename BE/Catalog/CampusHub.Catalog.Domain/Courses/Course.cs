@@ -15,9 +15,12 @@ public sealed class Course
 {
     public const int MaxCapacity = 500;
 
+    /// <summary>Highest price of a course, in cents (EUR).</summary>
+    public const int MaxPriceInCents = 1_000_000;
+
     private readonly List<SeatReservation> _reservations;
 
-    private Course(Guid id, string code, string title, string teacherId, int capacity, CourseSchedule schedule, CourseStatus status,
+    private Course(Guid id, string code, string title, string teacherId, int capacity, int priceInCents, CourseSchedule schedule, CourseStatus status,
                    DateTimeOffset createdAt, DateTimeOffset? publishedAt, IEnumerable<SeatReservation> reservations, long version)
     {
         Id = id;
@@ -25,6 +28,7 @@ public sealed class Course
         Title = title;
         TeacherId = teacherId;
         Capacity = capacity;
+        PriceInCents = priceInCents;
         Schedule = schedule;
         Status = status;
         CreatedAt = createdAt;
@@ -45,6 +49,9 @@ public sealed class Course
 
     public int Capacity { get; }
 
+    /// <summary>Price of the course in cents (EUR); 0 for a free course, which skips the payment step of the saga.</summary>
+    public int PriceInCents { get; }
+
     public CourseSchedule Schedule { get; }
 
     public CourseStatus Status { get; private set; }
@@ -58,8 +65,8 @@ public sealed class Course
 
     public IReadOnlyList<SeatReservation> Reservations => _reservations;
 
-    public static Result<Course> Create(Guid id, string? code, string? title, int capacity, DateTimeOffset startsAt, DateTimeOffset endsAt,
-                                        string teacherId, DateTimeOffset now)
+    public static Result<Course> Create(Guid id, string? code, string? title, int capacity, int priceInCents, DateTimeOffset startsAt,
+                                        DateTimeOffset endsAt, string teacherId, DateTimeOffset now)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(teacherId);
 
@@ -82,6 +89,11 @@ public sealed class Course
             errors.Add(CourseErrors.InvalidCapacity());
         }
 
+        if (priceInCents is < 0 or > MaxPriceInCents)
+        {
+            errors.Add(CourseErrors.InvalidPrice());
+        }
+
         var schedule = CourseSchedule.Create(startsAt, endsAt, now);
         errors.AddRange(schedule.Errors);
 
@@ -90,15 +102,15 @@ public sealed class Course
             return Result.Fail<Course>(errors);
         }
 
-        return Result.Ok(new Course(id, trimmedCode.ToUpperInvariant(), trimmedTitle, teacherId, capacity, schedule.Value,
+        return Result.Ok(new Course(id, trimmedCode.ToUpperInvariant(), trimmedTitle, teacherId, capacity, priceInCents, schedule.Value,
                                     CourseStatus.Draft, now, publishedAt: null, reservations: [], version: 0));
     }
 
     /// <summary>Rebuilds a course from storage. Persistence only: no rule is checked.</summary>
-    public static Course Rehydrate(Guid id, string code, string title, string teacherId, int capacity, CourseSchedule schedule,
-                                   CourseStatus status, DateTimeOffset createdAt, DateTimeOffset? publishedAt,
+    public static Course Rehydrate(Guid id, string code, string title, string teacherId, int capacity, int priceInCents,
+                                   CourseSchedule schedule, CourseStatus status, DateTimeOffset createdAt, DateTimeOffset? publishedAt,
                                    IEnumerable<SeatReservation> reservations, long version) =>
-        new(id, code, title, teacherId, capacity, schedule, status, createdAt, publishedAt, reservations, version);
+        new(id, code, title, teacherId, capacity, priceInCents, schedule, status, createdAt, publishedAt, reservations, version);
 
     public bool IsTaughtBy(string userId) => string.Equals(TeacherId, userId, StringComparison.Ordinal);
 

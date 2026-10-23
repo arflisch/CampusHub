@@ -808,6 +808,14 @@
         "resolved": "0.7.3",
         "contentHash": "U9Ix4l4cl58Kzz1rJzj5hoVTjmbx1qGMwzAcbv1j/d3NzrFaESIurQyg+ow4mivCgkE3S413y+U9k4WdnEIkRA=="
       },
+      "campushub.billing.serviceapi.sdk": {
+        "type": "Project",
+        "dependencies": {
+          "Google.Protobuf": "[3.36.2, )",
+          "Grpc": "[2.46.6, )",
+          "Newtonsoft.Json": "[13.0.4, )"
+        }
+      },
       "campushub.catalog.serviceapi.sdk": {
         "type": "Project",
         "dependencies": {
@@ -835,6 +843,15 @@
           "Google.Protobuf": "[3.36.2, )",
           "Grpc": "[2.46.6, )",
           "Microsoft.AspNetCore.Authentication.OpenIdConnect": "[11.0.0-rc.2.26504.105, )"
+        }
+      },
+      "campushub.enrollment.infrastructure.billing": {
+        "type": "Project",
+        "dependencies": {
+          "Arc4u": "[9.0.0-preview38, )",
+          "Arc4u.Dependency": "[9.0.0-preview38, )",
+          "CampusHub.Billing.ServiceApi.Sdk": "[1.0.0, )",
+          "CampusHub.Enrollment.Domain": "[1.0.0, )"
         }
       },
       "campushub.enrollment.infrastructure.catalog": {

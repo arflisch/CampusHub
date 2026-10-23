@@ -15,12 +15,35 @@ public sealed record CourseItem(
     string TeacherId,
     int Capacity,
     int SeatsLeft,
+    int PriceInCents,
     DateTimeOffset StartsAt,
     DateTimeOffset EndsAt,
     CourseState State,
     DateTimeOffset? PublishedAt)
 {
     public bool IsFull => SeatsLeft == 0;
+
+    public bool IsFree => PriceInCents == 0;
+}
+
+/// <summary>Display of amounts, all in EUR.</summary>
+public static class Money
+{
+    public static string Format(int cents) =>
+        cents == 0 ? "Free" : (cents / 100m).ToString("0.00 €", System.Globalization.CultureInfo.InvariantCulture);
+}
+
+/// <summary>Where the signed-in student stands with a course of the catalogue.</summary>
+public enum CourseEnrollment
+{
+    /// <summary>Not enrolled (or the last request was rejected): the course can be requested.</summary>
+    None,
+
+    /// <summary>A request is being processed by the saga.</summary>
+    InProgress,
+
+    /// <summary>The enrollment is confirmed.</summary>
+    Enrolled,
 }
 
 /// <summary>Progress of an enrollment saga, as reported by the Enrollment service.</summary>
@@ -30,6 +53,9 @@ public enum EnrollmentState
     SeatHeld,
     Confirmed,
     Rejected,
+
+    /// <summary>The seat is held and the course paid (paid courses only).</summary>
+    Paid,
 }
 
 public sealed record EnrollmentItem(
@@ -37,6 +63,7 @@ public sealed record EnrollmentItem(
     Guid CourseId,
     string? CourseTitle,
     DateTimeOffset? CourseStartsAt,
+    int CoursePriceInCents,
     EnrollmentState State,
     string? RejectionCode,
     DateTimeOffset RequestedAt,

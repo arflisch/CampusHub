@@ -58,6 +58,12 @@ public sealed partial class TeachingViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(CreateCommand))]
     public partial int Capacity { get; set; }
 
+    /// <summary>Price in euros as typed; 0 for a free course.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PriceError))]
+    [NotifyCanExecuteChangedFor(nameof(CreateCommand))]
+    public partial decimal Price { get; set; }
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ScheduleError))]
     [NotifyCanExecuteChangedFor(nameof(CreateCommand))]
@@ -104,6 +110,12 @@ public sealed partial class TeachingViewModel : ViewModelBase
     public string? TitleError => Title.Length > 200 ? "200 characters at most." : null;
 
     public string? CapacityError => Capacity is < 1 or > MaxCapacity ? $"Between 1 and {MaxCapacity} seats." : null;
+
+    public const decimal MaxPrice = 10_000m;
+
+    public string? PriceError =>
+        Price is < 0 or > MaxPrice ? $"Between 0 (free) and {MaxPrice:0} €." :
+        decimal.Round(Price, 2) != Price ? "Two decimals at most." : null;
 
     public string? ScheduleError
     {
@@ -162,7 +174,7 @@ public sealed partial class TeachingViewModel : ViewModelBase
 
     private bool CanCreate() =>
         IsTeacher == true && Code.Length > 0 && CodeError is null && !string.IsNullOrWhiteSpace(Title) && TitleError is null && CapacityError is null
-        && ScheduleError is null;
+        && PriceError is null && ScheduleError is null;
 
     [RelayCommand(CanExecute = nameof(CanCreate))]
     private async Task CreateAsync(CancellationToken cancellationToken)
@@ -172,7 +184,7 @@ public sealed partial class TeachingViewModel : ViewModelBase
 
         var startsAt = new DateTimeOffset(StartsOn.ToDateTime(StartTime), TimeSpan.Zero);
         var endsAt = new DateTimeOffset(EndsOn.ToDateTime(EndTime), TimeSpan.Zero);
-        var result = await _catalog.CreateAsync(Code.Trim(), Title.Trim(), Capacity, startsAt, endsAt, cancellationToken);
+        var result = await _catalog.CreateAsync(Code.Trim(), Title.Trim(), Capacity, (int)(Price * 100), startsAt, endsAt, cancellationToken);
         if (result.IsFailed)
         {
             ShowErrors(result.Errors);
@@ -184,6 +196,7 @@ public sealed partial class TeachingViewModel : ViewModelBase
         Code = string.Empty;
         Title = string.Empty;
         Capacity = 30;
+        Price = 0;
         (StartsOn, EndsOn) = DefaultSchedule();
     }
 

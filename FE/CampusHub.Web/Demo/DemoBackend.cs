@@ -27,11 +27,12 @@ internal sealed class DemoCampus
         var now = time.GetUtcNow();
         _courses =
         [
-            new("DOTNET-101", "Modern .NET from scratch", "prof-ada", 30, 12, Day(now, 7), Day(now, 37), CourseState.Published, now.AddDays(-3)),
-            new("DAPR-201", "Event-driven microservices with Dapr", "prof-ada", 20, 19, Day(now, 14), Day(now, 28), CourseState.Published, now.AddDays(-2)),
-            new("BLAZOR-110", "Blazor and MVVM in practice", "prof-grace", 25, 4, Day(now, 1), Day(now, 21), CourseState.Published, now.AddDays(-1)),
-            new("K8S-301", "Kubernetes for .NET developers", "prof-grace", 1, 1, Day(now, 30), Day(now, 60), CourseState.Published, now.AddHours(-5)),
-            new("OTEL-120", "Observability with OpenTelemetry", UserId, 40, 0, Day(now, 45), Day(now, 75), CourseState.Draft, null),
+            new("DOTNET-101", "Modern .NET from scratch", "prof-ada", 30, 12, 0, Day(now, 7), Day(now, 37), CourseState.Published, now.AddDays(-3)),
+            new("DAPR-201", "Event-driven microservices with Dapr", "prof-ada", 20, 19, 14900, Day(now, 14), Day(now, 28), CourseState.Published, now.AddDays(-2)),
+            new("BLAZOR-110", "Blazor and MVVM in practice", "prof-grace", 25, 4, 4900, Day(now, 1), Day(now, 21), CourseState.Published, now.AddDays(-1)),
+            new("ARCH-900", "Enterprise architecture bootcamp", "prof-grace", 10, 2, 89000, Day(now, 20), Day(now, 50), CourseState.Published, now.AddHours(-8)),
+            new("K8S-301", "Kubernetes for .NET developers", "prof-grace", 1, 1, 9900, Day(now, 30), Day(now, 60), CourseState.Published, now.AddHours(-5)),
+            new("OTEL-120", "Observability with OpenTelemetry", UserId, 40, 0, 0, Day(now, 45), Day(now, 75), CourseState.Draft, null),
         ];
     }
 
@@ -44,14 +45,17 @@ internal sealed class DemoCampus
 
     public IReadOnlyList<CourseItem> Mine() => [.. _courses.Where(c => c.TeacherId == UserId).Select(c => c.ToItem())];
 
-    public Result<CourseItem> Create(string code, string title, int capacity, DateTimeOffset startsAt, DateTimeOffset endsAt)
+    /// <summary>Like the simulated provider of Billing: a card is declined above this amount.</summary>
+    private const int CardLimitInCents = 50_000;
+
+    public Result<CourseItem> Create(string code, string title, int capacity, int priceInCents, DateTimeOffset startsAt, DateTimeOffset endsAt)
     {
         if (_courses.Exists(c => string.Equals(c.Code, code, StringComparison.OrdinalIgnoreCase)))
         {
             return Result.Fail<CourseItem>(new UiError("course.code_taken", "Code already used."));
         }
 
-        var course = new DemoCourse(code.ToUpperInvariant(), title, UserId, capacity, 0, startsAt, endsAt, CourseState.Draft, null);
+        var course = new DemoCourse(code.ToUpperInvariant(), title, UserId, capacity, 0, priceInCents, startsAt, endsAt, CourseState.Draft, null);
         _courses.Insert(0, course);
         return Result.Ok(course.ToItem());
     }
@@ -88,7 +92,8 @@ internal sealed class DemoCampus
         }
 
         var now = _time.GetUtcNow();
-        var enrollment = new EnrollmentItem(requestId, courseId, course.Title, course.StartsAt, EnrollmentState.Requested, null, now, now);
+        var enrollment = new EnrollmentItem(requestId, courseId, course.Title, course.StartsAt, course.PriceInCents, EnrollmentState.Requested,
+                                            null, now, now);
         _enrollments[requestId] = enrollment;
         _ = RunSagaAsync(requestId, course); // demo only: the real saga runs in the Enrollment service
         return Result.Ok(enrollment);
@@ -110,6 +115,19 @@ internal sealed class DemoCampus
         course.Taken++;
         Update(enrollmentId, EnrollmentState.SeatHeld, null);
 
+        if (course.PriceInCents > 0)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(1.5), _time);
+            if (course.PriceInCents > CardLimitInCents)
+            {
+                course.Taken--; // compensation: the seat is given back
+                Update(enrollmentId, EnrollmentState.Rejected, "payment.declined");
+                return;
+            }
+
+            Update(enrollmentId, EnrollmentState.Paid, null);
+        }
+
         await Task.Delay(TimeSpan.FromSeconds(2), _time);
         Update(enrollmentId, EnrollmentState.Confirmed, null);
         _notifications.Insert(0, new NotificationItem(Guid.NewGuid(), "Enrollment confirmed",
@@ -124,8 +142,8 @@ internal sealed class DemoCampus
             UpdatedAt = _time.GetUtcNow(),
         };
 
-    private sealed class DemoCourse(string code, string title, string teacherId, int capacity, int taken, DateTimeOffset startsAt,
-                                    DateTimeOffset endsAt, CourseState state, DateTimeOffset? publishedAt)
+    private sealed class DemoCourse(string code, string title, string teacherId, int capacity, int taken, int priceInCents,
+                                    DateTimeOffset startsAt, DateTimeOffset endsAt, CourseState state, DateTimeOffset? publishedAt)
     {
         public Guid Id { get; } = Guid.NewGuid();
         public string Code { get; } = code;
@@ -133,12 +151,14 @@ internal sealed class DemoCampus
         public string TeacherId { get; } = teacherId;
         public int Capacity { get; } = capacity;
         public int Taken { get; set; } = taken;
+        public int PriceInCents { get; } = priceInCents;
         public DateTimeOffset StartsAt { get; } = startsAt;
         public DateTimeOffset EndsAt { get; } = endsAt;
         public CourseState State { get; set; } = state;
         public DateTimeOffset? PublishedAt { get; set; } = publishedAt;
 
-        public CourseItem ToItem() => new(Id, Code, Title, TeacherId, Capacity, Math.Max(0, Capacity - Taken), StartsAt, EndsAt, State, PublishedAt);
+        public CourseItem ToItem() => new(Id, Code, Title, TeacherId, Capacity, Math.Max(0, Capacity - Taken), PriceInCents, StartsAt, EndsAt,
+                                          State, PublishedAt);
     }
 }
 
@@ -156,11 +176,11 @@ internal sealed class DemoCourseCatalog(DemoCampus campus) : ICourseCatalog
         return Result.Ok(campus.Mine());
     }
 
-    public async Task<Result<CourseItem>> CreateAsync(string code, string title, int capacity, DateTimeOffset startsAt, DateTimeOffset endsAt,
-                                                      CancellationToken cancellationToken)
+    public async Task<Result<CourseItem>> CreateAsync(string code, string title, int capacity, int priceInCents, DateTimeOffset startsAt,
+                                                      DateTimeOffset endsAt, CancellationToken cancellationToken)
     {
         await campus.DelayAsync(cancellationToken);
-        return campus.Create(code, title, capacity, startsAt, endsAt);
+        return campus.Create(code, title, capacity, priceInCents, startsAt, endsAt);
     }
 
     public async Task<Result<CourseItem>> PublishAsync(Guid courseId, CancellationToken cancellationToken)

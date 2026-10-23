@@ -12,6 +12,9 @@ public enum EnrollmentStatus
     /// <summary>Pivot reached: the seat is confirmed and the enrollment is final.</summary>
     Confirmed = 2,
 
-    /// <summary>Refused (course full, not open...) or compensated after a failure.</summary>
+    /// <summary>Refused (course full, not open, payment declined...) or compensated after a failure.</summary>
     Rejected = 3,
+
+    /// <summary>The seat is held and the course paid (paid courses only); the pivot comes next.</summary>
+    Paid = 4,
 }

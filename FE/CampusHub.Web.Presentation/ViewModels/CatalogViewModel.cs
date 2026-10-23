@@ -10,6 +10,11 @@ namespace Dev4u.CampusHub.Web.Presentation.ViewModels;
 /// <summary>
 /// Catalogue of the courses open for enrollment; a student asks to join one.
 /// <para>
+/// The student's enrollments are loaded with the courses, so a course already joined shows it instead of offering
+/// to enroll again. If they cannot be loaded, the courses are still shown: the Enrollment service refuses a
+/// duplicate anyway.
+/// </para>
+/// <para>
 /// The request id is generated once per course and kept until the server has accepted the request: a retry after
 /// a timeout or a network error reuses it, so the Enrollment service never creates two enrollments for one click.
 /// </para>
@@ -26,6 +31,7 @@ public sealed partial class CatalogViewModel : ViewModelBase
         _enrollments = enrollments;
         Courses = [];
         RequestedCourseIds = new HashSet<Guid>();
+        EnrollmentStates = new Dictionary<Guid, EnrollmentState>();
     }
 
     [ObservableProperty]
@@ -35,6 +41,11 @@ public sealed partial class CatalogViewModel : ViewModelBase
     /// <summary>Courses for which an enrollment was requested during this visit.</summary>
     [ObservableProperty]
     public partial IReadOnlySet<Guid> RequestedCourseIds { get; private set; }
+
+    /// <summary>State of the student's latest enrollment in each course, rejected ones excluded.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(EnrollCommand))]
+    public partial IReadOnlyDictionary<Guid, EnrollmentState> EnrollmentStates { get; private set; }
 
     [ObservableProperty]
     public partial string? InfoMessage { get; private set; }
@@ -49,11 +60,39 @@ public sealed partial class CatalogViewModel : ViewModelBase
 
     public bool WasRequested(CourseItem course) => course is not null && RequestedCourseIds.Contains(course.Id);
 
+    public CourseEnrollment EnrollmentOf(CourseItem course)
+    {
+        if (course is null)
+        {
+            return CourseEnrollment.None;
+        }
+
+        if (EnrollmentStates.TryGetValue(course.Id, out var state))
+        {
+            return state == EnrollmentState.Confirmed ? CourseEnrollment.Enrolled : CourseEnrollment.InProgress;
+        }
+
+        return RequestedCourseIds.Contains(course.Id) ? CourseEnrollment.InProgress : CourseEnrollment.None;
+    }
+
     [RelayCommand]
     private async Task LoadAsync(CancellationToken cancellationToken)
     {
         ErrorMessage = null;
-        var result = await _catalog.ListPublishedAsync(cancellationToken);
+        var courses = _catalog.ListPublishedAsync(cancellationToken);
+        var enrollments = _enrollments.ListMineAsync(cancellationToken);
+        await Task.WhenAll(courses, enrollments);
+
+        var mine = await enrollments;
+        if (mine.IsSuccess)
+        {
+            // Latest request first: a rejected one is ignored, the course can be requested again.
+            EnrollmentStates = mine.Value.Where(e => e.State != EnrollmentState.Rejected)
+                                         .GroupBy(e => e.CourseId)
+                                         .ToDictionary(g => g.Key, g => g.OrderByDescending(e => e.RequestedAt).First().State);
+        }
+
+        var result = await courses;
         if (result.IsSuccess)
         {
             Courses = result.Value;
@@ -95,5 +134,5 @@ public sealed partial class CatalogViewModel : ViewModelBase
     }
 
     private bool CanEnroll(CourseItem? course) =>
-        course is { State: CourseState.Published, IsFull: false } && !RequestedCourseIds.Contains(course.Id);
+        course is { State: CourseState.Published, IsFull: false } && EnrollmentOf(course) == CourseEnrollment.None;
 }

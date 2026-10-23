@@ -16,14 +16,15 @@ namespace Dev4u.CampusHub.Enrollment.UseCases.Enrollments;
 public sealed record MaintenanceReport(int Examined, int Handled, int Skipped, int Failed);
 
 /// <summary>
-/// Settles the enrollments whose saga died (workflow failed, terminated, or never started) while they waited for
-/// a seat: the held seat is given back to Catalog and the enrollment is rejected as expired, so the student sees a
-/// final answer instead of a request that never ends. An enrollment whose saga is still running is left to it.
+/// Settles the enrollments whose saga died (workflow failed, terminated, or never started) before the pivot: the
+/// payment is refunded, the held seat is given back to Catalog and the enrollment is rejected as expired, so the
+/// student sees a final answer instead of a request that never ends. An enrollment whose saga is still running is left to it.
 /// </summary>
 [Export, Scoped]
 public sealed class RecoverStalledEnrollments(
     IEnrollmentRepository enrollments,
     IEnrollmentSaga saga,
+    RefundEnrollmentPayment refund,
     ReleaseEnrollmentSeat releaseSeat,
     RejectEnrollment reject,
     TimeProvider timeProvider)
@@ -50,8 +51,13 @@ public sealed class RecoverStalledEnrollments(
                 continue;
             }
 
-            // Same steps, in the same order, as the saga's own compensation; both are idempotent.
-            var settled = await releaseSeat.ExecuteAsync(enrollmentId, cancellationToken).ConfigureAwait(false);
+            // Same steps, in the same order, as the saga's own compensation; all are idempotent.
+            var settled = await refund.ExecuteAsync(enrollmentId, cancellationToken).ConfigureAwait(false);
+            if (settled.IsSuccess)
+            {
+                settled = await releaseSeat.ExecuteAsync(enrollmentId, cancellationToken).ConfigureAwait(false);
+            }
+
             if (settled.IsSuccess)
             {
                 settled = await reject.ExecuteAsync(enrollmentId, ExpiredReason, cancellationToken).ConfigureAwait(false);

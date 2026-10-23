@@ -13,8 +13,8 @@ public interface ICourseCatalog
 
     Task<Result<IReadOnlyList<CourseItem>>> ListMineAsync(CancellationToken cancellationToken);
 
-    Task<Result<CourseItem>> CreateAsync(string code, string title, int capacity, DateTimeOffset startsAt, DateTimeOffset endsAt,
-                                         CancellationToken cancellationToken);
+    Task<Result<CourseItem>> CreateAsync(string code, string title, int capacity, int priceInCents, DateTimeOffset startsAt,
+                                         DateTimeOffset endsAt, CancellationToken cancellationToken);
 
     Task<Result<CourseItem>> PublishAsync(Guid courseId, CancellationToken cancellationToken);
 }

@@ -15,7 +15,7 @@ public class CourseTests
 
     private static Course PublishedCourse(int capacity = 2)
     {
-        var course = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro to .NET", capacity, Starts, Ends, Teacher, Now).Value;
+        var course = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro to .NET", capacity, 0, Starts, Ends, Teacher, Now).Value;
         course.Publish(Teacher, Now).IsSuccess.Should().BeTrue();
         return course;
     }
@@ -23,7 +23,7 @@ public class CourseTests
     [Fact]
     public void Create_normalizes_the_code_and_starts_in_draft()
     {
-        var result = Course.Create(Guid.NewGuid(), " dotnet-101 ", " Intro ", 30, Starts, Ends, Teacher, Now);
+        var result = Course.Create(Guid.NewGuid(), " dotnet-101 ", " Intro ", 30, 0, Starts, Ends, Teacher, Now);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Code.Should().Be("DOTNET-101");
@@ -34,7 +34,7 @@ public class CourseTests
     [Fact]
     public void Create_reports_every_invalid_field_at_once()
     {
-        var result = Course.Create(Guid.NewGuid(), "x", "", 0, Starts, Ends, Teacher, Now);
+        var result = Course.Create(Guid.NewGuid(), "x", "", 0, 0, Starts, Ends, Teacher, Now);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().HaveCount(3);
@@ -51,9 +51,19 @@ public class CourseTests
     {
         var startsAt = Now.AddDays(startsInDays);
 
-        var result = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro", 10, startsAt, startsAt.AddDays(lastsDays), Teacher, Now);
+        var result = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro", 10, 0, startsAt, startsAt.AddDays(lastsDays), Teacher, Now);
 
         result.Errors.HasCode("course.invalid_schedule").Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(Course.MaxPriceInCents + 1)]
+    public void Create_refuses_an_impossible_price(int priceInCents)
+    {
+        var result = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro", 10, priceInCents, Starts, Ends, Teacher, Now);
+
+        result.Errors.HasCode("course.invalid_price").Should().BeTrue();
     }
 
     [Fact]
@@ -70,7 +80,7 @@ public class CourseTests
     [Fact]
     public void Only_the_teacher_can_publish()
     {
-        var course = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro", 10, Starts, Ends, Teacher, Now).Value;
+        var course = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro", 10, 0, Starts, Ends, Teacher, Now).Value;
 
         var result = course.Publish("someone-else", Now);
 
@@ -81,7 +91,7 @@ public class CourseTests
     [Fact]
     public void A_draft_course_refuses_reservations()
     {
-        var course = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro", 10, Starts, Ends, Teacher, Now).Value;
+        var course = Course.Create(Guid.NewGuid(), "dotnet-101", "Intro", 10, 0, Starts, Ends, Teacher, Now).Value;
 
         var result = course.ReserveSeat("student-1", "key-1", Now, Hold);
 

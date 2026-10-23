@@ -811,6 +811,11 @@ namespace Dev4u.CampusHub.Enrollment.FrontendApi.Sdk
         [System.Text.Json.Serialization.JsonPropertyName("courseStartsAt")]
         public System.DateTime? CourseStartsAt { get; set; } = default!;
 
+        [System.Text.Json.Serialization.JsonPropertyName("coursePriceInCents")]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        [System.ComponentModel.DataAnnotations.RegularExpression(@"^-?(?:0|[1-9]\d*)$")]
+        public int CoursePriceInCents { get; set; } = default!;
+
         [System.Text.Json.Serialization.JsonPropertyName("status")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Status { get; set; } = default!;

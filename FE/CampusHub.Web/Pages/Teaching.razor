@@ -55,6 +55,11 @@
             <small class="field-error">@ViewModel.ScheduleError</small>
         </label>
         <label>
+            <span>Price (€)</span>
+            <input type="number" min="0" max="@TeachingViewModel.MaxPrice" step="0.01" @bind="ViewModel.Price" @bind:event="oninput" />
+            <small class="field-error">@ViewModel.PriceError</small>
+        </label>
+        <label>
             <span>Seats</span>
             <input type="number" min="1" max="@TeachingViewModel.MaxCapacity" @bind="ViewModel.Capacity" @bind:event="oninput" />
             <small class="field-error">@ViewModel.CapacityError</small>
@@ -79,7 +84,7 @@
                         <div class="row-title"><span class="code">@course.Code</span> @course.Title</div>
                         <div class="muted small">
                             @course.StartsAt.ToString("d MMM yyyy") → @course.EndsAt.ToString("d MMM yyyy")
-                            · @course.Capacity seats · @(course.Capacity - course.SeatsLeft) taken
+                            · @Money.Format(course.PriceInCents) · @course.Capacity seats · @(course.Capacity - course.SeatsLeft) taken
                         </div>
                     </div>
                     <StatusBadge Course="course.State" />

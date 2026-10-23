@@ -67,6 +67,10 @@ h2 { font-size: 1.1rem; margin: 0 0 .75rem; }
 .btn-primary { background: var(--primary); border-color: var(--primary); color: white; }
 .btn-primary:hover:not(:disabled) { background: var(--primary-strong); }
 .btn-ghost { background: transparent; }
+.enrolled {
+    display: inline-flex; align-items: center; gap: .45rem; padding: .55rem 1rem; border-radius: 8px;
+    background: var(--success-soft); color: var(--success); border: 1px solid #abefc6; font-weight: 600;
+}
 .spinner {
     width: 14px; height: 14px; border-radius: 50%;
     border: 2px solid currentColor; border-right-color: transparent; animation: spin .8s linear infinite;

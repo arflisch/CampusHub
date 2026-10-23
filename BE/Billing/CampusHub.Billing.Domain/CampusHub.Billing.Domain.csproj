@@ -9,4 +9,8 @@
     <PackageReference Include="MongoDB.Bson" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Shared\CampusHub.Shared.Domain\CampusHub.Shared.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

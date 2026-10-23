@@ -38,7 +38,8 @@ public sealed class MongoEnrollmentRepository(IMongoClientFactory<DatabaseContex
     public async Task<IReadOnlyList<StudentEnrollment>> ListStalledAsync(DateTimeOffset updatedBefore, int take, CancellationToken cancellationToken)
     {
         var limit = updatedBefore.UtcDateTime;
-        var documents = await Enrollments.Find(e => (e.Status == EnrollmentStatus.Requested || e.Status == EnrollmentStatus.SeatHeld)
+        var documents = await Enrollments.Find(e => (e.Status == EnrollmentStatus.Requested || e.Status == EnrollmentStatus.SeatHeld
+                                                      || e.Status == EnrollmentStatus.Paid)
                                                      && e.UpdatedAtUtc < limit)
                                          .SortBy(e => e.UpdatedAtUtc)
                                          .Limit(take)

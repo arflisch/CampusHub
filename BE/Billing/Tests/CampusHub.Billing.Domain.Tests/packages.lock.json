@@ -340,7 +340,15 @@
         "type": "Project",
         "dependencies": {
           "Arc4u": "[9.0.0-preview38, )",
+          "CampusHub.Shared.Domain": "[1.0.0, )",
           "MongoDB.Bson": "[3.12.0, )"
+        }
+      },
+      "campushub.shared.domain": {
+        "type": "Project",
+        "dependencies": {
+          "Arc4u": "[9.0.0-preview38, )",
+          "Arc4u.Results": "[9.0.0-preview38, )"
         }
       },
       "Arc4u": {
@@ -388,6 +396,18 @@
         "dependencies": {
           "Arc4u.Core": "9.0.0-preview38",
           "Arc4u.Threading": "9.0.0-preview38",
+          "Microsoft.Extensions.Hosting": "11.0.0-rc.2.26504.105"
+        }
+      },
+      "Arc4u.Results": {
+        "type": "CentralTransitive",
+        "requested": "[9.0.0-preview38, )",
+        "resolved": "9.0.0-preview38",
+        "contentHash": "smSQbAqaxZbe+KdfmCY/Hj1PqLhBnyPi3HEvuJGBAy8c6jiEgmJIOQz8O93s68hj+44B7U5boS2ezFw4XZCmvg==",
+        "dependencies": {
+          "Arc4u": "9.0.0-preview38",
+          "Arc4u.Diagnostics": "9.0.0-preview38",
+          "FluentResults": "4.0.0",
           "Microsoft.Extensions.Hosting": "11.0.0-rc.2.26504.105"
         }
       },

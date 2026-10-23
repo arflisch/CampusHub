@@ -76,6 +76,18 @@ internal sealed class ReserveSeatActivity(IServiceScopeFactory scopeFactory) : S
         services.GetRequiredService<ReserveSeatForEnrollment>().ExecuteAsync(input, cancellationToken);
 }
 
+internal sealed class PayForEnrollmentActivity(IServiceScopeFactory scopeFactory) : SagaActivity<Guid>(scopeFactory)
+{
+    protected override Task<Result> ExecuteAsync(IServiceProvider services, Guid input, CancellationToken cancellationToken) =>
+        services.GetRequiredService<PayForEnrollment>().ExecuteAsync(input, cancellationToken);
+}
+
+internal sealed class RefundPaymentActivity(IServiceScopeFactory scopeFactory) : SagaActivity<Guid>(scopeFactory)
+{
+    protected override Task<Result> ExecuteAsync(IServiceProvider services, Guid input, CancellationToken cancellationToken) =>
+        services.GetRequiredService<RefundEnrollmentPayment>().ExecuteAsync(input, cancellationToken);
+}
+
 internal sealed class ConfirmEnrollmentActivity(IServiceScopeFactory scopeFactory) : SagaActivity<Guid>(scopeFactory)
 {
     protected override Task<Result> ExecuteAsync(IServiceProvider services, Guid input, CancellationToken cancellationToken) =>

@@ -1,5 +1,8 @@
 using Arc4u.MongoDB;
 using Arc4u.MongoDB.Configuration;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 
 namespace Dev4u.CampusHub.Billing.Infrastructure.Payments;
 
@@ -19,6 +22,8 @@ namespace Dev4u.CampusHub.Billing.Infrastructure.Payments;
 /// </summary>
 public class DatabaseContext : DbContext
 {
+    public const string PaymentsCollection = "payments";
+
     /// <summary>
     /// Declare one entry per collection this adapter reads or writes. The mapping is what lets a repository ask
     /// for <c>IMongoClientFactory&lt;DatabaseContext&gt;.GetCollection&lt;TEntity&gt;()</c> without repeating the
@@ -29,6 +34,9 @@ public class DatabaseContext : DbContext
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        // context.MapCollection("<collectionname>").With<Dev4u.CampusHub.Billing.Domain.<Entity>>();
+        // MongoDB.Driver 3.x no longer guesses how to store a Guid: store them as standard UUIDs.
+        BsonSerializer.TryRegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+
+        context.MapCollection(PaymentsCollection).With<PaymentDocument>();
     }
 }

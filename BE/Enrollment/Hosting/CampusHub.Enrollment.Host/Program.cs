@@ -88,6 +88,7 @@ try
     services.RegisterUseCasesTypes();
     services.RegisterEnrollmentsTypes();
     services.RegisterCatalogTypes();
+    services.RegisterBillingTypes();
     services.RegisterServiceDefaultsTypes();
     services.RegisterTypes();
     services.AddTransient<IObjectSerialization, JsonSerialization>();
@@ -127,6 +128,8 @@ try
     {
         options.RegisterWorkflow<EnrollmentSaga>();
         options.RegisterActivity<ReserveSeatActivity>();
+        options.RegisterActivity<PayForEnrollmentActivity>();
+        options.RegisterActivity<RefundPaymentActivity>();
         options.RegisterActivity<ConfirmEnrollmentActivity>();
         options.RegisterActivity<ReleaseSeatActivity>();
         options.RegisterActivity<RejectEnrollmentActivity>();

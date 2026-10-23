@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Solution>
    <Folder Name="/Aspire/">
       <Project Path="Aspire/CampusHub.AppHost.csproj" />
@@ -133,6 +133,8 @@
     <Project Path="BE/Enrollment/CampusHub.Enrollment.Jobs/CampusHub.Enrollment.Jobs.csproj" />
   
     <Project Path="BE/Enrollment/CampusHub.Enrollment.Infrastructure.Catalog/CampusHub.Enrollment.Infrastructure.Catalog.csproj" />
+  
+    <Project Path="BE/Enrollment/CampusHub.Enrollment.Infrastructure.Billing/CampusHub.Enrollment.Infrastructure.Billing.csproj" />
   </Folder>
   <Folder Name="/BE/Enrollment/Hosting/">
     <Project Path="BE/Enrollment/Hosting/CampusHub.Enrollment.Host/CampusHub.Enrollment.Host.csproj" />

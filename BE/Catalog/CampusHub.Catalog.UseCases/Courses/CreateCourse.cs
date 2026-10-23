@@ -6,7 +6,8 @@ using FluentValidation;
 
 namespace Dev4u.CampusHub.Catalog.UseCases.Courses;
 
-public sealed record CreateCourseCommand(string? Code, string? Title, int Capacity, DateTimeOffset StartsAt, DateTimeOffset EndsAt);
+/// <param name="PriceInCents">Price in cents (EUR); 0 for a free course.</param>
+public sealed record CreateCourseCommand(string? Code, string? Title, int Capacity, int PriceInCents, DateTimeOffset StartsAt, DateTimeOffset EndsAt);
 
 /// <summary>Shape checks on the incoming request; the aggregate re-checks its own invariants.</summary>
 public sealed class CreateCourseCommandValidator : AbstractValidator<CreateCourseCommand>
@@ -17,6 +18,7 @@ public sealed class CreateCourseCommandValidator : AbstractValidator<CreateCours
         RuleFor(c => c.Title).NotEmpty().MaximumLength(200);
         RuleFor(c => c.Capacity).InclusiveBetween(1, Course.MaxCapacity);
         RuleFor(c => c.EndsAt).GreaterThan(c => c.StartsAt);
+        RuleFor(c => c.PriceInCents).InclusiveBetween(0, Course.MaxPriceInCents);
     }
 }
 
@@ -37,7 +39,7 @@ public sealed class CreateCourse(ICourseRepository courses, TimeProvider timePro
         }
 
         var now = timeProvider.GetUtcNow();
-        var course = Course.Create(Guid.CreateVersion7(now), command.Code, command.Title, command.Capacity,
+        var course = Course.Create(Guid.CreateVersion7(now), command.Code, command.Title, command.Capacity, command.PriceInCents,
                                    command.StartsAt, command.EndsAt, teacherId, now);
         if (course.IsFailed)
         {

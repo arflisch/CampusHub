@@ -17,7 +17,7 @@ public sealed class StudentEnrollment
     private readonly List<IDomainEvent> _domainEvents = [];
 
     private StudentEnrollment(Guid id, Guid courseId, string studentId, EnrollmentStatus status, Guid? reservationId,
-                       string? courseTitle, DateTimeOffset? courseStartsAt, DateTimeOffset? courseEndsAt, string? rejectionCode,
+                       string? courseTitle, DateTimeOffset? courseStartsAt, DateTimeOffset? courseEndsAt, int coursePriceInCents, string? rejectionCode,
                        DateTimeOffset? reminderSentAt, DateTimeOffset requestedAt, DateTimeOffset updatedAt, long version)
     {
         Id = id;
@@ -28,6 +28,7 @@ public sealed class StudentEnrollment
         CourseTitle = courseTitle;
         CourseStartsAt = courseStartsAt;
         CourseEndsAt = courseEndsAt;
+        CoursePriceInCents = coursePriceInCents;
         RejectionCode = rejectionCode;
         ReminderSentAt = reminderSentAt;
         RequestedAt = requestedAt;
@@ -54,6 +55,11 @@ public sealed class StudentEnrollment
     public DateTimeOffset? CourseStartsAt { get; private set; }
 
     public DateTimeOffset? CourseEndsAt { get; private set; }
+
+    /// <summary>Price of the course, copied from Catalog with the seat; 0 for a free course (no payment step).</summary>
+    public int CoursePriceInCents { get; private set; }
+
+    public bool RequiresPayment => CoursePriceInCents > 0;
 
     /// <summary>When the student was reminded that the course starts soon; null until then.</summary>
     public DateTimeOffset? ReminderSentAt { get; private set; }
@@ -85,17 +91,17 @@ public sealed class StudentEnrollment
         }
 
         return Result.Ok(new StudentEnrollment(id, courseId, studentId, EnrollmentStatus.Requested, reservationId: null,
-                                        courseTitle: null, courseStartsAt: null, courseEndsAt: null, rejectionCode: null,
+                                        courseTitle: null, courseStartsAt: null, courseEndsAt: null, coursePriceInCents: 0, rejectionCode: null,
                                         reminderSentAt: null, now, now, version: 0));
     }
 
     /// <summary>Rebuilds an enrollment from storage. Persistence only: no rule is checked.</summary>
     public static StudentEnrollment Rehydrate(Guid id, Guid courseId, string studentId, EnrollmentStatus status, Guid? reservationId,
                                        string? courseTitle, DateTimeOffset? courseStartsAt, DateTimeOffset? courseEndsAt,
-                                       string? rejectionCode, DateTimeOffset? reminderSentAt, DateTimeOffset requestedAt,
-                                       DateTimeOffset updatedAt, long version) =>
-        new(id, courseId, studentId, status, reservationId, courseTitle, courseStartsAt, courseEndsAt, rejectionCode,
-            reminderSentAt, requestedAt, updatedAt, version);
+                                       int coursePriceInCents, string? rejectionCode, DateTimeOffset? reminderSentAt,
+                                       DateTimeOffset requestedAt, DateTimeOffset updatedAt, long version) =>
+        new(id, courseId, studentId, status, reservationId, courseTitle, courseStartsAt, courseEndsAt, coursePriceInCents,
+            rejectionCode, reminderSentAt, requestedAt, updatedAt, version);
 
     public bool BelongsTo(string studentId) => string.Equals(StudentId, studentId, StringComparison.Ordinal);
 
@@ -122,11 +128,33 @@ public sealed class StudentEnrollment
         CourseTitle = seat.CourseTitle;
         CourseStartsAt = seat.CourseStartsAt;
         CourseEndsAt = seat.CourseEndsAt;
+        CoursePriceInCents = seat.CoursePriceInCents;
         UpdatedAt = now;
         return Result.Ok();
     }
 
-    /// <summary>Pivot of the saga: after this, the enrollment is never compensated.</summary>
+    /// <summary>Records that the course was paid (paid courses only). Replaying it succeeds without change.</summary>
+    public Result MarkPaid(DateTimeOffset now)
+    {
+        if (Status == EnrollmentStatus.Paid)
+        {
+            return Result.Ok(); // replayed activity
+        }
+
+        if (Status != EnrollmentStatus.SeatHeld || !RequiresPayment)
+        {
+            return Result.Fail(EnrollmentErrors.InvalidTransition(Status, EnrollmentStatus.Paid));
+        }
+
+        Status = EnrollmentStatus.Paid;
+        UpdatedAt = now;
+        return Result.Ok();
+    }
+
+    /// <summary>
+    /// Pivot of the saga: after this, the enrollment is never compensated. A paid course must be paid first; a free
+    /// one goes straight from SeatHeld.
+    /// </summary>
     public Result Confirm(DateTimeOffset now)
     {
         if (Status == EnrollmentStatus.Confirmed)
@@ -134,7 +162,8 @@ public sealed class StudentEnrollment
             return Result.Ok(); // replayed activity: no second event
         }
 
-        if (Status != EnrollmentStatus.SeatHeld || ReservationId is null || CourseTitle is null
+        var readyForPivot = RequiresPayment ? Status == EnrollmentStatus.Paid : Status == EnrollmentStatus.SeatHeld;
+        if (!readyForPivot || ReservationId is null || CourseTitle is null
             || CourseStartsAt is not { } startsAt || CourseEndsAt is not { } endsAt)
         {
             return Result.Fail(EnrollmentErrors.InvalidTransition(Status, EnrollmentStatus.Confirmed));

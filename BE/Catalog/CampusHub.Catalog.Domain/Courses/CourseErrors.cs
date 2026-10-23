@@ -17,6 +17,9 @@ public static class CourseErrors
     public static ProblemDetailError InvalidCapacity() =>
         AppErrors.Validation("course.invalid_capacity", $"The capacity must be between 1 and {Course.MaxCapacity}.");
 
+    public static ProblemDetailError InvalidPrice() =>
+        AppErrors.Validation("course.invalid_price", $"The price must be between 0 and {Course.MaxPriceInCents / 100} EUR.");
+
     public static ProblemDetailError InvalidSchedule(string detail) =>
         AppErrors.Validation("course.invalid_schedule", detail);
 

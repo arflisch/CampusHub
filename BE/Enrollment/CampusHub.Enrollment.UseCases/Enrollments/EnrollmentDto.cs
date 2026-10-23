@@ -8,6 +8,7 @@ public sealed record EnrollmentDto(
     Guid CourseId,
     string? CourseTitle,
     DateTimeOffset? CourseStartsAt,
+    int CoursePriceInCents,
     string Status,
     string? RejectionCode,
     DateTimeOffset RequestedAt,
@@ -18,6 +19,7 @@ public sealed record RequestEnrollmentCommand(Guid RequestId, Guid CourseId);
 internal static class EnrollmentMappings
 {
     public static EnrollmentDto ToDto(this StudentEnrollment enrollment) =>
-        new(enrollment.Id, enrollment.CourseId, enrollment.CourseTitle, enrollment.CourseStartsAt, enrollment.Status.ToString(),
+        new(enrollment.Id, enrollment.CourseId, enrollment.CourseTitle, enrollment.CourseStartsAt, enrollment.CoursePriceInCents,
+            enrollment.Status.ToString(),
             enrollment.RejectionCode, enrollment.RequestedAt, enrollment.UpdatedAt);
 }

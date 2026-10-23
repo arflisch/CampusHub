@@ -45,6 +45,9 @@ public static class UiErrors
     {
         "course.full" => "This course is full.",
         "course.not_open" => "This course is not open for enrollment.",
+        "payment.declined" => "Your payment was declined: the seat was given back.",
+        "billing.unavailable" => "The payment could not be processed right now. Nothing was charged; please try again.",
+        "course.invalid_price" => "The price must be between 0 and 10 000 €.",
         "course.started" => "This course has already started: enrollments are closed.",
         "course.invalid_schedule" => "Check the dates: a course starts in the future and lasts at most a year.",
         "course.already_enrolled" => "You already hold a seat in this course.",

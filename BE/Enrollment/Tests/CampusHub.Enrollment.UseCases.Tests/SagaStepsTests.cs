@@ -91,5 +91,5 @@ public class SagaStepsTests
 
     private static StudentEnrollment Copy(StudentEnrollment e) =>
         StudentEnrollment.Rehydrate(e.Id, e.CourseId, e.StudentId, e.Status, e.ReservationId, e.CourseTitle, e.CourseStartsAt, e.CourseEndsAt,
-                                    e.RejectionCode, e.ReminderSentAt, e.RequestedAt, e.UpdatedAt, e.Version);
+                                    e.CoursePriceInCents, e.RejectionCode, e.ReminderSentAt, e.RequestedAt, e.UpdatedAt, e.Version);
 }

@@ -8,7 +8,7 @@
 
     private string Css => Enrollment switch
     {
-        EnrollmentState.Requested or EnrollmentState.SeatHeld => "pending",
+        EnrollmentState.Requested or EnrollmentState.SeatHeld or EnrollmentState.Paid => "pending",
         EnrollmentState.Confirmed => "success",
         EnrollmentState.Rejected => "danger",
         _ => Course == CourseState.Published ? "success" : "neutral",
@@ -18,6 +18,7 @@
     {
         EnrollmentState.Requested => "Requested",
         EnrollmentState.SeatHeld => "Seat held",
+        EnrollmentState.Paid => "Paid",
         EnrollmentState.Confirmed => "Confirmed",
         EnrollmentState.Rejected => "Rejected",
         _ => Course?.ToString() ?? string.Empty,

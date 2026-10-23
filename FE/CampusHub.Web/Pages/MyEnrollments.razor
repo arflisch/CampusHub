@@ -45,7 +45,11 @@ else
                 </div>
                 <div class="steps" aria-label="Saga progress">
                     <span class="step @(enrollment.State != EnrollmentState.Rejected ? "done" : "failed")">Requested</span>
-                    <span class="step @(enrollment.State is EnrollmentState.SeatHeld or EnrollmentState.Confirmed ? "done" : string.Empty)">Seat held</span>
+                    <span class="step @(enrollment.State is EnrollmentState.SeatHeld or EnrollmentState.Paid or EnrollmentState.Confirmed ? "done" : string.Empty)">Seat held</span>
+                    @if (enrollment.CoursePriceInCents > 0)
+                    {
+                        <span class="step @(enrollment.State is EnrollmentState.Paid or EnrollmentState.Confirmed ? "done" : string.Empty)">Paid @Money.Format(enrollment.CoursePriceInCents)</span>
+                    }
                     <span class="step @(enrollment.State == EnrollmentState.Confirmed ? "done" : string.Empty)">Confirmed</span>
                 </div>
                 <StatusBadge Enrollment="enrollment.State" />

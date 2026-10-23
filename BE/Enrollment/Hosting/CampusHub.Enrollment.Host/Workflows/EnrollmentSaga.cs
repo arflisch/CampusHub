@@ -22,8 +22,9 @@ internal sealed record EnrollmentSagaOutcome(string Status, string? ReasonCode)
 }
 
 /// <summary>
-/// Orchestrated saga: reserve a seat in Catalog → confirm the seat and the enrollment (pivot, publishes
-/// EnrollmentConfirmed through the outbox). If the pivot fails, the seat is released and the enrollment rejected.
+/// Orchestrated saga: reserve a seat in Catalog → pay through Billing (paid courses only) → confirm the seat and the
+/// enrollment (pivot, publishes EnrollmentConfirmed through the outbox). If the payment or the pivot fails, the
+/// steps already done are compensated in reverse order: refund, release the seat, reject the enrollment.
 /// <para>
 /// Workflow code is replayed from its history after every await, so it stays deterministic: no I/O, no clock,
 /// no Guid.NewGuid here - every side effect is an activity. Activities run at least once and are retried with
@@ -48,46 +49,45 @@ internal sealed class EnrollmentSaga : Workflow<Guid, EnrollmentSagaOutcome>
         var enrollmentId = input;
 
         // 1. Hold a seat. A refusal (course full, closed...) ends the saga: nothing to compensate yet.
-        SagaStepResult reserved;
-        try
+        //    Catalog unreachable through every retry: a seat held meanwhile expires on its own.
+        var notReserved = await RunStepAsync(context, logger, nameof(ReserveSeatActivity), enrollmentId, "catalog.unavailable").ConfigureAwait(true);
+        if (notReserved is not null)
         {
-            reserved = await context.CallActivityAsync<SagaStepResult>(nameof(ReserveSeatActivity), enrollmentId, Retry).ConfigureAwait(true);
-        }
-        catch (WorkflowTaskFailedException ex)
-        {
-            // Catalog stayed unreachable through every retry. A seat held meanwhile expires on its own.
-            logger.LogSagaStepFailed(ex, enrollmentId, nameof(ReserveSeatActivity));
-            reserved = SagaStepResult.Failed("catalog.unavailable");
+            await context.CallActivityAsync<SagaStepResult>(nameof(RejectEnrollmentActivity), new RejectEnrollmentInput(enrollmentId, notReserved), Retry).ConfigureAwait(true);
+            return EnrollmentSagaOutcome.Rejected(notReserved);
         }
 
-        if (!reserved.Succeeded)
+        // 2. Pay (a free course passes straight through). A declined card is a business refusal: payment.declined.
+        // 3. Pivot: confirm the seat, then the enrollment (outbox). After this point the saga only moves forward.
+        var failure = await RunStepAsync(context, logger, nameof(PayForEnrollmentActivity), enrollmentId, "billing.unavailable").ConfigureAwait(true)
+                      ?? await RunStepAsync(context, logger, nameof(ConfirmEnrollmentActivity), enrollmentId, "enrollment.confirmation_failed").ConfigureAwait(true);
+        if (failure is null)
         {
-            var reason = reserved.ErrorCode ?? "enrollment.refused";
-            await context.CallActivityAsync<SagaStepResult>(nameof(RejectEnrollmentActivity), new RejectEnrollmentInput(enrollmentId, reason), Retry).ConfigureAwait(true);
-            return EnrollmentSagaOutcome.Rejected(reason);
+            return EnrollmentSagaOutcome.Confirmed();
         }
 
-        // 2. Pivot: confirm the seat, then the enrollment (outbox). After this point the saga only moves forward.
-        string failure;
-        try
-        {
-            var confirmed = await context.CallActivityAsync<SagaStepResult>(nameof(ConfirmEnrollmentActivity), enrollmentId, Retry).ConfigureAwait(true);
-            if (confirmed.Succeeded)
-            {
-                return EnrollmentSagaOutcome.Confirmed();
-            }
-
-            failure = confirmed.ErrorCode ?? "enrollment.confirmation_refused";
-        }
-        catch (WorkflowTaskFailedException ex)
-        {
-            logger.LogSagaStepFailed(ex, enrollmentId, nameof(ConfirmEnrollmentActivity));
-            failure = "enrollment.confirmation_failed";
-        }
-
-        // 3. Compensation: give the seat back, then record the rejection. Both are idempotent.
+        // Compensation, in reverse order. All steps are idempotent, and the refund is attempted even when the
+        // payment step failed: its answer may have been lost after Billing took the money.
+        await context.CallActivityAsync<SagaStepResult>(nameof(RefundPaymentActivity), enrollmentId, Retry).ConfigureAwait(true);
         await context.CallActivityAsync<SagaStepResult>(nameof(ReleaseSeatActivity), enrollmentId, Retry).ConfigureAwait(true);
         await context.CallActivityAsync<SagaStepResult>(nameof(RejectEnrollmentActivity), new RejectEnrollmentInput(enrollmentId, failure), Retry).ConfigureAwait(true);
         return EnrollmentSagaOutcome.Compensated(failure);
+    }
+
+    /// <summary>Runs one forward step: null when it succeeded, otherwise the code of the failure.</summary>
+    private static async Task<string?> RunStepAsync(WorkflowContext context, ILogger logger, string activity, Guid enrollmentId,
+                                                    string unavailableCode)
+    {
+        try
+        {
+            var result = await context.CallActivityAsync<SagaStepResult>(activity, enrollmentId, Retry).ConfigureAwait(true);
+            return result.Succeeded ? null : result.ErrorCode ?? $"{activity}.refused";
+        }
+        catch (WorkflowTaskFailedException ex)
+        {
+            // Still failing transiently after every retry.
+            logger.LogSagaStepFailed(ex, enrollmentId, activity);
+            return unavailableCode;
+        }
     }
 }

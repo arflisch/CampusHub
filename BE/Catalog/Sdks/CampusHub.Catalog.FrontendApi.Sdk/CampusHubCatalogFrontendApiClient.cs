@@ -1045,6 +1045,11 @@ namespace Dev4u.CampusHub.Catalog.FrontendApi.Sdk
         [System.ComponentModel.DataAnnotations.RegularExpression(@"^-?(?:0|[1-9]\d*)$")]
         public int SeatsLeft { get; set; } = default!;
 
+        [System.Text.Json.Serialization.JsonPropertyName("priceInCents")]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        [System.ComponentModel.DataAnnotations.RegularExpression(@"^-?(?:0|[1-9]\d*)$")]
+        public int PriceInCents { get; set; } = default!;
+
         [System.Text.Json.Serialization.JsonPropertyName("startsAt")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public System.DateTime StartsAt { get; set; } = default!;
@@ -1085,6 +1090,11 @@ namespace Dev4u.CampusHub.Catalog.FrontendApi.Sdk
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [System.ComponentModel.DataAnnotations.RegularExpression(@"^-?(?:0|[1-9]\d*)$")]
         public int Capacity { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("priceInCents")]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        [System.ComponentModel.DataAnnotations.RegularExpression(@"^-?(?:0|[1-9]\d*)$")]
+        public int PriceInCents { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("startsAt")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]

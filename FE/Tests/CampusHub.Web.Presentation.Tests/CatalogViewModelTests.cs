@@ -81,4 +81,60 @@ public class CatalogViewModelTests
         _sut.Courses.Should().HaveCount(2);
         _sut.ErrorMessage.Should().BeNull();
     }
+
+    private CourseItem PublishedWithMyEnrollment(EnrollmentState state)
+    {
+        var course = TestData.Course();
+        _catalog.Published = Result.Ok<IReadOnlyList<CourseItem>>([course]);
+        _enrollments.AnswerList([TestData.Enrollment(Guid.NewGuid(), state) with { CourseId = course.Id }]);
+        return course;
+    }
+
+    [Fact]
+    public async Task A_course_I_am_enrolled_in_shows_it_instead_of_the_enroll_button()
+    {
+        var course = PublishedWithMyEnrollment(EnrollmentState.Confirmed);
+
+        await _sut.InitializeAsync(CancellationToken.None);
+
+        _sut.EnrollmentOf(course).Should().Be(CourseEnrollment.Enrolled);
+        _sut.EnrollCommand.CanExecute(course).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(EnrollmentState.Requested)]
+    [InlineData(EnrollmentState.SeatHeld)]
+    [InlineData(EnrollmentState.Paid)]
+    public async Task A_request_still_in_the_saga_is_shown_as_in_progress(EnrollmentState state)
+    {
+        var course = PublishedWithMyEnrollment(state);
+
+        await _sut.InitializeAsync(CancellationToken.None);
+
+        _sut.EnrollmentOf(course).Should().Be(CourseEnrollment.InProgress);
+        _sut.EnrollCommand.CanExecute(course).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task After_a_rejected_request_the_course_can_be_requested_again()
+    {
+        var course = PublishedWithMyEnrollment(EnrollmentState.Rejected);
+
+        await _sut.InitializeAsync(CancellationToken.None);
+
+        _sut.EnrollmentOf(course).Should().Be(CourseEnrollment.None);
+        _sut.EnrollCommand.CanExecute(course).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task The_catalogue_is_shown_even_when_my_enrollments_cannot_be_loaded()
+    {
+        _catalog.Published = Result.Ok<IReadOnlyList<CourseItem>>([TestData.Course()]);
+        _enrollments.AnswerListResult(TestData.Transient<IReadOnlyList<EnrollmentItem>>());
+
+        await _sut.InitializeAsync(CancellationToken.None);
+
+        _sut.Courses.Should().ContainSingle();
+        _sut.ErrorMessage.Should().BeNull();
+    }
 }

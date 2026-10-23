@@ -13,13 +13,16 @@ public class RecoverStalledEnrollmentsTests
     private readonly Mock<IEnrollmentRepository> _repository = new();
     private readonly Mock<IEnrollmentSaga> _saga = new();
     private readonly Mock<ICourseSeats> _seats = new();
+    private readonly Mock<ICoursePayments> _payments = new();
     private readonly RecoverStalledEnrollments _sut;
 
     public RecoverStalledEnrollmentsTests()
     {
         _repository.Setup(r => r.SaveAsync(It.IsAny<StudentEnrollment>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Ok());
         _seats.Setup(s => s.ReleaseAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Ok());
+        _payments.Setup(p => p.RefundAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Result.Ok());
         _sut = new RecoverStalledEnrollments(_repository.Object, _saga.Object,
+                                             new RefundEnrollmentPayment(_repository.Object, _payments.Object),
                                              new ReleaseEnrollmentSeat(_repository.Object, _seats.Object),
                                              new RejectEnrollment(_repository.Object, TimeProvider.System),
                                              TimeProvider.System);

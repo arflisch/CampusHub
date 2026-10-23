@@ -26,6 +26,9 @@ public sealed class EnrollmentDocument
 
     public DateTime? CourseEndsAtUtc { get; set; }
 
+    /// <summary>Missing in enrollments stored before prices existed: read as 0 (free).</summary>
+    public int CoursePriceInCents { get; set; }
+
     public string? RejectionCode { get; set; }
 
     public DateTime? ReminderSentAtUtc { get; set; }
@@ -49,6 +52,7 @@ internal static class EnrollmentDocumentMapping
         CourseTitle = enrollment.CourseTitle,
         CourseStartsAtUtc = enrollment.CourseStartsAt?.UtcDateTime,
         CourseEndsAtUtc = enrollment.CourseEndsAt?.UtcDateTime,
+        CoursePriceInCents = enrollment.CoursePriceInCents,
         RejectionCode = enrollment.RejectionCode,
         ReminderSentAtUtc = enrollment.ReminderSentAt?.UtcDateTime,
         RequestedAtUtc = enrollment.RequestedAt.UtcDateTime,
@@ -59,7 +63,7 @@ internal static class EnrollmentDocumentMapping
     public static StudentEnrollment ToDomain(this EnrollmentDocument document) =>
         StudentEnrollment.Rehydrate(document.Id, document.CourseId, document.StudentId, document.Status, document.ReservationId,
                                     document.CourseTitle, AsUtc(document.CourseStartsAtUtc), AsUtc(document.CourseEndsAtUtc),
-                                    document.RejectionCode, AsUtc(document.ReminderSentAtUtc), AsUtc(document.RequestedAtUtc),
+                                    document.CoursePriceInCents, document.RejectionCode, AsUtc(document.ReminderSentAtUtc), AsUtc(document.RequestedAtUtc),
                                     AsUtc(document.UpdatedAtUtc), document.Version);
 
     private static DateTimeOffset AsUtc(DateTime value) => new(DateTime.SpecifyKind(value, DateTimeKind.Utc));

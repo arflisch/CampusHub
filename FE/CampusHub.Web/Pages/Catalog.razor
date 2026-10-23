@@ -40,20 +40,27 @@ else
                     </span>
                 </div>
                 <h2 class="card-title">@course.Title</h2>
-                <div class="muted small">@course.StartsAt.ToString("d MMM yyyy") → @course.EndsAt.ToString("d MMM yyyy")</div>
+                <div class="muted small">
+                    @course.StartsAt.ToString("d MMM yyyy") → @course.EndsAt.ToString("d MMM yyyy")
+                    · <strong class="price">@Money.Format(course.PriceInCents)</strong>
+                </div>
                 <div class="meter" aria-hidden="true">
                     <span style="width:@(Fill(course))%"></span>
                 </div>
                 <div class="card-actions">
-                    @if (ViewModel.WasRequested(course))
+                    @switch (ViewModel.EnrollmentOf(course))
                     {
-                        <a class="btn btn-ghost" href="enrollments">Follow my request →</a>
-                    }
-                    else
-                    {
-                        <CommandButton Command="ViewModel.EnrollCommand" Parameter="course" CssClass="btn btn-primary" BusyText="Sending…">
-                            Enroll
-                        </CommandButton>
+                        case CourseEnrollment.Enrolled:
+                            <span class="enrolled"><span aria-hidden="true">✓</span> Enrolled</span>
+                            break;
+                        case CourseEnrollment.InProgress:
+                            <a class="btn btn-ghost" href="enrollments">Enrollment in progress →</a>
+                            break;
+                        default:
+                            <CommandButton Command="ViewModel.EnrollCommand" Parameter="course" CssClass="btn btn-primary" BusyText="Sending…">
+                                Enroll
+                            </CommandButton>
+                            break;
                     }
                 </div>
             </article>

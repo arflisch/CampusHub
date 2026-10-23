@@ -37,15 +37,49 @@ public class EnrollmentSagaTests
     private Task<EnrollmentSagaOutcome> RunAsync() => new EnrollmentSaga().RunAsync(_context.Object, _enrollmentId);
 
     [Fact]
-    public async Task Reserve_then_confirm_completes_the_enrollment()
+    public async Task Reserve_pay_then_confirm_completes_the_enrollment()
     {
         Activity(nameof(ReserveSeatActivity), SagaStepResult.Ok);
+        Activity(nameof(PayForEnrollmentActivity), SagaStepResult.Ok);
         Activity(nameof(ConfirmEnrollmentActivity), SagaStepResult.Ok);
 
         var outcome = await RunAsync();
 
         outcome.Should().Be(EnrollmentSagaOutcome.Confirmed());
-        _calls.Should().Equal(nameof(ReserveSeatActivity), nameof(ConfirmEnrollmentActivity));
+        _calls.Should().Equal(nameof(ReserveSeatActivity), nameof(PayForEnrollmentActivity), nameof(ConfirmEnrollmentActivity));
+    }
+
+    [Fact]
+    public async Task A_declined_payment_compensates_and_never_reaches_the_pivot()
+    {
+        Activity(nameof(ReserveSeatActivity), SagaStepResult.Ok);
+        Activity(nameof(PayForEnrollmentActivity), () => SagaStepResult.Failed("payment.declined"));
+        Activity(nameof(RefundPaymentActivity), SagaStepResult.Ok);
+        Activity(nameof(ReleaseSeatActivity), SagaStepResult.Ok);
+        Activity(nameof(RejectEnrollmentActivity), SagaStepResult.Ok);
+
+        var outcome = await RunAsync();
+
+        outcome.Should().Be(EnrollmentSagaOutcome.Compensated("payment.declined"));
+        _calls.Should().Equal(nameof(ReserveSeatActivity), nameof(PayForEnrollmentActivity),
+                              nameof(RefundPaymentActivity), nameof(ReleaseSeatActivity), nameof(RejectEnrollmentActivity));
+    }
+
+    [Fact]
+    public async Task Billing_unreachable_after_all_retries_refunds_just_in_case_then_compensates()
+    {
+        Activity(nameof(ReserveSeatActivity), SagaStepResult.Ok);
+        _context.Setup(c => c.CallActivityAsync<SagaStepResult>(nameof(PayForEnrollmentActivity), It.IsAny<object?>(), It.IsAny<WorkflowTaskOptions?>()))
+                .ThrowsAsync(new WorkflowTaskFailedException("retries exhausted", new WorkflowTaskFailureDetails("HttpRequestException", "connection refused")));
+        Activity(nameof(RefundPaymentActivity), SagaStepResult.Ok);
+        Activity(nameof(ReleaseSeatActivity), SagaStepResult.Ok);
+        Activity(nameof(RejectEnrollmentActivity), SagaStepResult.Ok);
+
+        var outcome = await RunAsync();
+
+        outcome.Should().Be(EnrollmentSagaOutcome.Compensated("billing.unavailable"));
+        _calls.Should().Equal(nameof(ReserveSeatActivity), nameof(RefundPaymentActivity), nameof(ReleaseSeatActivity),
+                              nameof(RejectEnrollmentActivity));
     }
 
     [Fact]
@@ -61,18 +95,20 @@ public class EnrollmentSagaTests
     }
 
     [Fact]
-    public async Task A_failed_pivot_releases_the_seat_then_rejects()
+    public async Task A_failed_pivot_refunds_releases_the_seat_then_rejects()
     {
         Activity(nameof(ReserveSeatActivity), SagaStepResult.Ok);
+        Activity(nameof(PayForEnrollmentActivity), SagaStepResult.Ok);
         Activity(nameof(ConfirmEnrollmentActivity), () => SagaStepResult.Failed("reservation.expired"));
+        Activity(nameof(RefundPaymentActivity), SagaStepResult.Ok);
         Activity(nameof(ReleaseSeatActivity), SagaStepResult.Ok);
         Activity(nameof(RejectEnrollmentActivity), SagaStepResult.Ok);
 
         var outcome = await RunAsync();
 
         outcome.Should().Be(EnrollmentSagaOutcome.Compensated("reservation.expired"));
-        _calls.Should().Equal(nameof(ReserveSeatActivity), nameof(ConfirmEnrollmentActivity),
-                              nameof(ReleaseSeatActivity), nameof(RejectEnrollmentActivity));
+        _calls.Should().Equal(nameof(ReserveSeatActivity), nameof(PayForEnrollmentActivity), nameof(ConfirmEnrollmentActivity),
+                              nameof(RefundPaymentActivity), nameof(ReleaseSeatActivity), nameof(RejectEnrollmentActivity));
     }
 
     [Fact]
