@@ -61,10 +61,10 @@ try
     builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
 
     // Add configuration sources
-    builder.Configuration.AddJsonFile("configs/appsettings.json", optional: true, reloadOnChange: true);
-    builder.Configuration.AddJsonFile($"configs/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
-    // Local secrets (ClientSecret, ...), kept out of git: see configs/appsettings.{Environment}.local.json.
-    builder.Configuration.AddJsonFile($"configs/appsettings.{builder.Environment.EnvironmentName}.local.json", optional: true, reloadOnChange: true);
+    builder.Configuration.AddJsonFile("Configs/appsettings.json", optional: true, reloadOnChange: true);
+    builder.Configuration.AddJsonFile($"Configs/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+    // Local secrets (ClientSecret, ...), kept out of git: see Configs/appsettings.{Environment}.local.json.
+    builder.Configuration.AddJsonFile($"Configs/appsettings.{builder.Environment.EnvironmentName}.local.json", optional: true, reloadOnChange: true);
     // Environment variables and the command line (Aspire, containers, CI) must override the JSON files above:
     // they come first in WebApplication.CreateBuilder, so without this the local defaults would win.
     builder.Configuration.AddEnvironmentVariables();

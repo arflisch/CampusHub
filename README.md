@@ -1,5 +1,8 @@
 # CampusHub
 
+[![CI](https://github.com/arflisch/CampusHub/actions/workflows/ci.yml/badge.svg)](https://github.com/arflisch/CampusHub/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/arflisch/CampusHub/actions/workflows/codeql.yml/badge.svg)](https://github.com/arflisch/CampusHub/actions/workflows/codeql.yml)
+
 A course enrollment platform built as a .NET microservices sandbox: teachers publish courses with a limited number of
 seats, students enroll, and each enrollment runs as a saga across services.
 
@@ -51,6 +54,16 @@ dotnet run --project Aspire
 The gateway listens on https://localhost:7184. The services need an OpenID Connect client and the Arc4u decryption
 certificate; their secrets are read from `Configs/appsettings.Development.local.json` next to each service's
 `appsettings.Development.json`, a file that is not committed.
+
+**Roles:** every signed-in user is a student. Teachers (create and publish courses) and administrators (Swagger,
+Hangfire dashboards) come from the identity provider (`campushub:teach` / `campushub:admin` permissions) or, locally, from
+the AppHost user secrets:
+
+```bash
+dotnet user-secrets set CampusHub:Teachers "<user id>" --project Aspire
+```
+
+The user id is shown on the Teaching page to a signed-in user who is not a teacher yet.
 
 **Tests:**
 
