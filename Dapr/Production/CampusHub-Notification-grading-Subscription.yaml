@@ -9,6 +9,8 @@ spec:
     rules:
       - match: event.type == "campushub.grading.certificate.issued"
         path: /Dapr/Grading/CertificateIssued
-  deadLetterTopic: notification.grading.deadletter
+  # No deadLetterTopic: a dead-letter topic nobody subscribes to silently drops the message. Once the resiliency
+  # retries are exhausted, Dapr rejects the message and RabbitMQ moves it to the dlq-<consumer>-<topic> queue
+  # (enableDeadLetter on the pub/sub component), where it stays until someone looks at it.
 scopes:
 - campushub-notification

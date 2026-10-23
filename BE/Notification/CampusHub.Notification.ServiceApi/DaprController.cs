@@ -2,6 +2,7 @@ using Dev4u.CampusHub.Enrollment.IntegrationEvents;
 using Dev4u.CampusHub.Errors;
 using Dev4u.CampusHub.Grading.IntegrationEvents;
 using Dev4u.CampusHub.Notification.UseCases.Notifications;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,9 @@ namespace Dev4u.CampusHub.Notification.ServiceApi;
 /// </para>
 /// </summary>
 [ApiController]
+// Called by the Dapr sidecar, which sends no api-version: these routes are a technical contract with the sidecar,
+// not part of the versioned service API (without this, versioning answers 400 and every event is lost).
+[ApiVersionNeutral]
 [Authorize(Policy = "Dapr")]
 [ApiExplorerSettings(GroupName = "dapr")]
 [Route("Dapr")]

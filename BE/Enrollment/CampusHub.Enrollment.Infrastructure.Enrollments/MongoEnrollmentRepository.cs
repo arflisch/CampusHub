@@ -47,10 +47,10 @@ public sealed class MongoEnrollmentRepository(IMongoClientFactory<DatabaseContex
         return [.. documents.Select(d => d.ToDomain())];
     }
 
-    public async Task<IReadOnlyList<StudentEnrollment>> ListDueForReminderAsync(DateTimeOffset from, DateTimeOffset to, int take,
+    public async Task<IReadOnlyList<StudentEnrollment>> ListDueForReminderAsync(DateTimeOffset startsFrom, DateTimeOffset startsBefore, int take,
                                                                                 CancellationToken cancellationToken)
     {
-        var (start, end) = (from.UtcDateTime, to.UtcDateTime);
+        var (start, end) = (startsFrom.UtcDateTime, startsBefore.UtcDateTime);
         var documents = await Enrollments.Find(e => e.Status == EnrollmentStatus.Confirmed && e.ReminderSentAtUtc == null
                                                      && e.CourseStartsAtUtc >= start && e.CourseStartsAtUtc < end)
                                          .SortBy(e => e.CourseStartsAtUtc)

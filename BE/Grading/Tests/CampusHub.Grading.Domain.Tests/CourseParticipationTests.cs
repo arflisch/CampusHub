@@ -38,7 +38,7 @@ public class CourseParticipationTests
         participation.IssueCertificate(EndsAt.AddDays(1)).IsSuccess.Should().BeTrue();
 
         participation.Certificate.Should().Be(new Certificate(CourseParticipation.NumberFor(participation.EnrollmentId, EndsAt), EndsAt));
-        participation.Certificate!.Number.Should().StartWith("CH-2026-");
+        participation.Certificate.Number.Should().StartWith("CH-2026-");
     }
 
     [Fact]

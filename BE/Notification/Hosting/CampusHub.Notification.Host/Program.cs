@@ -118,6 +118,8 @@ try
     // checked by the "Dapr" policy (see DaprController).
     services.AddAuthentication().AddDapr();
     services.AddAuthorization(options => options.AddDapr());
+    // The sidecar is not a user: keep its identity away from the Arc4u claims transformation (see ServiceDefaults).
+    services.ExcludeDaprSidecarFromClaimsTransformation();
 
     services.AddNotificationHandlersAsScoped();
 

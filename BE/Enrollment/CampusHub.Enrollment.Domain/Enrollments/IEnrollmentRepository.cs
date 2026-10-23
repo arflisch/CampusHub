@@ -20,8 +20,9 @@ public interface IEnrollmentRepository
     /// <summary>Enrollments still waiting for their saga (Requested or SeatHeld) and unchanged since <paramref name="updatedBefore"/>.</summary>
     Task<IReadOnlyList<StudentEnrollment>> ListStalledAsync(DateTimeOffset updatedBefore, int take, CancellationToken cancellationToken);
 
-    /// <summary>Confirmed enrollments not reminded yet, whose course starts within [<paramref name="from"/>, <paramref name="to"/>).</summary>
-    Task<IReadOnlyList<StudentEnrollment>> ListDueForReminderAsync(DateTimeOffset from, DateTimeOffset to, int take, CancellationToken cancellationToken);
+    /// <summary>Confirmed enrollments not reminded yet, whose course starts within [<paramref name="startsFrom"/>, <paramref name="startsBefore"/>).</summary>
+    Task<IReadOnlyList<StudentEnrollment>> ListDueForReminderAsync(DateTimeOffset startsFrom, DateTimeOffset startsBefore, int take,
+                                                                    CancellationToken cancellationToken);
 
     Task<Result> AddAsync(StudentEnrollment enrollment, CancellationToken cancellationToken);
 
