@@ -72,7 +72,7 @@
          it explicitly; 7.0.0 (assembly 7.0.0.0) satisfies the reference and is the last legacy version. -->
     <PackageVersion Include="IdentityModel" Version="7.0.0" />
     <!-- Transitive via AspNetCore.HealthChecks.UI; pinned to patched version for GHSA-w7r3-mgwf-4mqq (NU1902). -->
-    <PackageVersion Include="KubernetesClient" Version="19.0.2" />
+    <PackageVersion Include="KubernetesClient" Version="21.0.8" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="$(DotNetVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="$(DotNetVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(DotNetVersion)" />
