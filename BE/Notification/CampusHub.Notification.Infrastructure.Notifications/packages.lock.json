@@ -21,9 +21,9 @@
       },
       "SharpCompress": {
         "type": "Direct",
-        "requested": "[0.50.4, )",
-        "resolved": "0.50.4",
-        "contentHash": "/hxjUR7DEX6mky8/LQXyrnrKioOL6D6veAID1EZpro+q4s02x5dHEYBV3qjEN6lDYYilDoQQ76BcmQj+lRx51w=="
+        "requested": "[0.50.7, )",
+        "resolved": "0.50.7",
+        "contentHash": "amxjOlPKUFb33ohAVahPCCBHLtToYOOb6JGyM40q8DnT6KYoBLW1TtW6uLEXbv40S7ej6ikf6VmAXGBaFL6Klg=="
       },
       "SonarAnalyzer.CSharp": {
         "type": "Direct",
@@ -309,13 +309,13 @@
       },
       "MongoDB.Bson": {
         "type": "CentralTransitive",
-        "requested": "[3.12.0, )",
+        "requested": "[3.13.0, )",
         "resolved": "3.12.0",
         "contentHash": "2iYGykWDl6Wkx2GHjWaPEGAS49lxQN5YFFT1a7l/pKraMo1gqT4aZckhwu53WMinQTc10R4FxUHoo7X9M20GFg=="
       },
       "MongoDB.Driver": {
         "type": "CentralTransitive",
-        "requested": "[3.12.0, )",
+        "requested": "[3.13.0, )",
         "resolved": "3.12.0",
         "contentHash": "KiUb/h/p5JZ15Vmxa5uuJKHzbsjGkN9aH6RrAtwTUGTelhgypZ784hKjdu8IM18ag93Ck/i9GgyP/erb17Cbqw==",
         "dependencies": {
