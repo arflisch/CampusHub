@@ -7,6 +7,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Arc4u.MongoDB" />
+    <PackageReference Include="MongoDB.Driver" />
     <PackageReference Include="SharpCompress" />
   </ItemGroup>
 

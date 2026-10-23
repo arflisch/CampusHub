@@ -21,12 +21,12 @@
       },
       "Microsoft.Build.Tasks.Core": {
         "type": "Direct",
-        "requested": "[18.10.1, )",
-        "resolved": "18.10.1",
-        "contentHash": "GxZUItwB/giFMsaJbudsRIU7ppwYHGh6APeosOZrZkVvGDsKhP4MN1dEC11m9oSv0FHVMxVaTLZyhW6zrtztQg==",
+        "requested": "[18.11.0, )",
+        "resolved": "18.11.0",
+        "contentHash": "UuC9Xgzyw7qYyFHj7Mv8NNUFifV76n0SL7Zt+RMRjClxjU3PnurKKyhjdPmlriJnkWSt4JkpbmnFSy8jiUQH9A==",
         "dependencies": {
-          "Microsoft.Build.Framework": "[18.10.1]",
-          "Microsoft.Build.Utilities.Core": "[18.10.1]",
+          "Microsoft.Build.Framework": "[18.11.0]",
+          "Microsoft.Build.Utilities.Core": "[18.11.0]",
           "System.CodeDom": "10.0.10",
           "System.Configuration.ConfigurationManager": "10.0.10",
           "System.Diagnostics.EventLog": "10.0.10",
@@ -46,6 +46,12 @@
           "Microsoft.Extensions.Configuration": "11.0.0-rc.2.26504.105",
           "Microsoft.Extensions.Configuration.FileExtensions": "11.0.0-rc.2.26504.105"
         }
+      },
+      "MongoDB.Bson": {
+        "type": "Direct",
+        "requested": "[2.30.0, )",
+        "resolved": "2.30.0",
+        "contentHash": "Gg0TQUT3IEntcqdug5a9P6d8iwL5CqOpQjVBCq1hxTbkjxdGdY6a2CPv7II44AO9GYUnORYsS6dDME2b7aqYyg=="
       },
       "MongoDB.Driver": {
         "type": "Direct",
@@ -83,9 +89,9 @@
       },
       "SharpCompress": {
         "type": "Direct",
-        "requested": "[0.50.4, )",
-        "resolved": "0.50.4",
-        "contentHash": "/hxjUR7DEX6mky8/LQXyrnrKioOL6D6veAID1EZpro+q4s02x5dHEYBV3qjEN6lDYYilDoQQ76BcmQj+lRx51w=="
+        "requested": "[0.50.7, )",
+        "resolved": "0.50.7",
+        "contentHash": "amxjOlPKUFb33ohAVahPCCBHLtToYOOb6JGyM40q8DnT6KYoBLW1TtW6uLEXbv40S7ej6ikf6VmAXGBaFL6Klg=="
       },
       "Snappier": {
         "type": "Direct",
@@ -196,18 +202,18 @@
       },
       "Microsoft.Build.Framework": {
         "type": "Transitive",
-        "resolved": "18.10.1",
-        "contentHash": "nL8dvvg9V/6PJQ92iQheiGnpkgS/VTBV2py8XM0pzxRYc8byHY83IuriHa3YXkLf3KMWnKlkdoTTt0c5irOXZQ==",
+        "resolved": "18.11.0",
+        "contentHash": "g0Uuh7+iNZ0rX3tWiG2z8mWP/gOWn967UcbtlTwmal85yYttp5miVljm744u/0LsAuC3gIKIiHWR6Zg1OIDnvA==",
         "dependencies": {
-          "Microsoft.NET.StringTools": "[18.10.1]"
+          "Microsoft.NET.StringTools": "[18.11.0]"
         }
       },
       "Microsoft.Build.Utilities.Core": {
         "type": "Transitive",
-        "resolved": "18.10.1",
-        "contentHash": "MXBaRIyOuy55jMsv8YMUEsyM9itWaPnfB56qe2St9fYF1YavL4MnCZovKP4Q1AiR1+RgMyLql3OfNbghDM3PbA==",
+        "resolved": "18.11.0",
+        "contentHash": "vENSscllKBclnB7A/K++YKSbW3I371v/7buxbvUMVJlnLHvt8DqGQN6CvKrNNHsbjdyevxy/KqTFVqNmdG4pvg==",
         "dependencies": {
-          "Microsoft.Build.Framework": "[18.10.1]",
+          "Microsoft.Build.Framework": "[18.11.0]",
           "System.Configuration.ConfigurationManager": "10.0.10",
           "System.Diagnostics.EventLog": "10.0.10",
           "System.Security.Cryptography.ProtectedData": "10.0.10"
@@ -447,8 +453,8 @@
       },
       "Microsoft.NET.StringTools": {
         "type": "Transitive",
-        "resolved": "18.10.1",
-        "contentHash": "/fIQMMIRzamkho+Teh7K0G8YaH85s2meFwxjFleBJ1DMnX2RHnRjg4xyWoFbmj260Vl4W2b1r7CuvbMAC+W+nQ=="
+        "resolved": "18.11.0",
+        "contentHash": "46dxu08YSKeHQXbBlz/HYfVnSMJnfF1nM4v3tmfHVqIdBaz5eF8GrxWz6nl8mM3fGHZIOcp/Pr8I2zZCdb6CLA=="
       },
       "MongoDB.Driver.Core": {
         "type": "Transitive",
@@ -654,12 +660,6 @@
         "requested": "[11.0.0-rc.2.26504.105, )",
         "resolved": "11.0.0-rc.2.26504.105",
         "contentHash": "yjotWRNS6RNuJE1UNlVWgRTPfEhavYoGMdORt3Y90rB8bJo+GNVAsrnvclyPn830Ws2etLC94QcYBZ13Naszgw=="
-      },
-      "MongoDB.Bson": {
-        "type": "CentralTransitive",
-        "requested": "[3.12.0, )",
-        "resolved": "2.19.0",
-        "contentHash": "pGp9F2PWU3Dj54PiXKibuaQ5rphWkfp8/Nsy5jLp2dWZGRGlr3r/Lfwnr0PvfihFfxieUcJZ2z3VeO8RctXcvA=="
       }
     }
   }

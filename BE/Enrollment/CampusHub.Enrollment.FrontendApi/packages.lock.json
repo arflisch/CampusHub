@@ -90,10 +90,10 @@
       },
       "Dapr.Common": {
         "type": "Transitive",
-        "resolved": "1.18.10",
-        "contentHash": "JsbUiR+V9DKZAMHhsnQREXLZJuY7Zee6hMY+PM/88jaufPVPXICUM3TQZCD2yJDFyYPXwu9iibGug6ea5SgfIw==",
+        "resolved": "1.19.0",
+        "contentHash": "sK55jyMd8mZmV/bo0TyFL/kfKgYUn9oPzZDE5k4bcE67u4nK4heIDpSbIMTANc/ptOTBjBjq+uacIBZIEDeh/w==",
         "dependencies": {
-          "Dapr.Protos": "1.18.10",
+          "Dapr.Protos": "1.19.0",
           "Google.Api.CommonProtos": "2.17.0",
           "Google.Protobuf": "3.35.0",
           "Grpc.Net.Client": "2.80.0",
@@ -102,8 +102,8 @@
       },
       "Dapr.Protos": {
         "type": "Transitive",
-        "resolved": "1.18.10",
-        "contentHash": "g0ZOJeTc7EosqBQIOynQOgg95icJrkYhccVRcWv1Naurx1xt+bRJp39wLkVRhtyCf/2ZIRgkEybCF+muJjFhwA==",
+        "resolved": "1.19.0",
+        "contentHash": "q2jtW3HMLzUtkBaGMk0oSwGOfM8C57ur0J00m6X4lsEep4I3MhNnC84B5z6QspkZlvof3p5clzXIXYuoGoym8A==",
         "dependencies": {
           "Google.Api.CommonProtos": "2.17.0",
           "Google.Protobuf": "3.35.0",
@@ -230,7 +230,7 @@
           "Arc4u.Caching.Dapr": "[9.0.0-preview38, )",
           "Arc4u.FluentValidation": "[9.0.0-preview38, )",
           "CampusHub.Enrollment.Domain": "[1.0.0, )",
-          "Dapr.Client": "[1.18.10, )"
+          "Dapr.Client": "[1.19.0, )"
         }
       },
       "campushub.shared.domain": {
@@ -348,12 +348,12 @@
       },
       "Dapr.Client": {
         "type": "CentralTransitive",
-        "requested": "[1.18.10, )",
-        "resolved": "1.18.10",
-        "contentHash": "PZ/KP37LtLXv5oIIjpOpPSZaEB0mvJzT24oIoMwI/Nm0d3DpO3QdhmgkDPUWTkxkSQ7qunsEZ5ltlKv/axeXOg==",
+        "requested": "[1.19.0, )",
+        "resolved": "1.19.0",
+        "contentHash": "iB5DO8rajKnb9+yZYuVWIDxf2cK8fUJjP2/vzFzqGs2W82RV4PvTX1Fh92IonIwjFmqVSjPLMZwz+8ItGMzsMw==",
         "dependencies": {
-          "Dapr.Common": "1.18.10",
-          "Dapr.Protos": "1.18.10",
+          "Dapr.Common": "1.19.0",
+          "Dapr.Protos": "1.19.0",
           "Google.Api.CommonProtos": "2.17.0",
           "Google.Protobuf": "3.35.0",
           "Grpc.Net.Client": "2.80.0",
