@@ -23,6 +23,7 @@
     without rebuilding this project first.
   -->
   <ItemGroup>
+    <PackageReference Include="MongoDB.Bson" VersionOverride="2.30.0" />
     <PackageReference Include="MongoDB.Driver" VersionOverride="2.19.0" />
     <PackageReference Include="Arc4u.Configuration.Decryptor" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
