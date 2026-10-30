@@ -4,15 +4,15 @@
     "net11.0": {
       "Arc4u.AspNetCore.gRpc": {
         "type": "Direct",
-        "requested": "[9.0.0-preview38, )",
-        "resolved": "9.0.0-preview38",
-        "contentHash": "o1pS3O/yMeTtozfQUMmhMYgh4EIHQ3H2Au65tQGxv3rVmaMW+sGioMipr09AE8PwmHDli29oM8+5m2qfb1N03w==",
+        "requested": "[9.0.0-preview40, )",
+        "resolved": "9.0.0-preview40",
+        "contentHash": "o3eCT+9dGHs0I2OB+HnULM+DNfxlKur1ZHVxQvsyoa2n3PlCXa+9p33rVN+gshDJANCk8F0R1nSD8dLZncEc4w==",
         "dependencies": {
-          "Arc4u": "9.0.0-preview38",
-          "Arc4u.AspNetCore.Results": "9.0.0-preview38",
-          "Arc4u.Dependency": "9.0.0-preview38",
-          "Arc4u.Diagnostics": "9.0.0-preview38",
-          "Arc4u.gRPC": "9.0.0-preview38",
+          "Arc4u": "9.0.0-preview40",
+          "Arc4u.AspNetCore.Results": "9.0.0-preview40",
+          "Arc4u.Dependency": "9.0.0-preview40",
+          "Arc4u.Diagnostics": "9.0.0-preview40",
+          "Arc4u.gRPC": "9.0.0-preview40",
           "Google.Protobuf": "3.36.2",
           "Grpc.AspNetCore.Server": "2.84.0",
           "Grpc.StatusProto": "2.84.0"
@@ -20,23 +20,23 @@
       },
       "Arc4u.AspNetCore.Results": {
         "type": "Direct",
-        "requested": "[9.0.0-preview38, )",
-        "resolved": "9.0.0-preview38",
-        "contentHash": "RKXBKQwj8GuMm1QrEndcxJJd/eebuAEMEwynFYBd4/G3LlMChbWe6EpVhQI5RESZfV3D70XgtVdm+06SDVQz1A==",
+        "requested": "[9.0.0-preview40, )",
+        "resolved": "9.0.0-preview40",
+        "contentHash": "5Aa9aHCTS9IBB8ZrjrLqJ2LsUI+3DJK4HFZRYdDvBYRUi215Tm24+TXm2r0qvw4GLeEd7jGIECg7eyj9SDoV9Q==",
         "dependencies": {
-          "Arc4u.Results": "9.0.0-preview38"
+          "Arc4u.Results": "9.0.0-preview40"
         }
       },
       "Arc4u.gRPC": {
         "type": "Direct",
-        "requested": "[9.0.0-preview38, )",
-        "resolved": "9.0.0-preview38",
-        "contentHash": "HNB1atQQl3jWdTaJ2PDe1GRV9KWoTsunSNgImhhFIfiYHUVi3gs/nvsJBhbujxHRH1QBDxb1oDsIkYTBXBxnfQ==",
+        "requested": "[9.0.0-preview40, )",
+        "resolved": "9.0.0-preview40",
+        "contentHash": "4wuMr+dXmyvlPVlUNiY1IqF17TJ/C3TgyvhVFGFYZFr33OBUS3MRF6Q3442Uf73GDhZ8FtRXpgry7uX/eQba+w==",
         "dependencies": {
-          "Arc4u.Configuration": "9.0.0-preview38",
-          "Arc4u.Dependency": "9.0.0-preview38",
-          "Arc4u.OAuth2": "9.0.0-preview38",
-          "Arc4u.Results": "9.0.0-preview38",
+          "Arc4u.Configuration": "9.0.0-preview40",
+          "Arc4u.Dependency": "9.0.0-preview40",
+          "Arc4u.OAuth2": "9.0.0-preview40",
+          "Arc4u.Results": "9.0.0-preview40",
           "Google.Protobuf": "3.36.2",
           "Grpc.Core.Api": "2.84.0",
           "Grpc.StatusProto": "2.84.0"
@@ -59,15 +59,15 @@
       },
       "Grpc.Tools": {
         "type": "Direct",
-        "requested": "[2.84.0, )",
-        "resolved": "2.84.0",
-        "contentHash": "SarjdfpQYU/mmdu/fWgSW8kEHQ54jiyG2+I4THu9eubtAud+QJf+1iJdGtoKTJ/ZRaI0qAG+7ttsK2WUTao2OQ=="
+        "requested": "[2.85.0, )",
+        "resolved": "2.85.0",
+        "contentHash": "JpACpJuD56v9MBlgJEakwBLbbDifYwE3fpktbsKMPOI3yvs/VFFQVGnmWatu6mgZSNo7gzFe+TDmda9SOKg+NQ=="
       },
       "Microsoft.AspNetCore.Authentication.OpenIdConnect": {
         "type": "Direct",
-        "requested": "[11.0.0-rc.2.26504.105, )",
-        "resolved": "11.0.0-rc.2.26504.105",
-        "contentHash": "mREAnS2XvtnDhrJHiUgnwLhQ8+VrIpG7Ahz+FaSpWFcPQGyYWGqBKCN7ESraWJ0sZKqH05YY5WUrhLpMq3wd8Q==",
+        "requested": "[11.0.0-rc.3.26522.148, )",
+        "resolved": "11.0.0-rc.3.26522.148",
+        "contentHash": "KrGWmvkoopr8WXD5yw76ku5REH9lrOdd3tuB/ziLbCqytilNJTId9tvrbIjiO031lcGSHIptFuoQXIV01xyzUw==",
         "dependencies": {
           "Microsoft.IdentityModel.Protocols.OpenIdConnect": "8.19.2"
         }
@@ -80,20 +80,20 @@
       },
       "Arc4u.Core": {
         "type": "Transitive",
-        "resolved": "9.0.0-preview38",
-        "contentHash": "BxsoRqb+sCatYGhJ+6B2Frs2P+lYmlp52MqUithSDJyHNFDpS0HD7vK3qowpRbpNVq/HLf72OTM7X0EK6QOCag=="
+        "resolved": "9.0.0-preview40",
+        "contentHash": "LhzETYTFB2x9ge33pxow9umKWpvVdzMSxUtqF9rQzAkRWTKVacHqnacwM2iFGAf1MkAswYqizplqXSO0/DnQgg=="
       },
       "Arc4u.Threading": {
         "type": "Transitive",
-        "resolved": "9.0.0-preview38",
-        "contentHash": "WjSPJ82ma5LQ+9X/oEoon/m5jKlTB2n3sa1TmUxdymepwJKD353Twe5PVbu4dTkTRjKfZ4qmWpAaln3ujKZ/3A=="
+        "resolved": "9.0.0-preview40",
+        "contentHash": "P9IEOGPA+GYgf/vQnrizlszBi8C9knDtg35kDNOFHE7Ikuq3bb9piludElDT2nRhDImFUp5bbrJZGB2gPtA9aQ=="
       },
       "Dapr.Common": {
         "type": "Transitive",
-        "resolved": "1.18.10",
-        "contentHash": "JsbUiR+V9DKZAMHhsnQREXLZJuY7Zee6hMY+PM/88jaufPVPXICUM3TQZCD2yJDFyYPXwu9iibGug6ea5SgfIw==",
+        "resolved": "1.19.0",
+        "contentHash": "sK55jyMd8mZmV/bo0TyFL/kfKgYUn9oPzZDE5k4bcE67u4nK4heIDpSbIMTANc/ptOTBjBjq+uacIBZIEDeh/w==",
         "dependencies": {
-          "Dapr.Protos": "1.18.10",
+          "Dapr.Protos": "1.19.0",
           "Google.Api.CommonProtos": "2.17.0",
           "Google.Protobuf": "3.35.0",
           "Grpc.Net.Client": "2.80.0",
@@ -102,8 +102,8 @@
       },
       "Dapr.Protos": {
         "type": "Transitive",
-        "resolved": "1.18.10",
-        "contentHash": "g0ZOJeTc7EosqBQIOynQOgg95icJrkYhccVRcWv1Naurx1xt+bRJp39wLkVRhtyCf/2ZIRgkEybCF+muJjFhwA==",
+        "resolved": "1.19.0",
+        "contentHash": "q2jtW3HMLzUtkBaGMk0oSwGOfM8C57ur0J00m6X4lsEep4I3MhNnC84B5z6QspkZlvof3p5clzXIXYuoGoym8A==",
         "dependencies": {
           "Google.Api.CommonProtos": "2.17.0",
           "Google.Protobuf": "3.35.0",
@@ -220,127 +220,127 @@
       "campushub.notification.domain": {
         "type": "Project",
         "dependencies": {
-          "Arc4u": "[9.0.0-preview38, )",
+          "Arc4u": "[9.0.0-preview40, )",
           "CampusHub.Shared.Domain": "[1.0.0, )"
         }
       },
       "campushub.notification.usecases": {
         "type": "Project",
         "dependencies": {
-          "Arc4u.FluentValidation": "[9.0.0-preview38, )",
+          "Arc4u.FluentValidation": "[9.0.0-preview40, )",
           "CampusHub.Notification.Domain": "[1.0.0, )",
-          "Dapr.Client": "[1.18.10, )"
+          "Dapr.Client": "[1.19.0, )"
         }
       },
       "campushub.shared.domain": {
         "type": "Project",
         "dependencies": {
-          "Arc4u": "[9.0.0-preview38, )",
-          "Arc4u.Results": "[9.0.0-preview38, )"
+          "Arc4u": "[9.0.0-preview40, )",
+          "Arc4u.Results": "[9.0.0-preview40, )"
         }
       },
       "Arc4u": {
         "type": "CentralTransitive",
-        "requested": "[9.0.0-preview38, )",
-        "resolved": "9.0.0-preview38",
-        "contentHash": "riu5GBRYsBzRBoPI5ZbzfE+JFa/y6jVnjNEOh0yAo1G1yjGJttwTQbSWB9NX7TRb6PGMNBF5opCrNFVV3QsYsg==",
+        "requested": "[9.0.0-preview40, )",
+        "resolved": "9.0.0-preview40",
+        "contentHash": "8X/8MUIqp98bevNBoPNGwr9kH1GPdmEF4bhEWfAtTFlH9aL9m8YmM6yTH2mW2y1ImugTxYxe16u8TsUuV1Xssg==",
         "dependencies": {
-          "Arc4u.Configuration": "9.0.0-preview38",
-          "Arc4u.Core": "9.0.0-preview38",
-          "Arc4u.Dependency": "9.0.0-preview38",
-          "Arc4u.Diagnostics": "9.0.0-preview38",
-          "Arc4u.Threading": "9.0.0-preview38",
+          "Arc4u.Configuration": "9.0.0-preview40",
+          "Arc4u.Core": "9.0.0-preview40",
+          "Arc4u.Dependency": "9.0.0-preview40",
+          "Arc4u.Diagnostics": "9.0.0-preview40",
+          "Arc4u.Threading": "9.0.0-preview40",
           "FluentResults": "4.0.0"
         }
       },
       "Arc4u.Caching": {
         "type": "CentralTransitive",
-        "requested": "[9.0.0-preview38, )",
-        "resolved": "9.0.0-preview38",
-        "contentHash": "8I9PJ9BLPiN7tXAWv/lGUN4NcYDX1ZwptRgPUwQ9lvDwgUvYKhLG2MA+hMp4159e4nhh9etYyeZ+/wFVboHOLA==",
+        "requested": "[9.0.0-preview40, )",
+        "resolved": "9.0.0-preview40",
+        "contentHash": "iDsqkpxaZmlRdF8O7a0s4Dt/YH0J4B8TK8MKc7Gc4L5HSSefXFBuvkrS9KKvC7IK2WP9WmXTEoy0zD0i5JDvnA==",
         "dependencies": {
-          "Arc4u.Dependency": "9.0.0-preview38",
-          "Arc4u.Diagnostics": "9.0.0-preview38",
-          "Arc4u.Serializer": "9.0.0-preview38"
+          "Arc4u.Dependency": "9.0.0-preview40",
+          "Arc4u.Diagnostics": "9.0.0-preview40",
+          "Arc4u.Serializer": "9.0.0-preview40"
         }
       },
       "Arc4u.Configuration": {
         "type": "CentralTransitive",
-        "requested": "[9.0.0-preview38, )",
-        "resolved": "9.0.0-preview38",
-        "contentHash": "GEqXMUOAGWkGHqz+9IIry7XvF2mCO3Q0YtRQrz6ePfhuZ72JXcav6h8/GYN24m28tIA+4++gAzS7FPGpBTonVw==",
+        "requested": "[9.0.0-preview40, )",
+        "resolved": "9.0.0-preview40",
+        "contentHash": "Qd4sJTsGniaO0DeNJo2lD9N/LMWMtdFySsAQqLARRRJ8X8vcBJ6ymjwc7Yr6xydnpgGhuvjMxa/idpcB0/pqqA==",
         "dependencies": {
-          "Arc4u.Core": "9.0.0-preview38",
-          "Arc4u.Dependency": "9.0.0-preview38"
+          "Arc4u.Core": "9.0.0-preview40",
+          "Arc4u.Dependency": "9.0.0-preview40"
         }
       },
       "Arc4u.Dependency": {
         "type": "CentralTransitive",
-        "requested": "[9.0.0-preview38, )",
-        "resolved": "9.0.0-preview38",
-        "contentHash": "J1UMR24PeMaNqV5wR7RGB0z/Hz9Y5bedp7ZuFNDAYHskj/HybIYev7tJBxcUyg3d+Rxn/v1I3AH0r4CShs/rbw==",
+        "requested": "[9.0.0-preview40, )",
+        "resolved": "9.0.0-preview40",
+        "contentHash": "AiRkWo9TSrN+SNneeoyb3QDEnzoOLGh8SChqarQwn5spY/Tsegiw0Yu0HrOzFvSJhicJL7b4tjy6aXVxBscCiQ==",
         "dependencies": {
-          "Arc4u.Diagnostics": "9.0.0-preview38",
-          "Arc4u.Threading": "9.0.0-preview38"
+          "Arc4u.Diagnostics": "9.0.0-preview40",
+          "Arc4u.Threading": "9.0.0-preview40"
         }
       },
       "Arc4u.Diagnostics": {
         "type": "CentralTransitive",
-        "requested": "[9.0.0-preview38, )",
-        "resolved": "9.0.0-preview38",
-        "contentHash": "o1lZTWWBgTPR16a1SPSkfKOszrdu0fpOWf0FUx1gnEgV30Q4BMQsyJ8a/zOOY2oHOqgNxMgyYQncoYnPfF3uYg==",
+        "requested": "[9.0.0-preview40, )",
+        "resolved": "9.0.0-preview40",
+        "contentHash": "Bz86MZ+n6F9xIMXyPhlKR75l0/LfSvV6IUHqFNu0ha7l4MjLAd3ifF1VviLhdFoa54fmayf5Xtn7Jyu+Y9LFnA==",
         "dependencies": {
-          "Arc4u.Core": "9.0.0-preview38",
-          "Arc4u.Threading": "9.0.0-preview38"
+          "Arc4u.Core": "9.0.0-preview40",
+          "Arc4u.Threading": "9.0.0-preview40"
         }
       },
       "Arc4u.FluentValidation": {
         "type": "CentralTransitive",
-        "requested": "[9.0.0-preview38, )",
-        "resolved": "9.0.0-preview38",
-        "contentHash": "VAlO51/KIJIRHDujg/mYML35uSYWaDOGh39Noqf+48EC+i1w0Bt4B3y5Wp/bWZdZp0m6EzBvx3JjtifMGz5CqA==",
+        "requested": "[9.0.0-preview40, )",
+        "resolved": "9.0.0-preview40",
+        "contentHash": "ElFBKl8TM78ERIXouq7dZtU3FHnZI1UTaVzkuzjvdVPN55t7FtFoFHP/2RlFDp1V5vULpiC5KLxja+mUvhaSQA==",
         "dependencies": {
-          "Arc4u.Results": "9.0.0-preview38",
+          "Arc4u.Results": "9.0.0-preview40",
           "FluentValidation": "12.1.1"
         }
       },
       "Arc4u.OAuth2": {
         "type": "CentralTransitive",
-        "requested": "[9.0.0-preview38, )",
-        "resolved": "9.0.0-preview38",
-        "contentHash": "QRF/ZmXSQTT9vJKNxr+obWOhqaNV7qhfHuhHtc0IhxCc3CE4SGfiruLUTBR0zP3DcbtvAaA8+i3wSaSBB7Bp2g==",
+        "requested": "[9.0.0-preview40, )",
+        "resolved": "9.0.0-preview40",
+        "contentHash": "53J51jqKIZD8MvnyAX1AQd8g/3NZMjWHNCZFsWRdBSIPe8zLQLkQm5oEfym4ujCsun7J4oayOl6XXNz9P2SMSw==",
         "dependencies": {
-          "Arc4u": "9.0.0-preview38",
-          "Arc4u.Caching": "9.0.0-preview38",
-          "Arc4u.Results": "9.0.0-preview38",
+          "Arc4u": "9.0.0-preview40",
+          "Arc4u.Caching": "9.0.0-preview40",
+          "Arc4u.Results": "9.0.0-preview40",
           "System.IdentityModel.Tokens.Jwt": "8.23.0"
         }
       },
       "Arc4u.Results": {
         "type": "CentralTransitive",
-        "requested": "[9.0.0-preview38, )",
-        "resolved": "9.0.0-preview38",
-        "contentHash": "smSQbAqaxZbe+KdfmCY/Hj1PqLhBnyPi3HEvuJGBAy8c6jiEgmJIOQz8O93s68hj+44B7U5boS2ezFw4XZCmvg==",
+        "requested": "[9.0.0-preview40, )",
+        "resolved": "9.0.0-preview40",
+        "contentHash": "3+Rw57aCb4c/tVUedLngFWpoOtT5Lv2514oegBqziZGNWAvZKqx9Vn/wm58utq5bSapap6W6qR/0PGoQu+6ANQ==",
         "dependencies": {
-          "Arc4u": "9.0.0-preview38",
-          "Arc4u.Diagnostics": "9.0.0-preview38",
+          "Arc4u": "9.0.0-preview40",
+          "Arc4u.Diagnostics": "9.0.0-preview40",
           "FluentResults": "4.0.0"
         }
       },
       "Arc4u.Serializer": {
         "type": "CentralTransitive",
-        "requested": "[9.0.0-preview38, )",
-        "resolved": "9.0.0-preview38",
-        "contentHash": "T/zQI0GYPmzkOe80G+p8iwLAe89YFvr4sBCnsFFhSUPNu1VIii6CoKZWaEgvXSBux/MbaxWu65CylUiYEMllsQ=="
+        "requested": "[9.0.0-preview40, )",
+        "resolved": "9.0.0-preview40",
+        "contentHash": "++K3Pj1L+iAbMUDIe/9YubYO2sewxLdMWZBrpSvthDi18Qu2SF6Zr1kQW797oWRyX97/D0Nefr4qnBQ8xS0YDw=="
       },
       "Dapr.Client": {
         "type": "CentralTransitive",
-        "requested": "[1.18.10, )",
-        "resolved": "1.18.10",
-        "contentHash": "PZ/KP37LtLXv5oIIjpOpPSZaEB0mvJzT24oIoMwI/Nm0d3DpO3QdhmgkDPUWTkxkSQ7qunsEZ5ltlKv/axeXOg==",
+        "requested": "[1.19.0, )",
+        "resolved": "1.19.0",
+        "contentHash": "iB5DO8rajKnb9+yZYuVWIDxf2cK8fUJjP2/vzFzqGs2W82RV4PvTX1Fh92IonIwjFmqVSjPLMZwz+8ItGMzsMw==",
         "dependencies": {
-          "Dapr.Common": "1.18.10",
-          "Dapr.Protos": "1.18.10",
+          "Dapr.Common": "1.19.0",
+          "Dapr.Protos": "1.19.0",
           "Google.Api.CommonProtos": "2.17.0",
           "Google.Protobuf": "3.35.0",
           "Grpc.Net.Client": "2.80.0",
