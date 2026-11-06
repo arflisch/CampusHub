@@ -39,6 +39,9 @@
     </PackageReference>
     <PackageReference Include="Arc4u.MongoDB" />
     <PackageReference Include="Arc4u.AspNetCore.Versioning" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="SharpCompress" />
   </ItemGroup>
 
   <PropertyGroup>
