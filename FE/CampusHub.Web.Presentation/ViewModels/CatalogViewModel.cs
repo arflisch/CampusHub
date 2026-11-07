@@ -23,12 +23,14 @@ public sealed partial class CatalogViewModel : ViewModelBase
 {
     private readonly ICourseCatalog _catalog;
     private readonly IEnrollmentService _enrollments;
+    private readonly ILiveUpdates _live;
     private readonly Dictionary<Guid, Guid> _pendingRequestIds = [];
 
-    public CatalogViewModel(ICourseCatalog catalog, IEnrollmentService enrollments)
+    public CatalogViewModel(ICourseCatalog catalog, IEnrollmentService enrollments, ILiveUpdates live)
     {
         _catalog = catalog;
         _enrollments = enrollments;
+        _live = live;
         Courses = [];
         RequestedCourseIds = new HashSet<Guid>();
         EnrollmentStates = new Dictionary<Guid, EnrollmentState>();
@@ -52,11 +54,37 @@ public sealed partial class CatalogViewModel : ViewModelBase
 
     public bool IsEmpty => Courses.Count == 0;
 
-    public override Task InitializeAsync(CancellationToken cancellationToken) => LoadCommand.ExecuteAsync(null);
+    public override Task InitializeAsync(CancellationToken cancellationToken)
+    {
+        _live.EnrollmentChanged += OnEnrollmentChanged;
+        return LoadCommand.ExecuteAsync(null);
+    }
 
     // Leaving the page cancels reads only. A request the user already sent is left to complete: cancelling it
     // half-way would leave them unsure whether they are enrolled (the server may have received it anyway).
-    public override void Deactivate() => LoadCommand.Cancel();
+    public override void Deactivate()
+    {
+        _live.EnrollmentChanged -= OnEnrollmentChanged;
+        LoadCommand.Cancel();
+    }
+
+    // A pushed change updates the card at once: "in progress" becomes "Enrolled", or Enroll comes back after a
+    // rejection or a cancellation.
+    private void OnEnrollmentChanged(object? sender, EnrollmentChange change)
+    {
+        var states = new Dictionary<Guid, EnrollmentState>(EnrollmentStates);
+        if (change.State is EnrollmentState.Rejected or EnrollmentState.Cancelled)
+        {
+            states.Remove(change.CourseId);
+            RequestedCourseIds = new HashSet<Guid>(RequestedCourseIds.Where(id => id != change.CourseId));
+        }
+        else
+        {
+            states[change.CourseId] = change.State;
+        }
+
+        EnrollmentStates = states;
+    }
 
     public bool WasRequested(CourseItem course) => course is not null && RequestedCourseIds.Contains(course.Id);
 
@@ -87,7 +115,7 @@ public sealed partial class CatalogViewModel : ViewModelBase
         if (mine.IsSuccess)
         {
             // Latest request first: a rejected one is ignored, the course can be requested again.
-            EnrollmentStates = mine.Value.Where(e => e.State != EnrollmentState.Rejected)
+            EnrollmentStates = mine.Value.Where(e => e.State is not (EnrollmentState.Rejected or EnrollmentState.Cancelled))
                                          .GroupBy(e => e.CourseId)
                                          .ToDictionary(g => g.Key, g => g.OrderByDescending(e => e.RequestedAt).First().State);
         }

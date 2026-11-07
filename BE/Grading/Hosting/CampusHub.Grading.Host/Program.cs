@@ -267,6 +267,7 @@ try
     app.UseWelcomePage("/");
 
     app.RegisterEnvironmentApis();
+    app.RegisterCertificateApis();
 
     if (!IsInvokedByNSwag())
     {

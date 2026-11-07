@@ -31,5 +31,8 @@ builder.Services.AddTransient<MyEnrollmentsViewModel>();
 builder.Services.AddTransient<TeachingViewModel>();
 builder.Services.AddTransient<NotificationsViewModel>();
 builder.Services.AddTransient<ShellViewModel>();
+builder.Services.AddTransient<AccountViewModel>();
+// Shared by the shell (menu badge) and the notifications page.
+builder.Services.AddSingleton<Dev4u.CampusHub.Web.Presentation.Services.NotificationCounter>();
 
 await builder.Build().RunAsync();

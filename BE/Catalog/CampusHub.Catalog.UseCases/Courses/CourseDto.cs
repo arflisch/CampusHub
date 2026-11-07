@@ -19,6 +19,7 @@ public sealed record SeatReservationDto(
     Guid ReservationId,
     Guid CourseId,
     string CourseTitle,
+    string CourseTeacherId,
     int CoursePriceInCents,
     DateTimeOffset CourseStartsAt,
     DateTimeOffset CourseEndsAt,

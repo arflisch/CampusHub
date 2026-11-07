@@ -30,7 +30,8 @@ public sealed class CatalogCourseSeats(IHttpClientFactory httpClientFactory, ILo
             var reservation = await Client.ReserveAsync(courseId, ApiVersion, api_version: null,
                 new ReserveSeatCommand { StudentId = studentId, IdempotencyKey = idempotencyKey }, cancellationToken).ConfigureAwait(false);
             return Result.Ok(new SeatHold(reservation.ReservationId, reservation.CourseTitle,
-                                          AsUtc(reservation.CourseStartsAt), AsUtc(reservation.CourseEndsAt), reservation.CoursePriceInCents));
+                                          AsUtc(reservation.CourseStartsAt), AsUtc(reservation.CourseEndsAt), reservation.CoursePriceInCents,
+                                          reservation.CourseTeacherId));
         }
         catch (Exception ex) when (TryTranslate(ex, cancellationToken, out var error))
         {

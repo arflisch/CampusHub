@@ -254,7 +254,7 @@
       },
       "catalog/service": {
         "ClusterId": "catalog",
-        "AuthorizationPolicy": "AccessApplication",
+        "AuthorizationPolicy": "CallServiceApis",
         "Match": {
           "Path": "/catalog/service/{**remainder}"
         },
@@ -290,7 +290,7 @@
       },
       "billing/service": {
         "ClusterId": "billing",
-        "AuthorizationPolicy": "AccessApplication",
+        "AuthorizationPolicy": "CallServiceApis",
         "Match": {
           "Path": "/billing/service/{**remainder}"
         },
@@ -309,6 +309,42 @@
         "Transforms": [
           {
             "PathPattern": "/frontend/payments/{**remainder}"
+          }
+        ]
+      },
+      "enrollment/courses": {
+        "ClusterId": "enrollment",
+        "AuthorizationPolicy": "CanTeach",
+        "Match": {
+          "Path": "/enrollment/frontend/courses/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/frontend/courses/{**remainder}"
+          }
+        ]
+      },
+      "grading/certificates": {
+        "ClusterId": "grading",
+        "AuthorizationPolicy": "AccessApplication",
+        "Match": {
+          "Path": "/grading/frontend/certificates/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/frontend/certificates/{**remainder}"
+          }
+        ]
+      },
+      "notification/hubs": {
+        "ClusterId": "notification",
+        "AuthorizationPolicy": "AccessApplication",
+        "Match": {
+          "Path": "/notification/hubs/{**remainder}"
+        },
+        "Transforms": [
+          {
+            "PathPattern": "/hubs/{**remainder}"
           }
         ]
       }

@@ -45,6 +45,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi;
 using Serilog;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
@@ -181,6 +183,13 @@ try
     services.AddCacheContext(configuration);
 
     services.AddJwtAuthentication(configuration);
+
+    // Subscriber endpoints are reserved to the Dapr sidecar: it sends APP_API_TOKEN in the dapr-api-token header,
+    // checked by the "Dapr" policy (see Subscribers/DaprController). The sidecar is not a user: keep its identity away
+    // from the Arc4u claims transformation.
+    services.AddAuthentication().AddDapr();
+    services.AddAuthorization(options => options.AddDapr());
+    services.ExcludeDaprSidecarFromClaimsTransformation();
 
     services.AddNotificationHandlersAsScoped();
 

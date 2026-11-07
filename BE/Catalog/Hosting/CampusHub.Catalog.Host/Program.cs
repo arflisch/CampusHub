@@ -96,6 +96,11 @@ try
     services.AddRetryingStartupTask("catalog-mongodb-indexes", (sp, ct) =>
         CatalogIndexes.EnsureAsync(sp.GetRequiredService<IMongoClientFactory<Dev4u.CampusHub.Catalog.Infrastructure.Courses.DatabaseContext>>(), ct));
     services.TryAddSingleton(TimeProvider.System);
+    // Publishes the cancelled courses (CourseCancelled) until each one is announced.
+    if (!string.Equals(System.Environment.GetEnvironmentVariable("NSwag"), "true", StringComparison.OrdinalIgnoreCase))
+    {
+        services.AddHostedService<Dev4u.CampusHub.Catalog.Host.Infrastructure.CourseCancellationDispatcher>();
+    }
     services.AddResultLogger();
 
     services.AddCustomRootCA(configuration);

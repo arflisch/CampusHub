@@ -4,8 +4,9 @@ namespace Dev4u.CampusHub.Enrollment.Domain.Enrollments;
 
 /// <summary>A seat held in Catalog for the enrollment, with the course details the enrollment keeps.</summary>
 /// <param name="CoursePriceInCents">Price of the course at reservation time; 0 for a free course.</param>
+/// <param name="CourseTeacherId">Teacher of the course, who may see its participants.</param>
 public sealed record SeatHold(Guid ReservationId, string CourseTitle, DateTimeOffset CourseStartsAt, DateTimeOffset CourseEndsAt,
-                              int CoursePriceInCents = 0);
+                              int CoursePriceInCents = 0, string? CourseTeacherId = null);
 
 /// <summary>
 /// Port to the Catalog service (anti-corruption layer). Failures keep the Catalog error codes; failures that are

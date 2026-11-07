@@ -35,6 +35,16 @@ public sealed class MongoEnrollmentRepository(IMongoClientFactory<DatabaseContex
         return [.. documents.Select(d => d.ToDomain())];
     }
 
+    public async Task<IReadOnlyList<StudentEnrollment>> ListForCourseAsync(Guid courseId, int take, CancellationToken cancellationToken)
+    {
+        var documents = await Enrollments.Find(e => e.CourseId == courseId)
+                                         .SortByDescending(e => e.RequestedAtUtc)
+                                         .Limit(take)
+                                         .ToListAsync(cancellationToken)
+                                         .ConfigureAwait(false);
+        return [.. documents.Select(d => d.ToDomain())];
+    }
+
     public async Task<IReadOnlyList<StudentEnrollment>> ListStalledAsync(DateTimeOffset updatedBefore, int take, CancellationToken cancellationToken)
     {
         var limit = updatedBefore.UtcDateTime;

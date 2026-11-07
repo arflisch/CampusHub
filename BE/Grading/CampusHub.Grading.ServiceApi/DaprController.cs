@@ -59,4 +59,21 @@ public sealed class DaprController(ILogger<DaprController> logger) : ControllerB
         logger.LogEventDropped(EnrollmentEvents.EnrollmentConfirmedV1Type, integrationEvent.EventId, code);
         return Ok(new { status = "DROP" });
     }
+
+    /// <summary>An enrollment was cancelled: it will earn no certificate.</summary>
+    /// <param name="integrationEvent">The CloudEvent data published by the Enrollment service.</param>
+    /// <param name="useCase">The use case removing the participation.</param>
+    /// <param name="cancellationToken">Signalled when the sidecar gives up on the call.</param>
+    [HttpPost("Enrollment/Cancelled")]
+    public async Task<IActionResult> EnrollmentCancelled([FromBody] EnrollmentCancelledV1 integrationEvent,
+                                                         [FromServices] ForgetParticipation useCase,
+                                                         CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(integrationEvent);
+        ArgumentNullException.ThrowIfNull(useCase);
+
+        var result = await useCase.ExecuteAsync(integrationEvent.EnrollmentId, cancellationToken).ConfigureAwait(false);
+        logger.LogEventProcessed(EnrollmentEvents.EnrollmentCancelledV1Type, integrationEvent.EventId, duplicate: !result.Value);
+        return Ok(new { status = "SUCCESS" });
+    }
 }

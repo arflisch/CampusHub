@@ -66,6 +66,20 @@ public sealed class MongoNotificationRepository(IMongoClientFactory<DatabaseCont
                                                                     AsUtc(d.CreatedAtUtc), d.ReadAtUtc is { } read ? AsUtc(read) : null))];
     }
 
+    public async Task<long> MarkReadAsync(string recipientId, Guid? notificationId, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        var filter = Builders<NotificationDocument>.Filter.Eq(n => n.RecipientId, recipientId)
+                     & Builders<NotificationDocument>.Filter.Eq(n => n.ReadAtUtc, null);
+        if (notificationId is { } id)
+        {
+            filter &= Builders<NotificationDocument>.Filter.Eq(n => n.Id, id);
+        }
+
+        var updated = await Notifications.UpdateManyAsync(filter, Builders<NotificationDocument>.Update.Set(n => n.ReadAtUtc, now.UtcDateTime),
+                                                          cancellationToken: cancellationToken).ConfigureAwait(false);
+        return updated.ModifiedCount;
+    }
+
     private static DateTimeOffset AsUtc(DateTime value) => new(DateTime.SpecifyKind(value, DateTimeKind.Utc));
 }
 

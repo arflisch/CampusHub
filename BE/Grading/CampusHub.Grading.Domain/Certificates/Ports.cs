@@ -17,6 +17,12 @@ public interface IParticipationRepository
 
     /// <summary>Participations whose certificate was issued but not announced yet.</summary>
     Task<IReadOnlyList<CourseParticipation>> ListUnannouncedAsync(int take, CancellationToken cancellationToken);
+
+    /// <summary>The certificates of a student, latest first.</summary>
+    Task<IReadOnlyList<CourseParticipation>> ListCertificatesForStudentAsync(string studentId, int take, CancellationToken cancellationToken);
+
+    /// <summary>Removes a participation that earned no certificate; false when there was none to remove.</summary>
+    Task<bool> DeleteWithoutCertificateAsync(Guid enrollmentId, CancellationToken cancellationToken);
 }
 
 /// <summary>

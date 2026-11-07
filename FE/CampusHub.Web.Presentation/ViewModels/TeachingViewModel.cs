@@ -26,12 +26,15 @@ public sealed partial class TeachingViewModel : ViewModelBase
     private readonly ICourseCatalog _catalog;
     private readonly ICurrentUserService _currentUser;
     private readonly TimeProvider _timeProvider;
+    private readonly IEnrollmentService _enrollments;
 
-    public TeachingViewModel(ICourseCatalog catalog, ICurrentUserService currentUser, TimeProvider timeProvider)
+    public TeachingViewModel(ICourseCatalog catalog, ICurrentUserService currentUser, TimeProvider timeProvider, IEnrollmentService enrollments)
     {
         _catalog = catalog;
         _currentUser = currentUser;
         _timeProvider = timeProvider;
+        _enrollments = enrollments;
+        Participants = [];
         MyCourses = [];
         Code = string.Empty;
         Title = string.Empty;
@@ -57,6 +60,13 @@ public sealed partial class TeachingViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(CapacityError))]
     [NotifyCanExecuteChangedFor(nameof(CreateCommand))]
     public partial int Capacity { get; set; }
+
+    /// <summary>Course whose participants are shown, if any.</summary>
+    [ObservableProperty]
+    public partial Guid? ShownParticipantsOf { get; private set; }
+
+    [ObservableProperty]
+    public partial IReadOnlyList<ParticipantItem> Participants { get; private set; }
 
     /// <summary>Price in euros as typed; 0 for a free course.</summary>
     [ObservableProperty]
@@ -113,9 +123,18 @@ public sealed partial class TeachingViewModel : ViewModelBase
 
     public const decimal MaxPrice = 10_000m;
 
-    public string? PriceError =>
-        Price is < 0 or > MaxPrice ? $"Between 0 (free) and {MaxPrice:0} €." :
-        decimal.Round(Price, 2) != Price ? "Two decimals at most." : null;
+    public string? PriceError
+    {
+        get
+        {
+            if (Price is < 0 or > MaxPrice)
+            {
+                return $"Between 0 (free) and {MaxPrice:0} €.";
+            }
+
+            return decimal.Round(Price, 2) != Price ? "Two decimals at most." : null;
+        }
+    }
 
     public string? ScheduleError
     {
@@ -202,6 +221,54 @@ public sealed partial class TeachingViewModel : ViewModelBase
 
     // Next week, for a month: a sensible starting point the teacher adjusts.
     private (DateOnly StartsOn, DateOnly EndsOn) DefaultSchedule() => (Today.AddDays(7), Today.AddDays(37));
+
+    /// <summary>Shows the participants of a course, or hides them when they are already shown.</summary>
+    [RelayCommand]
+    private async Task ToggleParticipantsAsync(CourseItem course, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(course);
+        if (ShownParticipantsOf == course.Id)
+        {
+            ShownParticipantsOf = null;
+            Participants = [];
+            return;
+        }
+
+        ErrorMessage = null;
+        var result = await _enrollments.ListParticipantsAsync(course.Id, cancellationToken);
+        if (result.IsFailed)
+        {
+            ShowErrors(result.Errors);
+            return;
+        }
+
+        Participants = result.Value;
+        ShownParticipantsOf = course.Id;
+    }
+
+    public bool CanCancelCourse(CourseItem? course) =>
+        course is { State: CourseState.Draft or CourseState.Published } && _timeProvider.GetUtcNow() < course.StartsAt;
+
+    /// <summary>Cancels a course before it starts: its students are refunded and notified by the services.</summary>
+    [RelayCommand(CanExecute = nameof(CanCancelCourse))]
+    private async Task CancelCourseAsync(CourseItem course, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(course);
+        ErrorMessage = null;
+        InfoMessage = null;
+
+        var result = await _catalog.CancelAsync(course.Id, cancellationToken);
+        if (result.IsFailed)
+        {
+            ShowErrors(result.Errors);
+            return;
+        }
+
+        MyCourses = [.. MyCourses.Select(c => c.Id == course.Id ? result.Value : c)];
+        InfoMessage = course.State == CourseState.Draft
+            ? $"\"{course.Title}\" is cancelled."
+            : $"\"{course.Title}\" is cancelled: its students are being refunded and notified.";
+    }
 
     [RelayCommand]
     private async Task PublishAsync(CourseItem course, CancellationToken cancellationToken)

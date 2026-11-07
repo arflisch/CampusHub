@@ -17,4 +17,16 @@ public interface ICourseRepository
     Task<Result> AddAsync(Course course, CancellationToken cancellationToken);
 
     Task<Result> SaveAsync(Course course, CancellationToken cancellationToken);
+
+    /// <summary>Cancelled courses whose cancellation was not announced yet, oldest first.</summary>
+    Task<IReadOnlyList<Course>> ListCancellationsToAnnounceAsync(int take, CancellationToken cancellationToken);
+}
+
+/// <summary>
+/// Port that tells the other services a course was cancelled (CourseCancelled integration event). Announcing the same
+/// course twice publishes the same event id, so subscribers ignore the duplicate.
+/// </summary>
+public interface ICourseCancellationAnnouncer
+{
+    Task<Result> AnnounceAsync(Course course, CancellationToken cancellationToken);
 }

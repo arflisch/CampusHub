@@ -13,7 +13,9 @@ public class MyEnrollmentsViewModelTests
     private readonly MyEnrollmentsViewModel _sut;
     private readonly Guid _id = Guid.NewGuid();
 
-    public MyEnrollmentsViewModelTests() => _sut = new MyEnrollmentsViewModel(_enrollments, _time);
+    private readonly FakeLiveUpdates _live = new();
+
+    public MyEnrollmentsViewModelTests() => _sut = new MyEnrollmentsViewModel(_enrollments, _time, _live);
 
     [Fact]
     public async Task A_running_saga_is_polled_until_it_is_settled()
@@ -78,6 +80,37 @@ public class MyEnrollmentsViewModelTests
         _sut.IsPolling.Should().BeFalse();
         _time.Advance(MyEnrollmentsViewModel.PollInterval * 3);
         _enrollments.ListCalls.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task A_confirmed_enrollment_can_be_cancelled_until_the_course_starts()
+    {
+        var confirmed = TestData.Enrollment(_id, EnrollmentState.Confirmed); // course starts 2026-11-02
+        _enrollments.AnswerList([confirmed]);
+        await _sut.InitializeAsync(CancellationToken.None);
+
+        _sut.CancelCommand.CanExecute(confirmed).Should().BeTrue();
+        await _sut.CancelCommand.ExecuteAsync(confirmed);
+
+        _enrollments.Cancelled.Should().Equal(_id);
+        _sut.Enrollments.Single().State.Should().Be(EnrollmentState.Cancelled);
+        _sut.InfoMessage.Should().Contain("cancelled");
+
+        _time.SetUtcNow(TestData.CourseStart);
+        _sut.CancelCommand.CanExecute(confirmed).Should().BeFalse("the course has started");
+    }
+
+    [Fact]
+    public async Task A_pushed_change_reloads_the_list_at_once()
+    {
+        _enrollments.AnswerList([TestData.Enrollment(_id, EnrollmentState.Requested)], [TestData.Enrollment(_id, EnrollmentState.SeatHeld)]);
+        await _sut.InitializeAsync(CancellationToken.None);
+
+        _live.Push(new EnrollmentChange(_id, Guid.NewGuid(), EnrollmentState.SeatHeld));
+        await Task.Delay(50);
+
+        _sut.Enrollments.Single().State.Should().Be(EnrollmentState.SeatHeld, "no need to wait for the next poll");
+        _sut.Deactivate();
     }
 
     // The PeriodicTimer continuation runs on the thread pool: advance the clock, then wait for the poll to happen.

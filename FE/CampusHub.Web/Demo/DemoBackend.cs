@@ -86,7 +86,7 @@ internal sealed class DemoCampus
             return Result.Fail<EnrollmentItem>(new UiError("course.not_found", "Course not found."));
         }
 
-        if (_enrollments.Values.Any(e => e.CourseId == courseId && e.State != EnrollmentState.Rejected))
+        if (_enrollments.Values.Any(e => e.CourseId == courseId && e.State is not (EnrollmentState.Rejected or EnrollmentState.Cancelled)))
         {
             return Result.Fail<EnrollmentItem>(new UiError("course.already_enrolled", "Already enrolled."));
         }
@@ -102,6 +102,100 @@ internal sealed class DemoCampus
     public IReadOnlyList<EnrollmentItem> MyEnrollments() => [.. _enrollments.Values.OrderByDescending(e => e.RequestedAt)];
 
     public IReadOnlyList<NotificationItem> Notifications() => [.. _notifications];
+
+    /// <summary>Raised like the server's live pushes (SignalR) would be.</summary>
+    public event EventHandler<EnrollmentChange>? EnrollmentChanged;
+
+    public event EventHandler<NotificationItem>? NotificationReceived;
+
+    private static readonly string[] SampleStudents = ["Ada Lovelace", "Grace Hopper", "Alan Turing", "Margaret Hamilton", "Linus Torvalds"];
+
+    public Result<EnrollmentItem> Cancel(Guid enrollmentId)
+    {
+        if (!_enrollments.TryGetValue(enrollmentId, out var enrollment))
+        {
+            return Result.Fail<EnrollmentItem>(new UiError("enrollment.not_found", "Not found."));
+        }
+
+        if (enrollment.State != EnrollmentState.Confirmed)
+        {
+            return Result.Fail<EnrollmentItem>(new UiError("enrollment.not_cancellable", "Not confirmed."));
+        }
+
+        _courses.Find(c => c.Id == enrollment.CourseId)!.Taken--;
+        Update(enrollmentId, EnrollmentState.Cancelled, null, "enrollment.cancelled_by_student");
+        Notify("Enrollment cancelled", $"Your enrollment in \"{enrollment.CourseTitle}\" is cancelled.{Refund(enrollment.CoursePriceInCents)}");
+        return Result.Ok(_enrollments[enrollmentId]);
+    }
+
+    public Result<CourseItem> CancelCourse(Guid courseId)
+    {
+        var course = _courses.Find(c => c.Id == courseId);
+        if (course is null || course.TeacherId != UserId)
+        {
+            return Result.Fail<CourseItem>(new UiError("course.not_owner", "Not your course."));
+        }
+
+        course.State = CourseState.Cancelled;
+        // What Enrollment does when CourseCancelled arrives: refund and cancel every confirmed enrollment.
+        foreach (var enrollment in _enrollments.Values.Where(e => e.CourseId == courseId && e.State == EnrollmentState.Confirmed).ToList())
+        {
+            Update(enrollment.Id, EnrollmentState.Cancelled, null, "course.cancelled");
+            Notify("Course cancelled", $"\"{course.Title}\" was cancelled by its teacher.{Refund(enrollment.CoursePriceInCents)}");
+        }
+
+        return Result.Ok(course.ToItem());
+    }
+
+    public IReadOnlyList<ParticipantItem> Participants(Guid courseId)
+    {
+        var course = _courses.Find(c => c.Id == courseId);
+        if (course is null || course.TeacherId != UserId)
+        {
+            return [];
+        }
+
+        var now = _time.GetUtcNow();
+        return [.. SampleStudents.Take(course.Taken).Select((name, i) =>
+            new ParticipantItem(Guid.NewGuid(), $"student-{i + 1}", name, EnrollmentState.Confirmed, course.PriceInCents, now.AddHours(-i - 1)))];
+    }
+
+    public IReadOnlyList<PaymentItem> Payments() =>
+    [
+        .. _enrollments.Values.Where(e => e.CoursePriceInCents > 0 && e.State is not EnrollmentState.Requested and not EnrollmentState.SeatHeld)
+                       .Select(e => new PaymentItem(e.Id, e.CourseId, e.CoursePriceInCents,
+                                                    e.State switch
+                                                    {
+                                                        EnrollmentState.Rejected => PaymentState.Declined,
+                                                        EnrollmentState.Cancelled => PaymentState.Refunded,
+                                                        _ => PaymentState.Captured,
+                                                    },
+                                                    e.State == EnrollmentState.Rejected ? "card.limit_exceeded" : null,
+                                                    e.UpdatedAt, e.State == EnrollmentState.Cancelled ? e.UpdatedAt : null)),
+    ];
+
+    public IReadOnlyList<CertificateItem> Certificates()
+    {
+        var now = _time.GetUtcNow();
+        return [new CertificateItem("CH-2026-3F2A9C41D0", Guid.NewGuid(), "Git for teams", now.AddDays(-20), now.AddDays(-19))];
+    }
+
+    public void MarkAllRead()
+    {
+        for (var i = 0; i < _notifications.Count; i++)
+        {
+            _notifications[i] = _notifications[i] with { IsRead = true };
+        }
+    }
+
+    private static string Refund(int cents) => cents > 0 ? $" You were refunded {Money.Format(cents)}." : string.Empty;
+
+    private void Notify(string title, string message)
+    {
+        var notification = new NotificationItem(Guid.NewGuid(), title, message, _time.GetUtcNow(), IsRead: false);
+        _notifications.Insert(0, notification);
+        NotificationReceived?.Invoke(this, notification);
+    }
 
     private async Task RunSagaAsync(Guid enrollmentId, DemoCourse course)
     {
@@ -130,17 +224,20 @@ internal sealed class DemoCampus
 
         await Task.Delay(TimeSpan.FromSeconds(2), _time);
         Update(enrollmentId, EnrollmentState.Confirmed, null);
-        _notifications.Insert(0, new NotificationItem(Guid.NewGuid(), "Enrollment confirmed",
-            $"Your enrollment in \"{course.Title}\" is confirmed.", _time.GetUtcNow(), IsRead: false));
+        Notify("Enrollment confirmed", $"Your enrollment in \"{course.Title}\" is confirmed.");
     }
 
-    private void Update(Guid enrollmentId, EnrollmentState state, string? rejectionCode) =>
-        _enrollments[enrollmentId] = _enrollments[enrollmentId] with
+    private void Update(Guid enrollmentId, EnrollmentState state, string? rejectionCode, string? cancellationReason = null)
+    {
+        var enrollment = _enrollments[enrollmentId] = _enrollments[enrollmentId] with
         {
             State = state,
             RejectionCode = rejectionCode,
+            CancellationReason = cancellationReason,
             UpdatedAt = _time.GetUtcNow(),
         };
+        EnrollmentChanged?.Invoke(this, new EnrollmentChange(enrollment.Id, enrollment.CourseId, state));
+    }
 
     private sealed class DemoCourse(string code, string title, string teacherId, int capacity, int taken, int priceInCents,
                                     DateTimeOffset startsAt, DateTimeOffset endsAt, CourseState state, DateTimeOffset? publishedAt)
@@ -188,6 +285,12 @@ internal sealed class DemoCourseCatalog(DemoCampus campus) : ICourseCatalog
         await campus.DelayAsync(cancellationToken);
         return campus.Publish(courseId);
     }
+
+    public async Task<Result<CourseItem>> CancelAsync(Guid courseId, CancellationToken cancellationToken)
+    {
+        await campus.DelayAsync(cancellationToken);
+        return campus.CancelCourse(courseId);
+    }
 }
 
 internal sealed class DemoEnrollmentService(DemoCampus campus) : IEnrollmentService
@@ -203,6 +306,18 @@ internal sealed class DemoEnrollmentService(DemoCampus campus) : IEnrollmentServ
         await campus.DelayAsync(cancellationToken);
         return Result.Ok(campus.MyEnrollments());
     }
+
+    public async Task<Result<EnrollmentItem>> CancelAsync(Guid enrollmentId, CancellationToken cancellationToken)
+    {
+        await campus.DelayAsync(cancellationToken);
+        return campus.Cancel(enrollmentId);
+    }
+
+    public async Task<Result<IReadOnlyList<ParticipantItem>>> ListParticipantsAsync(Guid courseId, CancellationToken cancellationToken)
+    {
+        await campus.DelayAsync(cancellationToken);
+        return Result.Ok(campus.Participants(courseId));
+    }
 }
 
 internal sealed class DemoNotificationService(DemoCampus campus) : INotificationService
@@ -212,6 +327,46 @@ internal sealed class DemoNotificationService(DemoCampus campus) : INotification
         await campus.DelayAsync(cancellationToken);
         return Result.Ok(campus.Notifications());
     }
+
+    public async Task<Result> MarkAllReadAsync(CancellationToken cancellationToken)
+    {
+        await campus.DelayAsync(cancellationToken);
+        campus.MarkAllRead();
+        return Result.Ok();
+    }
+}
+
+internal sealed class DemoAccountService(DemoCampus campus) : IAccountService
+{
+    public async Task<Result<IReadOnlyList<PaymentItem>>> ListPaymentsAsync(CancellationToken cancellationToken)
+    {
+        await campus.DelayAsync(cancellationToken);
+        return Result.Ok(campus.Payments());
+    }
+
+    public async Task<Result<IReadOnlyList<CertificateItem>>> ListCertificatesAsync(CancellationToken cancellationToken)
+    {
+        await campus.DelayAsync(cancellationToken);
+        return Result.Ok(campus.Certificates());
+    }
+}
+
+/// <summary>The demo's "server pushes": the in-memory campus raises them directly.</summary>
+internal sealed class DemoLiveUpdates : ILiveUpdates
+{
+    public DemoLiveUpdates(DemoCampus campus)
+    {
+        campus.EnrollmentChanged += (_, change) => EnrollmentChanged?.Invoke(this, change);
+        campus.NotificationReceived += (_, notification) => NotificationReceived?.Invoke(this, notification);
+    }
+
+    public event EventHandler<EnrollmentChange>? EnrollmentChanged;
+
+    public event EventHandler<NotificationItem>? NotificationReceived;
+
+    public bool IsConnected => true;
+
+    public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }
 
 internal sealed class DemoCurrentUserService : ICurrentUserService
@@ -229,6 +384,8 @@ internal static class DemoBackend
         services.AddScoped<IEnrollmentService, DemoEnrollmentService>();
         services.AddScoped<INotificationService, DemoNotificationService>();
         services.AddScoped<ICurrentUserService, DemoCurrentUserService>();
+        services.AddScoped<IAccountService, DemoAccountService>();
+        services.AddSingleton<ILiveUpdates, DemoLiveUpdates>();
         return services;
     }
 }

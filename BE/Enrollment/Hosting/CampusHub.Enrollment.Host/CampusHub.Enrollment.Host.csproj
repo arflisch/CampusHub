@@ -114,6 +114,7 @@
     <ProjectReference Include="..\..\CampusHub.Enrollment.Jobs\CampusHub.Enrollment.Jobs.csproj" />
     <ProjectReference Include="..\..\CampusHub.Enrollment.Infrastructure.Catalog\CampusHub.Enrollment.Infrastructure.Catalog.csproj" />
     <ProjectReference Include="..\..\CampusHub.Enrollment.Infrastructure.Billing\CampusHub.Enrollment.Infrastructure.Billing.csproj" />
+    <ProjectReference Include="..\..\..\Catalog\Sdks\CampusHub.Catalog.IntegrationEvents\CampusHub.Catalog.IntegrationEvents.csproj" />
   </ItemGroup>
 
 

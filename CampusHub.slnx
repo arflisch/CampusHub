@@ -57,6 +57,8 @@
   
     <File Path="Dapr/Development/CampusHub-Notification-grading-Subscription.yaml" />
   
+    <File Path="Dapr/Development/CampusHub-Enrollment-catalog-Subscription.yaml" />
+  
     <File Path="Dapr/Development/CampusHub-Grading-enrollment-confirmed-Subscription.yaml" />
   </Folder>
   <Folder Name="/Dapr/Staging/">
@@ -80,6 +82,8 @@
   
     <File Path="Dapr/Staging/CampusHub-Notification-grading-Subscription.yaml" />
   
+    <File Path="Dapr/Staging/CampusHub-Enrollment-catalog-Subscription.yaml" />
+  
     <File Path="Dapr/Staging/CampusHub-Grading-enrollment-confirmed-Subscription.yaml" />
   </Folder>
   <Folder Name="/Dapr/Production/">
@@ -102,6 +106,8 @@
     <File Path="Dapr/Production/CampusHub-Notification-enrollment-Subscription.yaml" />
   
     <File Path="Dapr/Production/CampusHub-Notification-grading-Subscription.yaml" />
+  
+    <File Path="Dapr/Production/CampusHub-Enrollment-catalog-Subscription.yaml" />
   
     <File Path="Dapr/Production/CampusHub-Grading-enrollment-confirmed-Subscription.yaml" />
   </Folder>
@@ -201,6 +207,7 @@
     <Project Path="BE/Catalog/Sdks/CampusHub.Catalog.FrontendApi.Sdk/CampusHub.Catalog.FrontendApi.Sdk.csproj" />
   
     <Project Path="BE/Catalog/Sdks/CampusHub.Catalog.ServiceApi.Sdk/CampusHub.Catalog.ServiceApi.Sdk.csproj" />
+    <Project Path="BE/Catalog/Sdks/CampusHub.Catalog.IntegrationEvents/CampusHub.Catalog.IntegrationEvents.csproj" />
   </Folder>
   <Folder Name="/BE/Enrollment/Sdks/">
     <Project Path="BE/Enrollment/Sdks/CampusHub.Enrollment.FrontendApi.Sdk/CampusHub.Enrollment.FrontendApi.Sdk.csproj" />

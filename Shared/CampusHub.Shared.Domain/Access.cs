@@ -19,6 +19,9 @@ public enum Access
 
     /// <summary>Teachers: create, publish and list the courses they teach.</summary>
     CanTeach = 3,
+
+    /// <summary>Service accounts only: the service-to-service APIs (seat reservations, payments).</summary>
+    CallServiceApis = 4,
 }
 
 public static class Operations

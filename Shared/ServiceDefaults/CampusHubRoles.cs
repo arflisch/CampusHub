@@ -12,6 +12,9 @@ namespace Dev4u.CampusHub.ServiceDefaults;
 /// <item>user ids (the token's <c>sub</c>) listed here, comma-separated, or <c>*</c> for every signed-in user: for an
 /// identity provider you cannot configure, such as a shared development tenant.</item>
 /// </list>
+/// Service accounts are the client-credentials clients listed in <see cref="ServiceClients"/>, recognised by the client
+/// the token was issued to (<c>client_id</c>) or by its <c>sub</c>, which is the client id for client credentials. They
+/// get the service-to-service APIs and nothing a person gets: a person signs in through another client.
 /// </summary>
 public sealed class RoleOptions
 {
@@ -24,6 +27,9 @@ public sealed class RoleOptions
     public string Teachers { get; set; } = string.Empty;
 
     public string Admins { get; set; } = string.Empty;
+
+    /// <summary>Client ids of the micro-services' service accounts, comma-separated.</summary>
+    public string ServiceClients { get; set; } = string.Empty;
 }
 
 /// <summary>Maps the claims of an access token to the CampusHub roles and operations.</summary>
@@ -32,6 +38,7 @@ public static class CampusHubRoles
     public const string User = "User";
     public const string Teacher = "Teacher";
     public const string Admin = "Admin";
+    public const string Service = "Service";
 
     public static IReadOnlyList<string> RolesOf(IReadOnlyCollection<Claim> claims, RoleOptions options)
     {
@@ -44,6 +51,14 @@ public static class CampusHubRoles
         }
 
         var userId = claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+        var clientId = claims.FirstOrDefault(c => c.Type is "client_id" or "azp")?.Value;
+        var serviceClients = Split(options.ServiceClients);
+        if ((userId is not null && serviceClients.Contains(userId, StringComparer.Ordinal))
+            || (clientId is not null && serviceClients.Contains(clientId, StringComparer.Ordinal)))
+        {
+            return [Service]; // a micro-service, never a person: no user right, no wildcard
+        }
+
         var permissions = claims.Where(c => c.Type is "scope" or "scp")
                                 .SelectMany(c => c.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
                                 .ToHashSet(StringComparer.Ordinal);
@@ -81,6 +96,10 @@ public static class CampusHubRoles
                     operations.Add(Access.CanSeeSwaggerFrontendApi);
                     operations.Add(Access.CanSeeJobs);
                     break;
+                case Service:
+                    operations.Add(Access.AccessApplication);
+                    operations.Add(Access.CallServiceApis);
+                    break;
             }
         }
 
@@ -89,8 +108,10 @@ public static class CampusHubRoles
 
     private static bool IsListed(string? userId, string list)
     {
-        var entries = list.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var entries = Split(list);
         return entries.Contains("*", StringComparer.Ordinal)
                || (userId is not null && entries.Contains(userId, StringComparer.Ordinal));
     }
+
+    private static string[] Split(string list) => list.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 }

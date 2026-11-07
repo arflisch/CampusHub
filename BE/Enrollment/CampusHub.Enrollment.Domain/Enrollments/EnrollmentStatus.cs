@@ -17,4 +17,7 @@ public enum EnrollmentStatus
 
     /// <summary>The seat is held and the course paid (paid courses only); the pivot comes next.</summary>
     Paid = 4,
+
+    /// <summary>Cancelled after confirmation, by the student or because the course was cancelled; refunded.</summary>
+    Cancelled = 5,
 }

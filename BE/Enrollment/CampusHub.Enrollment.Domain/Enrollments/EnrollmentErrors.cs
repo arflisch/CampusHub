@@ -20,6 +20,12 @@ public static class EnrollmentErrors
     public static ProblemDetailError InvalidTransition(EnrollmentStatus from, EnrollmentStatus to) =>
         AppErrors.Conflict("enrollment.invalid_transition", $"An enrollment cannot go from {from} to {to}.");
 
+    public static ProblemDetailError NotCancellable(Guid enrollmentId) =>
+        AppErrors.Conflict("enrollment.not_cancellable", $"Enrollment '{enrollmentId}' is not confirmed: there is nothing to cancel yet.");
+
+    public static ProblemDetailError CourseStarted(Guid enrollmentId) =>
+        AppErrors.BusinessRule("enrollment.course_started", $"The course of enrollment '{enrollmentId}' has started: it can no longer be cancelled.");
+
     public static ProblemDetailError NotConfirmed(Guid enrollmentId) =>
         AppErrors.Conflict("enrollment.not_confirmed", $"Enrollment '{enrollmentId}' is not confirmed.");
 

@@ -19,6 +19,7 @@ public sealed class PublishCourse(ICourseRepository courses, TimeProvider timePr
             }
 
             var now = timeProvider.GetUtcNow();
+            var wasDraft = course.Status == CourseStatus.Draft;
             var published = course.Publish(userId, now);
             if (published.IsFailed)
             {
@@ -26,6 +27,11 @@ public sealed class PublishCourse(ICourseRepository courses, TimeProvider timePr
             }
 
             var saved = await courses.SaveAsync(course, ct).ConfigureAwait(false);
+            if (saved.IsSuccess && wasDraft)
+            {
+                CatalogMetrics.RecordPublished();
+            }
+
             return saved.IsFailed ? saved.ToResult<CourseDto>() : Result.Ok(course.ToDto(now));
         }, cancellationToken).ConfigureAwait(false);
 }

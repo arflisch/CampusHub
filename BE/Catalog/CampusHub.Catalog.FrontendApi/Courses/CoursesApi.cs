@@ -76,6 +76,20 @@ public static partial class ApiDefinitions
             .WithName("Courses_Publish")
             .WithSummary("Open a course for enrollment (its teacher only).")
             .RequireAuthorization(nameof(Access.CanTeach));
+
+        courses.MapPost("{courseId:guid}/cancel", async Task<Results<Ok<CourseDto>, ProblemHttpResult>> (
+                Guid courseId, ClaimsPrincipal user, [FromServices] CancelCourse useCase, CancellationToken cancellationToken) =>
+            {
+                if (user.GetUserId() is not { } userId)
+                {
+                    return MissingUserId();
+                }
+
+                return ToOkOrProblem(await useCase.ExecuteAsync(courseId, userId, cancellationToken).ConfigureAwait(false));
+            })
+            .WithName("Courses_Cancel")
+            .WithSummary("Cancel a course before it starts (its teacher only); the enrolled students are refunded and notified.")
+            .RequireAuthorization(nameof(Access.CanTeach));
     }
 
     private static Results<Ok<T>, ProblemHttpResult> ToOkOrProblem<T>(Result<T> result) =>

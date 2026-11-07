@@ -25,6 +25,10 @@ public static class CatalogIndexes
             new CreateIndexModel<CourseDocument>(
                 Builders<CourseDocument>.IndexKeys.Ascending(c => c.TeacherId).Descending(c => c.CreatedAtUtc),
                 new CreateIndexOptions { Name = "teacher_courses" }),
+            // Cancellations still to announce (CourseCancellationAnnouncer).
+            new CreateIndexModel<CourseDocument>(
+                Builders<CourseDocument>.IndexKeys.Ascending(c => c.Status).Ascending(c => c.CancellationAnnouncedAtUtc),
+                new CreateIndexOptions { Name = "cancellations_to_announce" }),
         ], cancellationToken).ConfigureAwait(false);
     }
 }

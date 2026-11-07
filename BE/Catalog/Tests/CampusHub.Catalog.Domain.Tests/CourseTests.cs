@@ -172,4 +172,43 @@ public class CourseTests
         course.SeatsLeft(Now).Should().Be(1);
         course.ReserveSeat("student-1", "key-1", Now, Hold).Errors.HasCode("reservation.released").Should().BeTrue();
     }
+
+    [Fact]
+    public void Only_the_teacher_cancels_a_course_and_only_before_it_starts()
+    {
+        var course = PublishedCourse();
+
+        course.Cancel("someone-else", Now).Errors.HasCode("course.not_owner").Should().BeTrue();
+        course.Cancel(Teacher, Starts).Errors.HasCode("course.started").Should().BeTrue();
+        course.Cancel(Teacher, Now).IsSuccess.Should().BeTrue();
+        course.Cancel(Teacher, Now).IsSuccess.Should().BeTrue(); // twice: no change
+
+        course.Status.Should().Be(CourseStatus.Cancelled);
+        course.NeedsCancellationAnnouncement.Should().BeTrue();
+    }
+
+    [Fact]
+    public void A_cancelled_course_refuses_new_seats_and_the_confirmation_of_held_ones()
+    {
+        var course = PublishedCourse();
+        var held = course.ReserveSeat("student-1", "key-1", Now, Hold).Value;
+
+        course.Cancel(Teacher, Now);
+
+        course.ReserveSeat("student-2", "key-2", Now, Hold).Errors.HasCode("course.not_open").Should().BeTrue();
+        course.ConfirmSeat(held.Id, Now).Errors.HasCode("course.cancelled").Should().BeTrue("the saga then refunds and rejects");
+    }
+
+    [Fact]
+    public void The_cancellation_is_announced_once()
+    {
+        var course = PublishedCourse();
+        course.Cancel(Teacher, Now);
+
+        course.MarkCancellationAnnounced(Now.AddSeconds(5));
+        course.MarkCancellationAnnounced(Now.AddSeconds(9));
+
+        course.NeedsCancellationAnnouncement.Should().BeFalse();
+        course.Cancellation!.AnnouncedAt.Should().Be(Now.AddSeconds(5));
+    }
 }

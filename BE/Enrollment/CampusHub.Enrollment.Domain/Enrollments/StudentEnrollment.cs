@@ -18,7 +18,8 @@ public sealed class StudentEnrollment
 
     private StudentEnrollment(Guid id, Guid courseId, string studentId, EnrollmentStatus status, Guid? reservationId,
                        string? courseTitle, DateTimeOffset? courseStartsAt, DateTimeOffset? courseEndsAt, int coursePriceInCents, string? rejectionCode,
-                       DateTimeOffset? reminderSentAt, DateTimeOffset requestedAt, DateTimeOffset updatedAt, long version)
+                       DateTimeOffset? reminderSentAt, DateTimeOffset requestedAt, DateTimeOffset updatedAt, long version,
+                       string? studentName = null, string? courseTeacherId = null, string? cancellationReason = null)
     {
         Id = id;
         CourseId = courseId;
@@ -31,6 +32,9 @@ public sealed class StudentEnrollment
         CoursePriceInCents = coursePriceInCents;
         RejectionCode = rejectionCode;
         ReminderSentAt = reminderSentAt;
+        StudentName = studentName;
+        CourseTeacherId = courseTeacherId;
+        CancellationReason = cancellationReason;
         RequestedAt = requestedAt;
         UpdatedAt = updatedAt;
         Version = version;
@@ -61,6 +65,18 @@ public sealed class StudentEnrollment
 
     public bool RequiresPayment => CoursePriceInCents > 0;
 
+    /// <summary>Display name of the student when the request was made (shown to the teacher); may be unknown.</summary>
+    public string? StudentName { get; }
+
+    /// <summary>Teacher of the course, copied with the seat: who may see this enrollment as a participant.</summary>
+    public string? CourseTeacherId { get; private set; }
+
+    /// <summary>Why a confirmed enrollment was cancelled (<see cref="CancelledByStudent"/> or <see cref="CancelledWithCourse"/>).</summary>
+    public string? CancellationReason { get; private set; }
+
+    public const string CancelledByStudent = "enrollment.cancelled_by_student";
+    public const string CancelledWithCourse = "course.cancelled";
+
     /// <summary>When the student was reminded that the course starts soon; null until then.</summary>
     public DateTimeOffset? ReminderSentAt { get; private set; }
 
@@ -76,7 +92,7 @@ public sealed class StudentEnrollment
 
     public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents;
 
-    public static Result<StudentEnrollment> Request(Guid id, Guid courseId, string studentId, DateTimeOffset now)
+    public static Result<StudentEnrollment> Request(Guid id, Guid courseId, string studentId, DateTimeOffset now, string? studentName = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(studentId);
 
@@ -90,18 +106,22 @@ public sealed class StudentEnrollment
             return Result.Fail<StudentEnrollment>(EnrollmentErrors.InvalidRequest("A course id is required."));
         }
 
-        return Result.Ok(new StudentEnrollment(id, courseId, studentId, EnrollmentStatus.Requested, reservationId: null,
-                                        courseTitle: null, courseStartsAt: null, courseEndsAt: null, coursePriceInCents: 0, rejectionCode: null,
-                                        reminderSentAt: null, now, now, version: 0));
+        var enrollment = new StudentEnrollment(id, courseId, studentId, EnrollmentStatus.Requested, reservationId: null,
+                                               courseTitle: null, courseStartsAt: null, courseEndsAt: null, coursePriceInCents: 0,
+                                               rejectionCode: null, reminderSentAt: null, now, now, version: 0,
+                                               string.IsNullOrWhiteSpace(studentName) ? null : studentName.Trim());
+        enrollment.StatusChanged(now);
+        return Result.Ok(enrollment);
     }
 
     /// <summary>Rebuilds an enrollment from storage. Persistence only: no rule is checked.</summary>
     public static StudentEnrollment Rehydrate(Guid id, Guid courseId, string studentId, EnrollmentStatus status, Guid? reservationId,
                                        string? courseTitle, DateTimeOffset? courseStartsAt, DateTimeOffset? courseEndsAt,
                                        int coursePriceInCents, string? rejectionCode, DateTimeOffset? reminderSentAt,
-                                       DateTimeOffset requestedAt, DateTimeOffset updatedAt, long version) =>
+                                       DateTimeOffset requestedAt, DateTimeOffset updatedAt, long version,
+                                       string? studentName = null, string? courseTeacherId = null, string? cancellationReason = null) =>
         new(id, courseId, studentId, status, reservationId, courseTitle, courseStartsAt, courseEndsAt, coursePriceInCents,
-            rejectionCode, reminderSentAt, requestedAt, updatedAt, version);
+            rejectionCode, reminderSentAt, requestedAt, updatedAt, version, studentName, courseTeacherId, cancellationReason);
 
     public bool BelongsTo(string studentId) => string.Equals(StudentId, studentId, StringComparison.Ordinal);
 
@@ -129,7 +149,9 @@ public sealed class StudentEnrollment
         CourseStartsAt = seat.CourseStartsAt;
         CourseEndsAt = seat.CourseEndsAt;
         CoursePriceInCents = seat.CoursePriceInCents;
+        CourseTeacherId = seat.CourseTeacherId;
         UpdatedAt = now;
+        StatusChanged(now);
         return Result.Ok();
     }
 
@@ -148,6 +170,7 @@ public sealed class StudentEnrollment
 
         Status = EnrollmentStatus.Paid;
         UpdatedAt = now;
+        StatusChanged(now);
         return Result.Ok();
     }
 
@@ -172,6 +195,7 @@ public sealed class StudentEnrollment
         Status = EnrollmentStatus.Confirmed;
         UpdatedAt = now;
         _domainEvents.Add(new EnrollmentConfirmed(Id, CourseId, CourseTitle, startsAt, endsAt, StudentId, now));
+        StatusChanged(now);
         return Result.Ok();
     }
 
@@ -206,7 +230,7 @@ public sealed class StudentEnrollment
             return Result.Ok(); // replayed compensation
         }
 
-        if (Status == EnrollmentStatus.Confirmed)
+        if (Status is EnrollmentStatus.Confirmed or EnrollmentStatus.Cancelled)
         {
             return Result.Fail(EnrollmentErrors.InvalidTransition(Status, EnrollmentStatus.Rejected));
         }
@@ -214,8 +238,44 @@ public sealed class StudentEnrollment
         Status = EnrollmentStatus.Rejected;
         RejectionCode = reasonCode;
         UpdatedAt = now;
+        StatusChanged(now);
         return Result.Ok();
     }
+
+    /// <summary>
+    /// Cancels a confirmed enrollment, once its money was given back (the caller refunds first). Cancelling twice
+    /// succeeds without a second event. A student may cancel only before the course starts; a cancelled course
+    /// cancels its enrollments regardless.
+    /// </summary>
+    public Result Cancel(string reason, DateTimeOffset now)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+
+        if (Status == EnrollmentStatus.Cancelled)
+        {
+            return Result.Ok();
+        }
+
+        if (Status != EnrollmentStatus.Confirmed || CourseTitle is null)
+        {
+            return Result.Fail(EnrollmentErrors.NotCancellable(Id));
+        }
+
+        if (reason == CancelledByStudent && CourseStartsAt is { } startsAt && now >= startsAt)
+        {
+            return Result.Fail(EnrollmentErrors.CourseStarted(Id));
+        }
+
+        Status = EnrollmentStatus.Cancelled;
+        CancellationReason = reason;
+        UpdatedAt = now;
+        _domainEvents.Add(new EnrollmentCancelled(Id, CourseId, CourseTitle, StudentId, reason, CoursePriceInCents, now));
+        StatusChanged(now);
+        return Result.Ok();
+    }
+
+    private void StatusChanged(DateTimeOffset now) =>
+        _domainEvents.Add(new EnrollmentStatusChanged(Id, CourseId, StudentId, Status, now));
 
     public void ClearDomainEvents() => _domainEvents.Clear();
 

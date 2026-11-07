@@ -32,7 +32,7 @@ public static class SeatReservationsApi
                               .MapToApiVersion(ApiVersions.V1)
                               .WithGroupName("service")
                               .WithTags("SeatReservations")
-                              .RequireAuthorization(nameof(Access.AccessApplication));
+                              .RequireAuthorization(nameof(Access.CallServiceApis)); // service accounts only
 
         reservations.MapPost("", async Task<Results<Ok<SeatReservationDto>, ProblemHttpResult>> (
                 Guid courseId, [FromBody] ReserveSeatCommand command, [FromServices] ReserveSeat useCase, CancellationToken cancellationToken) =>

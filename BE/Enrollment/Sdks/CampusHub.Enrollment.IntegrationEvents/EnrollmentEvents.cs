@@ -11,7 +11,50 @@ public static class EnrollmentEvents
 
     /// <summary>CloudEvent type of <see cref="ClassReminderDueV1"/>.</summary>
     public const string ClassReminderDueV1Type = "campushub.enrollment.class.reminder_due";
+
+    /// <summary>CloudEvent type of <see cref="EnrollmentCancelledV1"/>.</summary>
+    public const string EnrollmentCancelledV1Type = "campushub.enrollment.enrollment.cancelled";
+
+    /// <summary>CloudEvent type of <see cref="EnrollmentStatusChangedV1"/>.</summary>
+    public const string EnrollmentStatusChangedV1Type = "campushub.enrollment.enrollment.status_changed";
 }
+
+/// <summary>A confirmed enrollment was cancelled and its money given back.</summary>
+/// <param name="EventId">Unique id of the event, also the CloudEvent id: subscribers deduplicate on it.</param>
+/// <param name="OccurredAt">When the enrollment was cancelled (UTC).</param>
+/// <param name="EnrollmentId">The cancelled enrollment.</param>
+/// <param name="CourseId">The course.</param>
+/// <param name="CourseTitle">Title of the course (event-carried state).</param>
+/// <param name="StudentId">Identity provider subject of the student.</param>
+/// <param name="Reason"><c>enrollment.cancelled_by_student</c> or <c>course.cancelled</c>.</param>
+/// <param name="RefundedInCents">Amount given back (EUR cents); 0 for a free course.</param>
+public sealed record EnrollmentCancelledV1(
+    Guid EventId,
+    DateTimeOffset OccurredAt,
+    Guid EnrollmentId,
+    Guid CourseId,
+    string CourseTitle,
+    string StudentId,
+    string Reason,
+    int RefundedInCents);
+
+/// <summary>
+/// The status of an enrollment changed (Requested, SeatHeld, Paid, Confirmed, Rejected, Cancelled): lets the
+/// student's screens follow the saga live. Informative only, never a command.
+/// </summary>
+/// <param name="EventId">Unique id of the event, also the CloudEvent id: subscribers deduplicate on it.</param>
+/// <param name="OccurredAt">When the status changed (UTC).</param>
+/// <param name="EnrollmentId">The enrollment.</param>
+/// <param name="CourseId">The course.</param>
+/// <param name="StudentId">Identity provider subject of the student.</param>
+/// <param name="Status">The new status.</param>
+public sealed record EnrollmentStatusChangedV1(
+    Guid EventId,
+    DateTimeOffset OccurredAt,
+    Guid EnrollmentId,
+    Guid CourseId,
+    string StudentId,
+    string Status);
 
 /// <summary>
 /// A student's enrollment reached its final, confirmed state.

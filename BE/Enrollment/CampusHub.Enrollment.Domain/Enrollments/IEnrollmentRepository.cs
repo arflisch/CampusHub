@@ -17,6 +17,9 @@ public interface IEnrollmentRepository
 
     Task<IReadOnlyList<StudentEnrollment>> ListForStudentAsync(string studentId, int take, CancellationToken cancellationToken);
 
+    /// <summary>Every enrollment of a course, latest request first.</summary>
+    Task<IReadOnlyList<StudentEnrollment>> ListForCourseAsync(Guid courseId, int take, CancellationToken cancellationToken);
+
     /// <summary>Enrollments still waiting for their saga (Requested, SeatHeld or Paid) and unchanged since <paramref name="updatedBefore"/>.</summary>
     Task<IReadOnlyList<StudentEnrollment>> ListStalledAsync(DateTimeOffset updatedBefore, int take, CancellationToken cancellationToken);
 

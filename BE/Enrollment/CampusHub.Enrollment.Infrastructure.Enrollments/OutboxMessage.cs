@@ -81,6 +81,31 @@ internal static class OutboxMessages
                 StudentId: reminder.StudentId),
             e => e.EventId,
             reminder.OccurredAt),
+        EnrollmentCancelled cancelled => Create(
+            EnrollmentEvents.EnrollmentCancelledV1Type,
+            new EnrollmentCancelledV1(
+                EventId: DeterministicId(cancelled.EnrollmentId, EnrollmentEvents.EnrollmentCancelledV1Type),
+                OccurredAt: cancelled.OccurredAt,
+                EnrollmentId: cancelled.EnrollmentId,
+                CourseId: cancelled.CourseId,
+                CourseTitle: cancelled.CourseTitle,
+                StudentId: cancelled.StudentId,
+                Reason: cancelled.Reason,
+                RefundedInCents: cancelled.RefundedInCents),
+            e => e.EventId,
+            cancelled.OccurredAt),
+        EnrollmentStatusChanged changed => Create(
+            EnrollmentEvents.EnrollmentStatusChangedV1Type,
+            new EnrollmentStatusChangedV1(
+                // Each status is reached once per enrollment: one event per (enrollment, status).
+                EventId: DeterministicId(changed.EnrollmentId, $"{EnrollmentEvents.EnrollmentStatusChangedV1Type}:{changed.Status}"),
+                OccurredAt: changed.OccurredAt,
+                EnrollmentId: changed.EnrollmentId,
+                CourseId: changed.CourseId,
+                StudentId: changed.StudentId,
+                Status: changed.Status.ToString()),
+            e => e.EventId,
+            changed.OccurredAt),
         _ => null, // domain events that are not published outside the service
     };
 

@@ -12,7 +12,9 @@ public class CatalogViewModelTests
     private readonly FakeEnrollmentService _enrollments = new();
     private readonly CatalogViewModel _sut;
 
-    public CatalogViewModelTests() => _sut = new CatalogViewModel(_catalog, _enrollments);
+    private readonly FakeLiveUpdates _live = new();
+
+    public CatalogViewModelTests() => _sut = new CatalogViewModel(_catalog, _enrollments, _live);
 
     [Fact]
     public async Task A_retry_after_a_transient_failure_reuses_the_same_request_id()
@@ -136,5 +138,33 @@ public class CatalogViewModelTests
 
         _sut.Courses.Should().ContainSingle();
         _sut.ErrorMessage.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task A_pushed_confirmation_turns_the_card_into_enrolled_at_once()
+    {
+        var course = TestData.Course();
+        _catalog.Published = Result.Ok<IReadOnlyList<CourseItem>>([course]);
+        await _sut.InitializeAsync(CancellationToken.None);
+        await _sut.EnrollCommand.ExecuteAsync(course);
+        _sut.EnrollmentOf(course).Should().Be(CourseEnrollment.InProgress);
+
+        _live.Push(new EnrollmentChange(Guid.NewGuid(), course.Id, EnrollmentState.Confirmed));
+
+        _sut.EnrollmentOf(course).Should().Be(CourseEnrollment.Enrolled);
+    }
+
+    [Fact]
+    public async Task A_pushed_rejection_brings_the_enroll_button_back()
+    {
+        var course = TestData.Course();
+        _catalog.Published = Result.Ok<IReadOnlyList<CourseItem>>([course]);
+        await _sut.InitializeAsync(CancellationToken.None);
+        await _sut.EnrollCommand.ExecuteAsync(course);
+
+        _live.Push(new EnrollmentChange(Guid.NewGuid(), course.Id, EnrollmentState.Rejected));
+
+        _sut.EnrollmentOf(course).Should().Be(CourseEnrollment.None);
+        _sut.EnrollCommand.CanExecute(course).Should().BeTrue();
     }
 }

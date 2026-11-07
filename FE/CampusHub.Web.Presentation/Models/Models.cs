@@ -5,6 +5,9 @@ public enum CourseState
     Draft,
     Published,
     Closed,
+
+    /// <summary>Cancelled by its teacher: the enrolled students were refunded.</summary>
+    Cancelled,
 }
 
 /// <summary>A course as shown in the catalogue and in the teacher's list.</summary>
@@ -56,6 +59,9 @@ public enum EnrollmentState
 
     /// <summary>The seat is held and the course paid (paid courses only).</summary>
     Paid,
+
+    /// <summary>Cancelled after confirmation (by the student, or because the course was cancelled) and refunded.</summary>
+    Cancelled,
 }
 
 public sealed record EnrollmentItem(
@@ -67,11 +73,35 @@ public sealed record EnrollmentItem(
     EnrollmentState State,
     string? RejectionCode,
     DateTimeOffset RequestedAt,
-    DateTimeOffset UpdatedAt)
+    DateTimeOffset UpdatedAt,
+    string? CancellationReason = null)
 {
-    /// <summary>Confirmed or rejected: the saga is over and the item no longer needs polling.</summary>
-    public bool IsSettled => State is EnrollmentState.Confirmed or EnrollmentState.Rejected;
+    /// <summary>Confirmed, rejected or cancelled: the saga is over and the item no longer needs polling.</summary>
+    public bool IsSettled => State is EnrollmentState.Confirmed or EnrollmentState.Rejected or EnrollmentState.Cancelled;
 }
+
+/// <summary>Somebody enrolled in one of my courses, as the teacher sees it.</summary>
+public sealed record ParticipantItem(Guid EnrollmentId, string StudentId, string? StudentName, EnrollmentState State,
+                                     int PriceInCents, DateTimeOffset RequestedAt)
+{
+    /// <summary>The name when the gateway knew it, else a shortened id.</summary>
+    public string DisplayName => StudentName ?? (StudentId.Length > 8 ? $"{StudentId[..8]}…" : StudentId);
+}
+
+public enum PaymentState
+{
+    Captured,
+    Declined,
+    Refunded,
+}
+
+public sealed record PaymentItem(Guid EnrollmentId, Guid CourseId, int AmountInCents, PaymentState State, string? DeclineReason,
+                                 DateTimeOffset CreatedAt, DateTimeOffset? RefundedAt);
+
+public sealed record CertificateItem(string Number, Guid CourseId, string CourseTitle, DateTimeOffset CourseEndedAt, DateTimeOffset IssuedAt);
+
+/// <summary>A change pushed live by the server: one of my enrollments has a new status.</summary>
+public sealed record EnrollmentChange(Guid EnrollmentId, Guid CourseId, EnrollmentState State);
 
 public sealed record NotificationItem(Guid Id, string Title, string Message, DateTimeOffset CreatedAt, bool IsRead);
 

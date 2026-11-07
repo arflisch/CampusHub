@@ -2,6 +2,7 @@ using Arc4u.Dependency.Attribute;
 using Dev4u.CampusHub.Errors;
 using Dev4u.CampusHub.Notification.Domain.Notifications;
 using FluentResults;
+using Dev4u.CampusHub.Notification.UseCases.Common;
 
 namespace Dev4u.CampusHub.Notification.UseCases.Notifications;
 
@@ -14,7 +15,7 @@ public sealed record NotifyEnrollmentConfirmedCommand(Guid EventId, string Stude
 /// id), so the at-least-once delivery of Dapr never creates duplicates.
 /// </summary>
 [Export, Scoped]
-public sealed class NotifyEnrollmentConfirmed(INotificationRepository notifications)
+public sealed class NotifyEnrollmentConfirmed(INotificationRepository notifications, ILiveUpdates live)
 {
     public async Task<Result<bool>> ExecuteAsync(NotifyEnrollmentConfirmedCommand command, CancellationToken cancellationToken)
     {
@@ -27,8 +28,7 @@ public sealed class NotifyEnrollmentConfirmed(INotificationRepository notificati
         }
 
         var notification = UserNotification.EnrollmentConfirmed(command.EventId, command.StudentId, command.CourseTitle, command.OccurredAt);
-        var created = await notifications.AddIfAbsentAsync(notification, cancellationToken).ConfigureAwait(false);
-        return Result.Ok(created);
+        return await notifications.StoreAndPushAsync(live, notification, cancellationToken).ConfigureAwait(false);
     }
 }
 
@@ -36,7 +36,7 @@ public sealed record NotifyClassStartsSoonCommand(Guid EventId, string StudentId
 
 /// <summary>Reacts to ClassReminderDue: the student is reminded that the course starts soon. Idempotent like the others.</summary>
 [Export, Scoped]
-public sealed class NotifyClassStartsSoon(INotificationRepository notifications)
+public sealed class NotifyClassStartsSoon(INotificationRepository notifications, ILiveUpdates live)
 {
     public async Task<Result<bool>> ExecuteAsync(NotifyClassStartsSoonCommand command, CancellationToken cancellationToken)
     {
@@ -49,7 +49,7 @@ public sealed class NotifyClassStartsSoon(INotificationRepository notifications)
 
         var notification = UserNotification.ClassStartsSoon(command.EventId, command.StudentId, command.CourseTitle, command.CourseStartsAt,
                                                             command.OccurredAt);
-        return Result.Ok(await notifications.AddIfAbsentAsync(notification, cancellationToken).ConfigureAwait(false));
+        return await notifications.StoreAndPushAsync(live, notification, cancellationToken).ConfigureAwait(false);
     }
 }
 
@@ -57,7 +57,7 @@ public sealed record NotifyCertificateIssuedCommand(Guid EventId, string Student
 
 /// <summary>Reacts to CertificateIssued (Grading): the student learns that the certificate is available. Idempotent.</summary>
 [Export, Scoped]
-public sealed class NotifyCertificateIssued(INotificationRepository notifications)
+public sealed class NotifyCertificateIssued(INotificationRepository notifications, ILiveUpdates live)
 {
     public async Task<Result<bool>> ExecuteAsync(NotifyCertificateIssuedCommand command, CancellationToken cancellationToken)
     {
@@ -71,7 +71,76 @@ public sealed class NotifyCertificateIssued(INotificationRepository notification
 
         var notification = UserNotification.CertificateIssued(command.EventId, command.StudentId, command.CourseTitle, command.CertificateNumber,
                                                               command.OccurredAt);
-        return Result.Ok(await notifications.AddIfAbsentAsync(notification, cancellationToken).ConfigureAwait(false));
+        return await notifications.StoreAndPushAsync(live, notification, cancellationToken).ConfigureAwait(false);
+    }
+}
+
+public sealed record NotifyEnrollmentCancelledCommand(Guid EventId, string StudentId, string CourseTitle, string Reason, int RefundedInCents,
+                                                       DateTimeOffset OccurredAt);
+
+/// <summary>Reacts to EnrollmentCancelled: the student learns that the enrollment is cancelled and refunded. Idempotent.</summary>
+[Export, Scoped]
+public sealed class NotifyEnrollmentCancelled(INotificationRepository notifications, ILiveUpdates live)
+{
+    public async Task<Result<bool>> ExecuteAsync(NotifyEnrollmentCancelledCommand command, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        if (command.EventId == Guid.Empty || string.IsNullOrWhiteSpace(command.StudentId) || string.IsNullOrWhiteSpace(command.CourseTitle))
+        {
+            return Result.Fail<bool>(AppErrors.Validation("notification.invalid_event", "The EnrollmentCancelled event is incomplete."));
+        }
+
+        var notification = UserNotification.EnrollmentCancelled(command.EventId, command.StudentId, command.CourseTitle, command.Reason,
+                                                                command.RefundedInCents, command.OccurredAt);
+        return await notifications.StoreAndPushAsync(live, notification, cancellationToken).ConfigureAwait(false);
+    }
+}
+
+public sealed record RelayEnrollmentStatusCommand(string StudentId, Guid EnrollmentId, Guid CourseId, string Status);
+
+/// <summary>
+/// Reacts to EnrollmentStatusChanged: the student's open screens are told at once (SignalR), so the saga is followed
+/// live instead of polled. Nothing is stored: a missed push only means the change is seen at the next load.
+/// </summary>
+[Export, Scoped]
+public sealed class RelayEnrollmentStatus(ILiveUpdates live)
+{
+    public async Task<Result> ExecuteAsync(RelayEnrollmentStatusCommand command, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (string.IsNullOrWhiteSpace(command.StudentId) || command.EnrollmentId == Guid.Empty)
+        {
+            return Result.Fail(AppErrors.Validation("notification.invalid_event", "The EnrollmentStatusChanged event is incomplete."));
+        }
+
+        await live.EnrollmentChangedAsync(command.StudentId, command.EnrollmentId, command.CourseId, command.Status, cancellationToken).ConfigureAwait(false);
+        return Result.Ok();
+    }
+}
+
+/// <summary>Marks the current user's notifications as read: one, or all of them.</summary>
+[Export, Scoped]
+public sealed class MarkMyNotificationsRead(INotificationRepository notifications, TimeProvider timeProvider)
+{
+    public async Task<Result<long>> ExecuteAsync(string recipientId, Guid? notificationId, CancellationToken cancellationToken) =>
+        Result.Ok(await notifications.MarkReadAsync(recipientId, notificationId, timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false));
+}
+
+internal static class NotificationStorage
+{
+    /// <summary>Stores the notification (inbox: once per event) and pushes it live when it is new.</summary>
+    public static async Task<Result<bool>> StoreAndPushAsync(this INotificationRepository notifications, ILiveUpdates live,
+                                                             UserNotification notification, CancellationToken cancellationToken)
+    {
+        var created = await notifications.AddIfAbsentAsync(notification, cancellationToken).ConfigureAwait(false);
+        if (created)
+        {
+            NotificationMetrics.RecordCreated(notification.Title);
+            await live.NotificationCreatedAsync(notification, cancellationToken).ConfigureAwait(false);
+        }
+
+        return Result.Ok(created);
     }
 }
 

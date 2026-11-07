@@ -38,6 +38,22 @@ public sealed class UserNotification
                                     $"Your enrollment in \"{courseTitle}\" is confirmed.", occurredAt, readAt: null);
     }
 
+    public static UserNotification EnrollmentCancelled(Guid sourceEventId, string studentId, string courseTitle, string reason,
+                                                       int refundedInCents, DateTimeOffset occurredAt)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(studentId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(courseTitle);
+
+        var refund = refundedInCents > 0
+            ? $" You were refunded {(refundedInCents / 100m).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)} €."
+            : string.Empty;
+        return reason == "course.cancelled"
+            ? new UserNotification(sourceEventId, studentId, "Course cancelled",
+                                   $"\"{courseTitle}\" was cancelled by its teacher.{refund}", occurredAt, readAt: null)
+            : new UserNotification(sourceEventId, studentId, "Enrollment cancelled",
+                                   $"Your enrollment in \"{courseTitle}\" is cancelled.{refund}", occurredAt, readAt: null);
+    }
+
     public static UserNotification ClassStartsSoon(Guid sourceEventId, string studentId, string courseTitle, DateTimeOffset startsAt,
                                                    DateTimeOffset occurredAt)
     {

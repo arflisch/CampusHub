@@ -83,6 +83,44 @@ public sealed class DaprController(ILogger<DaprController> logger) : ControllerB
         return Acknowledge(GradingEvents.CertificateIssuedV1Type, integrationEvent.EventId, result);
     }
 
+    /// <summary>A student's enrollment was cancelled (by the student or with its course): tell the student.</summary>
+    /// <param name="integrationEvent">The CloudEvent data published by the Enrollment service.</param>
+    /// <param name="useCase">The use case creating the notification.</param>
+    /// <param name="cancellationToken">Signalled when the sidecar gives up on the call.</param>
+    [HttpPost("Enrollment/Cancelled")]
+    public async Task<IActionResult> EnrollmentCancelled([FromBody] EnrollmentCancelledV1 integrationEvent,
+                                                         [FromServices] NotifyEnrollmentCancelled useCase,
+                                                         CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(integrationEvent);
+        ArgumentNullException.ThrowIfNull(useCase);
+
+        var result = await useCase.ExecuteAsync(
+            new NotifyEnrollmentCancelledCommand(integrationEvent.EventId, integrationEvent.StudentId, integrationEvent.CourseTitle,
+                                                 integrationEvent.Reason, integrationEvent.RefundedInCents, integrationEvent.OccurredAt),
+            cancellationToken).ConfigureAwait(false);
+        return Acknowledge(EnrollmentEvents.EnrollmentCancelledV1Type, integrationEvent.EventId, result);
+    }
+
+    /// <summary>An enrollment changed status: push it to the student's open screens.</summary>
+    /// <param name="integrationEvent">The CloudEvent data published by the Enrollment service.</param>
+    /// <param name="useCase">The use case relaying the change.</param>
+    /// <param name="cancellationToken">Signalled when the sidecar gives up on the call.</param>
+    [HttpPost("Enrollment/StatusChanged")]
+    public async Task<IActionResult> EnrollmentStatusChanged([FromBody] EnrollmentStatusChangedV1 integrationEvent,
+                                                             [FromServices] RelayEnrollmentStatus useCase,
+                                                             CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(integrationEvent);
+        ArgumentNullException.ThrowIfNull(useCase);
+
+        var result = await useCase.ExecuteAsync(
+            new RelayEnrollmentStatusCommand(integrationEvent.StudentId, integrationEvent.EnrollmentId, integrationEvent.CourseId, integrationEvent.Status),
+            cancellationToken).ConfigureAwait(false);
+        return Acknowledge(EnrollmentEvents.EnrollmentStatusChangedV1Type, integrationEvent.EventId,
+                           result.IsSuccess ? FluentResults.Result.Ok(true) : result.ToResult<bool>());
+    }
+
     // 200 when processed (or a duplicate), RETRY for a transient failure, DROP for an event that can never succeed.
     private OkObjectResult Acknowledge(string eventType, Guid eventId, FluentResults.Result<bool> result)
     {

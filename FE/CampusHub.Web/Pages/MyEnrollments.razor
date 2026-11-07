@@ -18,6 +18,7 @@
 </div>
 
 <Banner Message="@ViewModel.ErrorMessage" OnDismiss="() => ViewModel.DismissErrorCommand.Execute(null)" />
+<Banner Message="@ViewModel.InfoMessage" Kind="info" />
 
 @if (ViewModel.IsEmpty && !ViewModel.LoadCommand.IsRunning)
 {
@@ -41,19 +42,48 @@ else
                         {
                             <span> · @MyEnrollmentsViewModel.DescribeRejection(enrollment)</span>
                         }
+                        @if (enrollment.State == EnrollmentState.Cancelled)
+                        {
+                            <span> · @(enrollment.CancellationReason == "course.cancelled" ? "the course was cancelled by its teacher" : "cancelled by you")@(enrollment.CoursePriceInCents > 0 ? ", refunded" : string.Empty)</span>
+                        }
                     </div>
                 </div>
                 <div class="steps" aria-label="Saga progress">
                     <span class="step @(enrollment.State != EnrollmentState.Rejected ? "done" : "failed")">Requested</span>
-                    <span class="step @(enrollment.State is EnrollmentState.SeatHeld or EnrollmentState.Paid or EnrollmentState.Confirmed ? "done" : string.Empty)">Seat held</span>
+                    <span class="step @(enrollment.State is EnrollmentState.SeatHeld or EnrollmentState.Paid or EnrollmentState.Confirmed or EnrollmentState.Cancelled ? "done" : string.Empty)">Seat held</span>
                     @if (enrollment.CoursePriceInCents > 0)
                     {
-                        <span class="step @(enrollment.State is EnrollmentState.Paid or EnrollmentState.Confirmed ? "done" : string.Empty)">Paid @Money.Format(enrollment.CoursePriceInCents)</span>
+                        <span class="step @(enrollment.State is EnrollmentState.Paid or EnrollmentState.Confirmed or EnrollmentState.Cancelled ? "done" : string.Empty)">Paid @Money.Format(enrollment.CoursePriceInCents)</span>
                     }
-                    <span class="step @(enrollment.State == EnrollmentState.Confirmed ? "done" : string.Empty)">Confirmed</span>
+                    <span class="step @(enrollment.State is EnrollmentState.Confirmed or EnrollmentState.Cancelled ? "done" : string.Empty)">Confirmed</span>
+                    @if (enrollment.State == EnrollmentState.Cancelled)
+                    {
+                        <span class="step failed">Cancelled</span>
+                    }
                 </div>
-                <StatusBadge Enrollment="enrollment.State" />
+                <div class="row-actions">
+                    <StatusBadge Enrollment="enrollment.State" />
+                    @if (ViewModel.CanCancel(enrollment))
+                    {
+                        if (_confirming == enrollment.Id)
+                        {
+                            <CommandButton Command="ViewModel.CancelCommand" Parameter="enrollment" CssClass="btn btn-danger" BusyText="Cancelling…">
+                                Confirm@(enrollment.CoursePriceInCents > 0 ? $" (refund {Money.Format(enrollment.CoursePriceInCents)})" : string.Empty)
+                            </CommandButton>
+                            <button type="button" class="btn btn-ghost" @onclick="() => _confirming = null">Keep it</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-ghost" @onclick="() => _confirming = enrollment.Id">Cancel enrollment</button>
+                        }
+                    }
+                </div>
             </li>
         }
     </ul>
+}
+
+@code {
+    // Two-step cancellation: the first click asks to confirm, the second one cancels.
+    private Guid? _confirming;
 }

@@ -21,7 +21,8 @@ public sealed class Course
     private readonly List<SeatReservation> _reservations;
 
     private Course(Guid id, string code, string title, string teacherId, int capacity, int priceInCents, CourseSchedule schedule, CourseStatus status,
-                   DateTimeOffset createdAt, DateTimeOffset? publishedAt, IEnumerable<SeatReservation> reservations, long version)
+                   DateTimeOffset createdAt, DateTimeOffset? publishedAt, CourseCancellation? cancellation,
+                   IEnumerable<SeatReservation> reservations, long version)
     {
         Id = id;
         Code = code;
@@ -33,6 +34,7 @@ public sealed class Course
         Status = status;
         CreatedAt = createdAt;
         PublishedAt = publishedAt;
+        Cancellation = cancellation;
         _reservations = [.. reservations];
         Version = version;
     }
@@ -59,6 +61,11 @@ public sealed class Course
     public DateTimeOffset CreatedAt { get; }
 
     public DateTimeOffset? PublishedAt { get; private set; }
+
+    /// <summary>Set when the teacher cancelled the course.</summary>
+    public CourseCancellation? Cancellation { get; private set; }
+
+    public bool NeedsCancellationAnnouncement => Cancellation is { AnnouncedAt: null };
 
     /// <summary>Optimistic concurrency token, incremented by the repository on every successful save.</summary>
     public long Version { get; private set; }
@@ -103,14 +110,14 @@ public sealed class Course
         }
 
         return Result.Ok(new Course(id, trimmedCode.ToUpperInvariant(), trimmedTitle, teacherId, capacity, priceInCents, schedule.Value,
-                                    CourseStatus.Draft, now, publishedAt: null, reservations: [], version: 0));
+                                    CourseStatus.Draft, now, publishedAt: null, cancellation: null, reservations: [], version: 0));
     }
 
     /// <summary>Rebuilds a course from storage. Persistence only: no rule is checked.</summary>
     public static Course Rehydrate(Guid id, string code, string title, string teacherId, int capacity, int priceInCents,
                                    CourseSchedule schedule, CourseStatus status, DateTimeOffset createdAt, DateTimeOffset? publishedAt,
-                                   IEnumerable<SeatReservation> reservations, long version) =>
-        new(id, code, title, teacherId, capacity, priceInCents, schedule, status, createdAt, publishedAt, reservations, version);
+                                   CourseCancellation? cancellation, IEnumerable<SeatReservation> reservations, long version) =>
+        new(id, code, title, teacherId, capacity, priceInCents, schedule, status, createdAt, publishedAt, cancellation, reservations, version);
 
     public bool IsTaughtBy(string userId) => string.Equals(TeacherId, userId, StringComparison.Ordinal);
 
@@ -183,8 +190,54 @@ public sealed class Course
     }
 
     /// <summary>Turns a held seat into a confirmed one. Confirming twice succeeds; an expired hold cannot be confirmed.</summary>
+    /// <summary>
+    /// Cancels the course (its teacher only, before it starts). Enrollments close, seats can no longer be confirmed,
+    /// and the course must be announced as cancelled so that Enrollment refunds the students. Cancelling twice
+    /// succeeds without change.
+    /// </summary>
+    public Result Cancel(string userId, DateTimeOffset now)
+    {
+        if (!IsTaughtBy(userId))
+        {
+            return Result.Fail(CourseErrors.NotOwner(Id));
+        }
+
+        if (Status == CourseStatus.Cancelled)
+        {
+            return Result.Ok();
+        }
+
+        if (Status is not (CourseStatus.Draft or CourseStatus.Published))
+        {
+            return Result.Fail(CourseErrors.InvalidTransition(Status, CourseStatus.Cancelled));
+        }
+
+        if (Schedule.HasStarted(now))
+        {
+            return Result.Fail(CourseErrors.Started(Id));
+        }
+
+        Status = CourseStatus.Cancelled;
+        Cancellation = new CourseCancellation(now, AnnouncedAt: null);
+        return Result.Ok();
+    }
+
+    /// <summary>Records that CourseCancelled was published.</summary>
+    public void MarkCancellationAnnounced(DateTimeOffset now)
+    {
+        if (NeedsCancellationAnnouncement)
+        {
+            Cancellation = Cancellation! with { AnnouncedAt = now };
+        }
+    }
+
     public Result ConfirmSeat(Guid reservationId, DateTimeOffset now)
     {
+        if (Status == CourseStatus.Cancelled)
+        {
+            return Result.Fail(CourseErrors.Cancelled(Id)); // the saga compensates: refund, release, reject
+        }
+
         var reservation = _reservations.FirstOrDefault(r => r.Id == reservationId);
         return reservation is null
             ? Result.Fail(CourseErrors.ReservationNotFound(reservationId))

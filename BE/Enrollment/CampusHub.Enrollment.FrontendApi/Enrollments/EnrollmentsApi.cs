@@ -25,14 +25,15 @@ public static partial class ApiDefinitions
 
         enrollments.MapPost("", async Task<Results<Accepted<EnrollmentDto>, ProblemHttpResult>> (
                 [FromBody] RequestEnrollmentCommand command, ClaimsPrincipal user, [FromServices] RequestEnrollment useCase,
-                CancellationToken cancellationToken) =>
+                [FromHeader(Name = GatewayHeaders.UserName)] string? studentName, CancellationToken cancellationToken) =>
             {
                 if (user.GetUserId() is not { } studentId)
                 {
                     return TypedResults.Problem(statusCode: StatusCodes.Status403Forbidden, title: "The token carries no user identifier.");
                 }
 
-                var result = await useCase.ExecuteAsync(command, studentId, cancellationToken).ConfigureAwait(false);
+                var result = await useCase.ExecuteAsync(command, studentId, cancellationToken,
+                                                       studentName is null ? null : Uri.UnescapeDataString(studentName)).ConfigureAwait(false);
                 return result.IsSuccess
                     ? TypedResults.Accepted($"/enrollment/frontend/enrollments/{result.Value.Id}", result.Value)
                     : TypedResults.Problem(result.ToProblemDetails());
@@ -57,5 +58,28 @@ public static partial class ApiDefinitions
             })
             .WithName("Enrollments_Get")
             .WithSummary("Get one of my enrollments.");
+
+        enrollments.MapPost("{enrollmentId:guid}/cancel", async Task<Results<Ok<EnrollmentDto>, ProblemHttpResult>> (
+                Guid enrollmentId, ClaimsPrincipal user, [FromServices] CancelMyEnrollment useCase, CancellationToken cancellationToken) =>
+            {
+                var result = await useCase.ExecuteAsync(enrollmentId, user.GetUserId() ?? string.Empty, cancellationToken).ConfigureAwait(false);
+                return result.IsSuccess ? TypedResults.Ok(result.Value) : TypedResults.Problem(result.ToProblemDetails());
+            })
+            .WithName("Enrollments_Cancel")
+            .WithSummary("Cancel one of my confirmed enrollments before the course starts; the payment is refunded.");
+
+        var courses = app.MapGroup("frontend/courses")
+                         .WithGroupName("frontend")
+                         .WithTags("Participants")
+                         .RequireAuthorization(nameof(Access.CanTeach));
+
+        courses.MapGet("{courseId:guid}/participants", async Task<Results<Ok<IReadOnlyList<ParticipantDto>>, ProblemHttpResult>> (
+                Guid courseId, ClaimsPrincipal user, [FromServices] ListCourseParticipants useCase, CancellationToken cancellationToken) =>
+            {
+                var result = await useCase.ExecuteAsync(courseId, user.GetUserId() ?? string.Empty, cancellationToken).ConfigureAwait(false);
+                return result.IsSuccess ? TypedResults.Ok(result.Value) : TypedResults.Problem(result.ToProblemDetails());
+            })
+            .WithName("Participants_List")
+            .WithSummary("The participants of one of my courses (teachers only).");
     }
 }

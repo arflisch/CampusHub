@@ -52,10 +52,14 @@ var daprAppToken = builder.AddParameter("dapr-app-api-token",
 // and given to every service, whose claims filler turns them into rights (see ServiceDefaults/CampusHubRoles.cs).
 var teachers = builder.Configuration["CampusHub:Teachers"] ?? string.Empty;
 var admins = builder.Configuration["CampusHub:Admins"] ?? string.Empty;
+// Service accounts (client-credentials clients) allowed on the service-to-service APIs: by default the Development
+// client of the services ("ClientTokens:Service" in their appsettings.Development.json).
+var serviceClients = builder.Configuration["CampusHub:ServiceClients"] ?? "hgxgbi1tryp55zladslxw";
 
 IResourceBuilder<ProjectResource> WithRoles(IResourceBuilder<ProjectResource> project) =>
     project.WithEnvironment("Authorization__Roles__Teachers", teachers)
-           .WithEnvironment("Authorization__Roles__Admins", admins);
+           .WithEnvironment("Authorization__Roles__Admins", admins)
+           .WithEnvironment("Authorization__Roles__ServiceClients", serviceClients);
 
 // A service with its Dapr sidecar. The sidecar gets the API token and, through the env secret store
 // (Dapr/Development/CampusHub-store-secrets-Secret.yaml), the broker connection string and the Redis password.

@@ -94,6 +94,8 @@ public static class HostingExtensions
                     metrics.AddMeter("Microsoft.AspNetCore.Routing");
                     metrics.AddMeter("Microsoft.AspNetCore.Diagnostics");
                     metrics.AddMeter("Microsoft.AspNetCore.Http"); // HTTP server semantic convention metrics
+                    // Business metrics of the services (CampusHub.Enrollment, CampusHub.Billing...).
+                    metrics.AddMeter("CampusHub.*");
                 })
                 .WithTracing(tracing =>
                 {

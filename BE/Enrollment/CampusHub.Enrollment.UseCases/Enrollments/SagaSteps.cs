@@ -143,10 +143,20 @@ public sealed class ConfirmEnrollment(IEnrollmentRepository enrollments, ICourse
                 return seatConfirmed;
             }
 
-            var confirmed = enrollment.Confirm(timeProvider.GetUtcNow());
-            return confirmed.IsFailed
-                ? confirmed
-                : await enrollments.SaveAsync(enrollment, ct).ConfigureAwait(false);
+            var now = timeProvider.GetUtcNow();
+            var confirmed = enrollment.Confirm(now);
+            if (confirmed.IsFailed)
+            {
+                return confirmed;
+            }
+
+            var saved = await enrollments.SaveAsync(enrollment, ct).ConfigureAwait(false);
+            if (saved.IsSuccess)
+            {
+                EnrollmentMetrics.RecordConfirmed(now - enrollment.RequestedAt);
+            }
+
+            return saved;
         }, cancellationToken);
 }
 
@@ -163,10 +173,25 @@ public sealed class RejectEnrollment(IEnrollmentRepository enrollments, TimeProv
                 return Result.Fail(EnrollmentErrors.NotFound(enrollmentId));
             }
 
-            var rejected = enrollment.Reject(reasonCode, timeProvider.GetUtcNow());
-            return rejected.IsFailed
-                ? rejected
-                : await enrollments.SaveAsync(enrollment, ct).ConfigureAwait(false);
+            if (enrollment.Status == EnrollmentStatus.Rejected)
+            {
+                return Result.Ok(); // replayed compensation: already recorded
+            }
+
+            var now = timeProvider.GetUtcNow();
+            var rejected = enrollment.Reject(reasonCode, now);
+            if (rejected.IsFailed)
+            {
+                return rejected;
+            }
+
+            var saved = await enrollments.SaveAsync(enrollment, ct).ConfigureAwait(false);
+            if (saved.IsSuccess)
+            {
+                EnrollmentMetrics.RecordRejected(reasonCode, now - enrollment.RequestedAt);
+            }
+
+            return saved;
         }, cancellationToken);
 }
 

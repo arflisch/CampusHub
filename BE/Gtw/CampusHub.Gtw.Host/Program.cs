@@ -23,7 +23,9 @@ using Dev4u.CampusHub.Gtw.Domain;
 using Dev4u.CampusHub.Gtw.Host;
 using Dev4u.CampusHub.Gtw.FrontendApi;
 using Dev4u.CampusHub.Gtw.Host.Infrastructure;
+using Dev4u.CampusHub.Security;
 using Dev4u.CampusHub.ServiceDefaults;
+using Yarp.ReverseProxy.Transforms;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.OpenApi;
@@ -87,7 +89,21 @@ try
     // Reverse proxy configuration + ServiceDiscovery.
     services.AddReverseProxy()
             .LoadFromConfig(configuration.GetSection("ReverseProxy"))
-            .AddServiceDiscoveryDestinationResolver();
+            .AddServiceDiscoveryDestinationResolver()
+            .AddTransforms(transforms => transforms.AddRequestTransform(context =>
+            {
+                // The services only get an access token, which carries no name: the gateway passes the display name
+                // of the session along (URL-encoded: header values are ASCII). A value sent by the client is dropped.
+                context.ProxyRequest.Headers.Remove(GatewayHeaders.UserName);
+                var user = context.HttpContext.User;
+                var name = user.FindFirst("name")?.Value ?? user.FindFirst("preferred_username")?.Value ?? user.FindFirst("username")?.Value;
+                if (user.Identity?.IsAuthenticated == true && !string.IsNullOrWhiteSpace(name))
+                {
+                    context.ProxyRequest.Headers.TryAddWithoutValidation(GatewayHeaders.UserName, Uri.EscapeDataString(name));
+                }
+
+                return ValueTask.CompletedTask;
+            }));
 
 
     services.AddDefaultAuthorizationPolicies();

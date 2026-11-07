@@ -32,6 +32,39 @@ public sealed class RecordParticipation(IParticipationRepository participations)
     }
 }
 
+/// <summary>
+/// Reacts to EnrollmentCancelled: a cancelled enrollment earns no certificate, its participation is removed.
+/// Idempotent (removing nothing is fine); a certificate already issued is kept.
+/// </summary>
+[Export, Scoped]
+public sealed class ForgetParticipation(IParticipationRepository participations)
+{
+    public async Task<Result<bool>> ExecuteAsync(Guid enrollmentId, CancellationToken cancellationToken) =>
+        Result.Ok(await participations.DeleteWithoutCertificateAsync(enrollmentId, cancellationToken).ConfigureAwait(false));
+}
+
+/// <summary>A certificate, as shown to its student.</summary>
+public sealed record CertificateDto(string Number, Guid EnrollmentId, Guid CourseId, string CourseTitle,
+                                    DateTimeOffset CourseEndedAt, DateTimeOffset IssuedAt);
+
+/// <summary>The current student's certificates.</summary>
+[Export, Scoped]
+public sealed class ListMyCertificates(IParticipationRepository participations)
+{
+    public const int MaxCount = 100;
+
+    public async Task<Result<IReadOnlyList<CertificateDto>>> ExecuteAsync(string studentId, CancellationToken cancellationToken)
+    {
+        var items = await participations.ListCertificatesForStudentAsync(studentId, MaxCount, cancellationToken).ConfigureAwait(false);
+        return Result.Ok<IReadOnlyList<CertificateDto>>(
+        [
+            .. items.Where(p => p.Certificate is not null)
+                    .Select(p => new CertificateDto(p.Certificate!.Number, p.EnrollmentId, p.CourseId, p.CourseTitle, p.CourseEndsAt,
+                                                    p.Certificate.IssuedAt)),
+        ]);
+    }
+}
+
 /// <summary>What a run of <see cref="IssueCertificates"/> did, logged by the job.</summary>
 public sealed record CertificatesReport(int Issued, int Announced, int Failed);
 
@@ -52,6 +85,11 @@ public sealed class IssueCertificates(IParticipationRepository participations, I
         foreach (var enrollmentId in ended.Select(p => p.EnrollmentId))
         {
             var result = await UpdateAsync(enrollmentId, p => p.IssueCertificate(timeProvider.GetUtcNow()), cancellationToken).ConfigureAwait(false);
+            if (result.IsSuccess)
+            {
+                GradingMetrics.RecordIssued();
+            }
+
             (issued, failed) = result.IsSuccess ? (issued + 1, failed) : (issued, failed + 1);
         }
 

@@ -30,7 +30,7 @@ public class StudentEnrollmentTests
         enrollment.Confirm(Now.AddSeconds(1)).IsSuccess.Should().BeTrue(); // replayed activity
 
         enrollment.Status.Should().Be(EnrollmentStatus.Confirmed);
-        var confirmed = enrollment.DomainEvents.Should().ContainSingle().Which.Should().BeOfType<EnrollmentConfirmed>().Subject;
+        var confirmed = enrollment.DomainEvents.OfType<EnrollmentConfirmed>().Should().ContainSingle().Subject;
         confirmed.EnrollmentId.Should().Be(enrollment.Id);
         confirmed.CourseTitle.Should().Be("Intro to .NET");
         confirmed.StudentId.Should().Be("student-1");
@@ -53,7 +53,7 @@ public class StudentEnrollmentTests
         var enrollment = Requested();
 
         enrollment.Confirm(Now).Errors.HasCode("enrollment.invalid_transition").Should().BeTrue();
-        enrollment.DomainEvents.Should().BeEmpty();
+        enrollment.DomainEvents.Where(e => e is not EnrollmentStatusChanged).Should().BeEmpty();
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public class StudentEnrollmentTests
         var enrollment = Requested();
 
         enrollment.RemindOfClass(Now).Errors.HasCode("enrollment.not_confirmed").Should().BeTrue();
-        enrollment.DomainEvents.Should().BeEmpty();
+        enrollment.DomainEvents.Where(e => e is not EnrollmentStatusChanged).Should().BeEmpty();
     }
 
     [Fact]
@@ -155,5 +155,47 @@ public class StudentEnrollmentTests
         enrollment.MarkPaid(Now);
 
         enrollment.Reject("enrollment.confirmation_failed", Now).IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Each_status_change_is_announced_once()
+    {
+        var enrollment = Requested();
+        enrollment.MarkSeatReserved(new SeatHold(Guid.NewGuid(), "Intro", Now.AddDays(1), Now.AddDays(30), CoursePriceInCents: 4900), Now);
+        enrollment.MarkPaid(Now);
+        enrollment.MarkPaid(Now); // replayed activity
+        enrollment.Confirm(Now);
+
+        enrollment.DomainEvents.OfType<EnrollmentStatusChanged>().Select(e => e.Status).Should().Equal(
+            EnrollmentStatus.Requested, EnrollmentStatus.SeatHeld, EnrollmentStatus.Paid, EnrollmentStatus.Confirmed);
+    }
+
+    [Fact]
+    public void A_student_cancels_a_confirmed_enrollment_before_the_course_starts()
+    {
+        var enrollment = Confirmed(); // starts the day after Now
+
+        enrollment.Cancel(StudentEnrollment.CancelledByStudent, Now).IsSuccess.Should().BeTrue();
+        enrollment.Cancel(StudentEnrollment.CancelledByStudent, Now).IsSuccess.Should().BeTrue(); // twice: one event
+
+        enrollment.Status.Should().Be(EnrollmentStatus.Cancelled);
+        enrollment.DomainEvents.OfType<EnrollmentCancelled>().Should().ContainSingle()
+                  .Which.Reason.Should().Be(StudentEnrollment.CancelledByStudent);
+    }
+
+    [Fact]
+    public void A_student_cannot_cancel_once_the_course_started_but_a_cancelled_course_cancels_anyway()
+    {
+        var byStudent = Confirmed();
+        var withCourse = Confirmed();
+
+        byStudent.Cancel(StudentEnrollment.CancelledByStudent, Now.AddDays(2)).Errors.HasCode("enrollment.course_started").Should().BeTrue();
+        withCourse.Cancel(StudentEnrollment.CancelledWithCourse, Now.AddDays(2)).IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Only_a_confirmed_enrollment_can_be_cancelled()
+    {
+        Requested().Cancel(StudentEnrollment.CancelledByStudent, Now).Errors.HasCode("enrollment.not_cancellable").Should().BeTrue();
     }
 }

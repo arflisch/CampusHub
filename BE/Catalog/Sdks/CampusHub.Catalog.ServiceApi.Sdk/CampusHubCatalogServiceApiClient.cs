@@ -626,6 +626,10 @@ namespace Dev4u.CampusHub.Catalog.ServiceApi.Sdk
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string CourseTitle { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("courseTeacherId", Required = Newtonsoft.Json.Required.Always)]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string CourseTeacherId { get; set; } = default!;
+
         [Newtonsoft.Json.JsonProperty("coursePriceInCents", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [System.ComponentModel.DataAnnotations.RegularExpression(@"^-?(?:0|[1-9]\d*)$")]

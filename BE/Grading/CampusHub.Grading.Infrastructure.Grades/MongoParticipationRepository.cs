@@ -98,6 +98,24 @@ public sealed class MongoParticipationRepository(IMongoClientFactory<DatabaseCon
         return [.. documents.Select(ToDomain)];
     }
 
+    public async Task<IReadOnlyList<CourseParticipation>> ListCertificatesForStudentAsync(string studentId, int take,
+                                                                                        CancellationToken cancellationToken)
+    {
+        var documents = await Participations.Find(p => p.StudentId == studentId && p.CertificateNumber != null)
+                                            .SortByDescending(p => p.CertificateIssuedAtUtc)
+                                            .Limit(take)
+                                            .ToListAsync(cancellationToken)
+                                            .ConfigureAwait(false);
+        return [.. documents.Select(ToDomain)];
+    }
+
+    public async Task<bool> DeleteWithoutCertificateAsync(Guid enrollmentId, CancellationToken cancellationToken)
+    {
+        var deleted = await Participations.DeleteOneAsync(p => p.Id == enrollmentId && p.CertificateNumber == null, cancellationToken)
+                                          .ConfigureAwait(false);
+        return deleted.DeletedCount > 0;
+    }
+
     private static ParticipationDocument ToDocument(CourseParticipation participation, long version) => new()
     {
         Id = participation.EnrollmentId,
@@ -133,6 +151,10 @@ public static class GradingIndexes
             new CreateIndexModel<ParticipationDocument>(
                 Builders<ParticipationDocument>.IndexKeys.Ascending(p => p.CertificateNumber).Ascending(p => p.CourseEndsAtUtc),
                 new CreateIndexOptions { Name = "certificates_due" }),
+            // A student's certificates.
+            new CreateIndexModel<ParticipationDocument>(
+                Builders<ParticipationDocument>.IndexKeys.Ascending(p => p.StudentId).Descending(p => p.CertificateIssuedAtUtc),
+                new CreateIndexOptions { Name = "student_certificates" }),
             // Certificates issued but not announced yet.
             new CreateIndexModel<ParticipationDocument>(
                 Builders<ParticipationDocument>.IndexKeys.Ascending(p => p.CertificateAnnouncedAtUtc).Ascending(p => p.CertificateIssuedAtUtc),

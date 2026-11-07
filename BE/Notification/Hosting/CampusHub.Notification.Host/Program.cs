@@ -39,6 +39,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Arc4u.MongoDB;
 using Dev4u.CampusHub.Notification.Infrastructure.Notifications;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
@@ -126,6 +127,12 @@ try
     // Only the origins listed in Cors:AllowedOrigins may call the API cross-origin; none are allowed by default.
     var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
     services.AddCors(options => options.AddDefaultPolicy(policy => policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()));
+
+    // Live updates to the browsers (see Infrastructure/LiveUpdates.cs). One instance in this sandbox: several would
+    // need a backplane (Redis) so that a push reaches a user connected to another instance.
+    services.AddSignalR();
+    services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider, Dev4u.CampusHub.Notification.Host.Infrastructure.SubjectUserIdProvider>();
+    services.TryAddSingleton(TimeProvider.System);
 
     services.AddControllers(opt =>
     {
@@ -241,6 +248,7 @@ try
     app.RegisterNotificationsApis();
 
     app.MapControllers();
+    app.MapHub<Dev4u.CampusHub.Notification.Host.Infrastructure.LiveHub>("hubs/campus");
     app.MapSubscribeHandler();
     app.MapGrpcReflectionService();
 

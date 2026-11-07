@@ -11,6 +11,7 @@ public sealed record EnrollmentDto(
     int CoursePriceInCents,
     string Status,
     string? RejectionCode,
+    string? CancellationReason,
     DateTimeOffset RequestedAt,
     DateTimeOffset UpdatedAt);
 
@@ -21,5 +22,5 @@ internal static class EnrollmentMappings
     public static EnrollmentDto ToDto(this StudentEnrollment enrollment) =>
         new(enrollment.Id, enrollment.CourseId, enrollment.CourseTitle, enrollment.CourseStartsAt, enrollment.CoursePriceInCents,
             enrollment.Status.ToString(),
-            enrollment.RejectionCode, enrollment.RequestedAt, enrollment.UpdatedAt);
+            enrollment.RejectionCode, enrollment.CancellationReason, enrollment.RequestedAt, enrollment.UpdatedAt);
 }

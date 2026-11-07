@@ -315,7 +315,7 @@ namespace Dev4u.CampusHub.Enrollment.FrontendApi.Sdk
         /// </summary>
         /// <returns>Accepted</returns>
         /// <exception cref="RestException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<EnrollmentDto> RequestAsync(RequestEnrollmentCommand body);
+        System.Threading.Tasks.Task<EnrollmentDto> RequestAsync(string? x_CampusHub_User_Name, RequestEnrollmentCommand body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -323,7 +323,7 @@ namespace Dev4u.CampusHub.Enrollment.FrontendApi.Sdk
         /// </summary>
         /// <returns>Accepted</returns>
         /// <exception cref="RestException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<EnrollmentDto> RequestAsync(RequestEnrollmentCommand body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<EnrollmentDto> RequestAsync(string? x_CampusHub_User_Name, RequestEnrollmentCommand body, System.Threading.CancellationToken cancellationToken);
 
         /// <summary>
         /// My latest enrollments.
@@ -354,6 +354,21 @@ namespace Dev4u.CampusHub.Enrollment.FrontendApi.Sdk
         /// <returns>OK</returns>
         /// <exception cref="RestException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<EnrollmentDto> GetAsync(System.Guid enrollmentId, System.Threading.CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Cancel one of my confirmed enrollments before the course starts; the payment is refunded.
+        /// </summary>
+        /// <returns>OK</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<EnrollmentDto> CancelAsync(System.Guid enrollmentId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Cancel one of my confirmed enrollments before the course starts; the payment is refunded.
+        /// </summary>
+        /// <returns>OK</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<EnrollmentDto> CancelAsync(System.Guid enrollmentId, System.Threading.CancellationToken cancellationToken);
 
     }
 
@@ -394,9 +409,9 @@ namespace Dev4u.CampusHub.Enrollment.FrontendApi.Sdk
         /// </summary>
         /// <returns>Accepted</returns>
         /// <exception cref="RestException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<EnrollmentDto> RequestAsync(RequestEnrollmentCommand body)
+        public virtual System.Threading.Tasks.Task<EnrollmentDto> RequestAsync(string? x_CampusHub_User_Name, RequestEnrollmentCommand body)
         {
-            return RequestAsync(body, System.Threading.CancellationToken.None);
+            return RequestAsync(x_CampusHub_User_Name, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -405,7 +420,7 @@ namespace Dev4u.CampusHub.Enrollment.FrontendApi.Sdk
         /// </summary>
         /// <returns>Accepted</returns>
         /// <exception cref="RestException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<EnrollmentDto> RequestAsync(RequestEnrollmentCommand body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<EnrollmentDto> RequestAsync(string? x_CampusHub_User_Name, RequestEnrollmentCommand body, System.Threading.CancellationToken cancellationToken)
         {
             if (body == null)
                 throw new System.ArgumentNullException("body");
@@ -416,6 +431,9 @@ namespace Dev4u.CampusHub.Enrollment.FrontendApi.Sdk
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
+
+                    if (x_CampusHub_User_Name != null)
+                        request_.Headers.TryAddWithoutValidation("X-CampusHub-User-Name", ConvertToString(x_CampusHub_User_Name, System.Globalization.CultureInfo.InvariantCulture));
                     var json_ = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(body, JsonSerializerSettings);
                     var content_ = new System.Net.Http.ByteArrayContent(json_);
                     content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
@@ -664,6 +682,374 @@ namespace Dev4u.CampusHub.Enrollment.FrontendApi.Sdk
             }
         }
 
+        /// <summary>
+        /// Cancel one of my confirmed enrollments before the course starts; the payment is refunded.
+        /// </summary>
+        /// <returns>OK</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<EnrollmentDto> CancelAsync(System.Guid enrollmentId)
+        {
+            return CancelAsync(enrollmentId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Cancel one of my confirmed enrollments before the course starts; the payment is refunded.
+        /// </summary>
+        /// <returns>OK</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<EnrollmentDto> CancelAsync(System.Guid enrollmentId, System.Threading.CancellationToken cancellationToken)
+        {
+            if (enrollmentId == null)
+                throw new System.ArgumentNullException("enrollmentId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Content = new System.Net.Http.StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json");
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "frontend/enrollments/{enrollmentId}/cancel"
+                    urlBuilder_.Append("frontend/enrollments/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(enrollmentId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/cancel");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<EnrollmentDto>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new RestException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new RestException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new RestException<ProblemDetails>("An error occured and is RFC 7807 (problem details).", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        protected struct ObjectResponseResult<T>
+        {
+            public ObjectResponseResult(T responseObject, string responseText)
+            {
+                this.Object = responseObject;
+                this.Text = responseText;
+            }
+
+            public T Object { get; }
+
+            public string Text { get; }
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        private static System.Threading.Tasks.Task<string> ReadAsStringAsync(System.Net.Http.HttpContent content, System.Threading.CancellationToken cancellationToken)
+        {
+    #if NET5_0_OR_GREATER
+            return content.ReadAsStringAsync(cancellationToken);
+    #else
+            return content.ReadAsStringAsync();
+    #endif
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        private static System.Threading.Tasks.Task<System.IO.Stream> ReadAsStreamAsync(System.Net.Http.HttpContent content, System.Threading.CancellationToken cancellationToken)
+        {
+    #if NET5_0_OR_GREATER
+            return content.ReadAsStreamAsync(cancellationToken);
+    #else
+            return content.ReadAsStreamAsync();
+    #endif
+        }
+
+        public bool ReadResponseAsString { get; set; }
+
+        protected virtual async System.Threading.Tasks.Task<ObjectResponseResult<T>> ReadObjectResponseAsync<T>(System.Net.Http.HttpResponseMessage response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Threading.CancellationToken cancellationToken)
+        {
+            if (response == null || response.Content == null)
+            {
+                return new ObjectResponseResult<T>(default(T)!, string.Empty);
+            }
+
+            if (ReadResponseAsString)
+            {
+                var responseText = await ReadAsStringAsync(response.Content, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    var typedBody = System.Text.Json.JsonSerializer.Deserialize<T>(responseText, JsonSerializerSettings);
+                    return new ObjectResponseResult<T>(typedBody!, responseText);
+                }
+                catch (System.Text.Json.JsonException exception)
+                {
+                    var message = "Could not deserialize the response body string as " + typeof(T).FullName + ".";
+                    throw new RestException(message, (int)response.StatusCode, responseText, headers, exception);
+                }
+            }
+            else
+            {
+                try
+                {
+                    using (var responseStream = await ReadAsStreamAsync(response.Content, cancellationToken).ConfigureAwait(false))
+                    {
+                        var typedBody = await System.Text.Json.JsonSerializer.DeserializeAsync<T>(responseStream, JsonSerializerSettings, cancellationToken).ConfigureAwait(false);
+                        return new ObjectResponseResult<T>(typedBody!, string.Empty);
+                    }
+                }
+                catch (System.Text.Json.JsonException exception)
+                {
+                    var message = "Could not deserialize the response body stream as " + typeof(T).FullName + ".";
+                    throw new RestException(message, (int)response.StatusCode, string.Empty, headers, exception);
+                }
+            }
+        }
+
+        private string ConvertToString(object? value, System.Globalization.CultureInfo cultureInfo)
+        {
+            if (value == null)
+            {
+                return "";
+            }
+
+            if (value is System.Enum)
+            {
+                var name = System.Enum.GetName(value.GetType(), value);
+                if (name != null)
+                {
+                    var field_ = System.Reflection.IntrospectionExtensions.GetTypeInfo(value.GetType()).GetDeclaredField(name);
+                    if (field_ != null)
+                    {
+                        var attribute = System.Reflection.CustomAttributeExtensions.GetCustomAttribute(field_, typeof(System.Runtime.Serialization.EnumMemberAttribute)) 
+                            as System.Runtime.Serialization.EnumMemberAttribute;
+                        if (attribute != null)
+                        {
+                            return attribute.Value != null ? attribute.Value : name;
+                        }
+                    }
+
+                    var converted = System.Convert.ToString(System.Convert.ChangeType(value, System.Enum.GetUnderlyingType(value.GetType()), cultureInfo));
+                    return converted == null ? string.Empty : converted;
+                }
+            }
+            else if (value is bool) 
+            {
+                return System.Convert.ToString((bool)value, cultureInfo).ToLowerInvariant();
+            }
+            else if (value is byte[])
+            {
+                return System.Convert.ToBase64String((byte[]) value);
+            }
+            else if (value is string[])
+            {
+                return string.Join(",", (string[])value);
+            }
+            else if (value.GetType().IsArray)
+            {
+                var valueArray = (System.Array)value;
+                var valueTextArray = new string[valueArray.Length];
+                for (var i = 0; i < valueArray.Length; i++)
+                {
+                    valueTextArray[i] = ConvertToString(valueArray.GetValue(i), cultureInfo);
+                }
+                return string.Join(",", valueTextArray);
+            }
+
+            var result = System.Convert.ToString(value, cultureInfo);
+            return result == null ? "" : result;
+        }
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial interface IParticipantsClient
+    {
+        /// <summary>
+        /// The participants of one of my courses (teachers only).
+        /// </summary>
+        /// <returns>OK</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<ParticipantDto>> ListAsync(System.Guid courseId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// The participants of one of my courses (teachers only).
+        /// </summary>
+        /// <returns>OK</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<ParticipantDto>> ListAsync(System.Guid courseId, System.Threading.CancellationToken cancellationToken);
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ParticipantsClient : IParticipantsClient
+    {
+        private System.Net.Http.HttpClient _httpClient;
+        private static System.Lazy<System.Text.Json.JsonSerializerOptions> _settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings, true);
+        private System.Text.Json.JsonSerializerOptions _instanceSettings;
+
+    #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        public ParticipantsClient(System.Net.Http.HttpClient httpClient)
+    #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        {
+            _httpClient = httpClient;
+            Initialize();
+        }
+
+        private static System.Text.Json.JsonSerializerOptions CreateSerializerSettings()
+        {
+            var settings = new System.Text.Json.JsonSerializerOptions();
+            UpdateJsonSerializerSettings(settings);
+            return settings;
+        }
+
+        protected System.Text.Json.JsonSerializerOptions JsonSerializerSettings { get { return _instanceSettings ?? _settings.Value; } }
+
+        static partial void UpdateJsonSerializerSettings(System.Text.Json.JsonSerializerOptions settings);
+
+        partial void Initialize();
+
+        partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, string url);
+        partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, System.Text.StringBuilder urlBuilder);
+        partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
+
+        /// <summary>
+        /// The participants of one of my courses (teachers only).
+        /// </summary>
+        /// <returns>OK</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<ParticipantDto>> ListAsync(System.Guid courseId)
+        {
+            return ListAsync(courseId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// The participants of one of my courses (teachers only).
+        /// </summary>
+        /// <returns>OK</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<ParticipantDto>> ListAsync(System.Guid courseId, System.Threading.CancellationToken cancellationToken)
+        {
+            if (courseId == null)
+                throw new System.ArgumentNullException("courseId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "frontend/courses/{courseId}/participants"
+                    urlBuilder_.Append("frontend/courses/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(courseId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/participants");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.ObjectModel.ObservableCollection<ParticipantDto>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new RestException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new RestException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new RestException<ProblemDetails>("An error occured and is RFC 7807 (problem details).", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
         protected struct ObjectResponseResult<T>
         {
             public ObjectResponseResult(T responseObject, string responseText)
@@ -823,6 +1209,9 @@ namespace Dev4u.CampusHub.Enrollment.FrontendApi.Sdk
         [System.Text.Json.Serialization.JsonPropertyName("rejectionCode")]
         public string? RejectionCode { get; set; } = default!;
 
+        [System.Text.Json.Serialization.JsonPropertyName("cancellationReason")]
+        public string? CancellationReason { get; set; } = default!;
+
         [System.Text.Json.Serialization.JsonPropertyName("requestedAt")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public System.DateTime RequestedAt { get; set; } = default!;
@@ -854,6 +1243,45 @@ namespace Dev4u.CampusHub.Enrollment.FrontendApi.Sdk
 
         [System.Text.Json.Serialization.JsonPropertyName("service")]
         public string? Service { get; set; } = default!;
+
+        private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
+
+        [System.Text.Json.Serialization.JsonExtensionData]
+        public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
+        {
+            get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
+            set { _additionalProperties = value; }
+        }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ParticipantDto
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("enrollmentId")]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public System.Guid EnrollmentId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("studentId")]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string StudentId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("studentName")]
+        public string? StudentName { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("status")]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public string Status { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("coursePriceInCents")]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        [System.ComponentModel.DataAnnotations.RegularExpression(@"^-?(?:0|[1-9]\d*)$")]
+        public int CoursePriceInCents { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedAt")]
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public System.DateTime RequestedAt { get; set; } = default!;
 
         private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
 

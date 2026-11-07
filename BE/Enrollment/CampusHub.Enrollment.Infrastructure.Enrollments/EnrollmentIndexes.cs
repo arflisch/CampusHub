@@ -29,6 +29,10 @@ public static class EnrollmentIndexes
             new CreateIndexModel<EnrollmentDocument>(
                 Builders<EnrollmentDocument>.IndexKeys.Ascending(e => e.StudentId).Descending(e => e.RequestedAtUtc),
                 new CreateIndexOptions { Name = "student_requests" }),
+            // A course's participants (teacher view, course cancellation).
+            new CreateIndexModel<EnrollmentDocument>(
+                Builders<EnrollmentDocument>.IndexKeys.Ascending(e => e.CourseId).Descending(e => e.RequestedAtUtc),
+                new CreateIndexOptions { Name = "course_enrollments" }),
             // The stalled-saga sweep: unsettled enrollments, oldest change first.
             new CreateIndexModel<EnrollmentDocument>(
                 Builders<EnrollmentDocument>.IndexKeys.Ascending(e => e.Status).Ascending(e => e.UpdatedAtUtc),

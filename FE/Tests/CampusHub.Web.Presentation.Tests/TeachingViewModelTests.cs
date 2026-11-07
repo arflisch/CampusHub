@@ -15,7 +15,9 @@ public class TeachingViewModelTests : IAsyncLifetime
     private readonly FakeTimeProvider _time = new(new DateTimeOffset(2026, 10, 22, 15, 0, 0, TimeSpan.Zero));
     private readonly TeachingViewModel _sut;
 
-    public TeachingViewModelTests() => _sut = new TeachingViewModel(_catalog, new FakeCurrentUserService(Teacher), _time);
+    private readonly FakeEnrollmentService _enrollments = new();
+
+    public TeachingViewModelTests() => _sut = new TeachingViewModel(_catalog, new FakeCurrentUserService(Teacher), _time, _enrollments);
 
     public Task InitializeAsync() => _sut.InitializeAsync(CancellationToken.None);
 
@@ -24,7 +26,7 @@ public class TeachingViewModelTests : IAsyncLifetime
     [Fact]
     public async Task A_user_without_the_teacher_role_gets_nothing_to_create_and_learns_their_id()
     {
-        var student = new TeachingViewModel(_catalog, new FakeCurrentUserService(new CurrentUser("student-1", "Sam Student")), _time);
+        var student = new TeachingViewModel(_catalog, new FakeCurrentUserService(new CurrentUser("student-1", "Sam Student")), _time, _enrollments);
         _catalog.Mine = Result.Fail<IReadOnlyList<CourseItem>>("must not be called");
 
         await student.InitializeAsync(CancellationToken.None);
@@ -141,5 +143,35 @@ public class TeachingViewModelTests : IAsyncLifetime
         await _sut.PublishCommand.ExecuteAsync(draft);
 
         _sut.MyCourses.Single().State.Should().Be(CourseState.Published);
+    }
+
+    [Fact]
+    public async Task A_published_course_that_has_not_started_can_be_cancelled()
+    {
+        var published = TestData.Course(); // starts 2026-11-02, "now" is 2026-10-22
+        _catalog.Mine = Result.Ok<IReadOnlyList<CourseItem>>([published]);
+        await _sut.LoadCommand.ExecuteAsync(null);
+
+        _sut.CancelCourseCommand.CanExecute(published).Should().BeTrue();
+        await _sut.CancelCourseCommand.ExecuteAsync(published);
+
+        _sut.MyCourses.Single().State.Should().Be(CourseState.Cancelled);
+        _sut.InfoMessage.Should().Contain("refunded");
+        _sut.CancelCourseCommand.CanExecute(_sut.MyCourses.Single()).Should().BeFalse("already cancelled");
+    }
+
+    [Fact]
+    public async Task The_participants_of_a_course_are_shown_then_hidden()
+    {
+        var course = TestData.Course();
+        _enrollments.Participants = Result.Ok<IReadOnlyList<ParticipantItem>>(
+            [new ParticipantItem(Guid.NewGuid(), "student-1", "Ada Lovelace", EnrollmentState.Confirmed, 0, DateTimeOffset.UnixEpoch)]);
+
+        await _sut.ToggleParticipantsCommand.ExecuteAsync(course);
+        _sut.ShownParticipantsOf.Should().Be(course.Id);
+        _sut.Participants.Single().DisplayName.Should().Be("Ada Lovelace");
+
+        await _sut.ToggleParticipantsCommand.ExecuteAsync(course);
+        _sut.ShownParticipantsOf.Should().BeNull();
     }
 }

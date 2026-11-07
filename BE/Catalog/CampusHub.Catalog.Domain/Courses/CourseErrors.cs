@@ -23,6 +23,9 @@ public static class CourseErrors
     public static ProblemDetailError InvalidSchedule(string detail) =>
         AppErrors.Validation("course.invalid_schedule", detail);
 
+    public static ProblemDetailError Cancelled(Guid courseId) =>
+        AppErrors.BusinessRule("course.cancelled", $"Course '{courseId}' was cancelled by its teacher.");
+
     public static ProblemDetailError Started(Guid courseId) =>
         AppErrors.BusinessRule("course.started", $"Course '{courseId}' has already started: enrollments are closed.");
 

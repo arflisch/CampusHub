@@ -1,4 +1,5 @@
 using Arc4u.Dependency.Attribute;
+using Dev4u.CampusHub.Enrollment.UseCases.Common;
 using Dev4u.CampusHub.Enrollment.Domain.Enrollments;
 using FluentResults;
 
@@ -15,7 +16,8 @@ namespace Dev4u.CampusHub.Enrollment.UseCases.Enrollments;
 [Export, Scoped]
 public sealed class RequestEnrollment(IEnrollmentRepository enrollments, IEnrollmentSaga saga, TimeProvider timeProvider)
 {
-    public async Task<Result<EnrollmentDto>> ExecuteAsync(RequestEnrollmentCommand command, string studentId, CancellationToken cancellationToken)
+    public async Task<Result<EnrollmentDto>> ExecuteAsync(RequestEnrollmentCommand command, string studentId, CancellationToken cancellationToken,
+                                                          string? studentName = null)
     {
         ArgumentNullException.ThrowIfNull(command);
 
@@ -27,7 +29,7 @@ public sealed class RequestEnrollment(IEnrollmentRepository enrollments, IEnroll
 
         if (enrollment is null)
         {
-            var requested = StudentEnrollment.Request(command.RequestId, command.CourseId, studentId, timeProvider.GetUtcNow());
+            var requested = StudentEnrollment.Request(command.RequestId, command.CourseId, studentId, timeProvider.GetUtcNow(), studentName);
             if (requested.IsFailed)
             {
                 return requested.ToResult<EnrollmentDto>();
@@ -38,6 +40,8 @@ public sealed class RequestEnrollment(IEnrollmentRepository enrollments, IEnroll
             {
                 return added.ToResult<EnrollmentDto>();
             }
+
+            EnrollmentMetrics.RecordRequested();
 
             enrollment = requested.Value;
         }

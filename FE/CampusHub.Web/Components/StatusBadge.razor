@@ -11,7 +11,13 @@
         EnrollmentState.Requested or EnrollmentState.SeatHeld or EnrollmentState.Paid => "pending",
         EnrollmentState.Confirmed => "success",
         EnrollmentState.Rejected => "danger",
-        _ => Course == CourseState.Published ? "success" : "neutral",
+        EnrollmentState.Cancelled => "neutral",
+        _ => Course switch
+        {
+            CourseState.Published => "success",
+            CourseState.Cancelled => "danger",
+            _ => "neutral",
+        },
     };
 
     private string Text => Enrollment switch
@@ -21,6 +27,7 @@
         EnrollmentState.Paid => "Paid",
         EnrollmentState.Confirmed => "Confirmed",
         EnrollmentState.Rejected => "Rejected",
+        EnrollmentState.Cancelled => "Cancelled",
         _ => Course?.ToString() ?? string.Empty,
     };
 }

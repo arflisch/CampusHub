@@ -12,6 +12,10 @@ spec:
         path: /Dapr/Enrollment/Confirmed
       - match: event.type == "campushub.enrollment.class.reminder_due"
         path: /Dapr/Enrollment/ClassReminder
+      - match: event.type == "campushub.enrollment.enrollment.cancelled"
+        path: /Dapr/Enrollment/Cancelled
+      - match: event.type == "campushub.enrollment.enrollment.status_changed"
+        path: /Dapr/Enrollment/StatusChanged
   # No deadLetterTopic: a dead-letter topic nobody subscribes to silently drops the message. Once the resiliency
   # retries are exhausted, Dapr rejects the message and RabbitMQ moves it to the dlq-<consumer>-<topic> queue
   # (enableDeadLetter on the pub/sub component), where it stays until someone looks at it.

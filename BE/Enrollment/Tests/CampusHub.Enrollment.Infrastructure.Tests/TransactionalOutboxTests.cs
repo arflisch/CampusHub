@@ -36,7 +36,7 @@ public class TransactionalOutboxTests(MongoReplicaSetFixture mongo) : IClassFixt
         enrollment.DomainEvents.Should().BeEmpty("they are in the outbox now");
         (await repository.GetAsync(enrollment.Id, CancellationToken.None))!.Status.Should().Be(EnrollmentStatus.Confirmed);
 
-        var message = await factory.GetCollection<OutboxMessage>().Find(_ => true).SingleAsync();
+        var message = await factory.GetCollection<OutboxMessage>().Find(m => m.Type == EnrollmentEvents.EnrollmentConfirmedV1Type).SingleAsync();
         message.Type.Should().Be(EnrollmentEvents.EnrollmentConfirmedV1Type);
         message.Topic.Should().Be(EnrollmentEvents.Topic);
         message.ProcessedAtUtc.Should().BeNull();
@@ -108,7 +108,8 @@ public class TransactionalOutboxTests(MongoReplicaSetFixture mongo) : IClassFixt
         var result = await repository.SaveAsync(stale, CancellationToken.None);
 
         result.Errors.HasCode(EnrollmentErrors.ConcurrencyConflictCode).Should().BeTrue();
-        (await factory.GetCollection<OutboxMessage>().CountDocumentsAsync(_ => true)).Should().Be(1, "the losing transaction was rolled back");
+        (await factory.GetCollection<OutboxMessage>().CountDocumentsAsync(m => m.Type == EnrollmentEvents.EnrollmentConfirmedV1Type))
+            .Should().Be(1, "the losing transaction was rolled back");
     }
 
     [Fact]

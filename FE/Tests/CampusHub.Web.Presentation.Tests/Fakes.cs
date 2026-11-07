@@ -66,6 +66,35 @@ internal sealed class FakeEnrollmentService : IEnrollmentService
 
         return Task.FromResult(_lastList);
     }
+
+    public List<Guid> Cancelled { get; } = [];
+
+    public Result<IReadOnlyList<ParticipantItem>> Participants { get; set; } = Result.Ok<IReadOnlyList<ParticipantItem>>([]);
+
+    public Task<Result<EnrollmentItem>> CancelAsync(Guid enrollmentId, CancellationToken cancellationToken)
+    {
+        Cancelled.Add(enrollmentId);
+        return Task.FromResult(Result.Ok(TestData.Enrollment(enrollmentId, EnrollmentState.Cancelled)));
+    }
+
+    public Task<Result<IReadOnlyList<ParticipantItem>>> ListParticipantsAsync(Guid courseId, CancellationToken cancellationToken) =>
+        Task.FromResult(Participants);
+}
+
+/// <summary>Pushes on demand, like the server would through SignalR.</summary>
+internal sealed class FakeLiveUpdates : ILiveUpdates
+{
+    public event EventHandler<EnrollmentChange>? EnrollmentChanged;
+
+    public event EventHandler<NotificationItem>? NotificationReceived;
+
+    public bool IsConnected => true;
+
+    public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    public void Push(EnrollmentChange change) => EnrollmentChanged?.Invoke(this, change);
+
+    public void Push(NotificationItem notification) => NotificationReceived?.Invoke(this, notification);
 }
 
 internal sealed class FakeCurrentUserService(CurrentUser user) : ICurrentUserService
@@ -94,6 +123,12 @@ internal sealed class FakeCourseCatalog : ICourseCatalog
         return Task.FromResult(CreateResult
             ?? Result.Ok(new CourseItem(Guid.NewGuid(), code, title, "teacher-1", capacity, capacity, priceInCents, startsAt, endsAt,
                                         CourseState.Draft, null)));
+    }
+
+    public Task<Result<CourseItem>> CancelAsync(Guid courseId, CancellationToken cancellationToken)
+    {
+        var course = Mine.Value.Single(c => c.Id == courseId);
+        return Task.FromResult(Result.Ok(course with { State = CourseState.Cancelled }));
     }
 
     public Task<Result<CourseItem>> PublishAsync(Guid courseId, CancellationToken cancellationToken)

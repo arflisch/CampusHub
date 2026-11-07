@@ -6,9 +6,12 @@
 <div class="page-head">
     <div>
         <h1>Notifications</h1>
-        <p class="muted">Written by the Notification service when it receives an event (e.g. an enrollment confirmed).</p>
+        <p class="muted">Written by the Notification service when it receives an event; new ones appear here live.</p>
     </div>
-    <CommandButton Command="ViewModel.LoadCommand" CssClass="btn btn-ghost" BusyText="Refreshing…">Refresh</CommandButton>
+    <div class="row-actions">
+        <CommandButton Command="ViewModel.MarkAllReadCommand" CssClass="btn btn-ghost" BusyText="Marking…">Mark all as read</CommandButton>
+        <CommandButton Command="ViewModel.LoadCommand" CssClass="btn btn-ghost" BusyText="Refreshing…">Refresh</CommandButton>
+    </div>
 </div>
 
 <Banner Message="@ViewModel.ErrorMessage" OnDismiss="() => ViewModel.DismissErrorCommand.Execute(null)" />
@@ -22,9 +25,15 @@ else
     <ul class="list">
         @foreach (var notification in ViewModel.Notifications)
         {
-            <li class="row" @key="notification.Id">
+            <li class="row @(notification.IsRead ? string.Empty : "unread")" @key="notification.Id">
                 <div>
-                    <div class="row-title">@notification.Title</div>
+                    <div class="row-title">
+                        @if (!notification.IsRead)
+                        {
+                            <span class="unread-dot" aria-label="Unread"></span>
+                        }
+                        @notification.Title
+                    </div>
                     <div class="muted small">@notification.Message</div>
                 </div>
                 <span class="muted small">@notification.CreatedAt.ToLocalTime().ToString("g")</span>

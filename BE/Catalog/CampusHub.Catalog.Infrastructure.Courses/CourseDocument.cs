@@ -36,6 +36,10 @@ public sealed class CourseDocument
 
     public DateTime? PublishedAtUtc { get; set; }
 
+    public DateTime? CancelledAtUtc { get; set; }
+
+    public DateTime? CancellationAnnouncedAtUtc { get; set; }
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1002", Justification = "Storage DTO deserialized by the MongoDB driver.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227", Justification = "Storage DTO deserialized by the MongoDB driver.")]
     public List<SeatReservationDocument> Reservations { get; set; } = [];
@@ -75,6 +79,8 @@ internal static class CourseDocumentMapping
         Status = course.Status,
         CreatedAtUtc = course.CreatedAt.UtcDateTime,
         PublishedAtUtc = course.PublishedAt?.UtcDateTime,
+        CancelledAtUtc = course.Cancellation?.CancelledAt.UtcDateTime,
+        CancellationAnnouncedAtUtc = course.Cancellation?.AnnouncedAt?.UtcDateTime,
         Reservations = [.. course.Reservations.Select(r => new SeatReservationDocument
         {
             Id = r.Id,
@@ -99,9 +105,21 @@ internal static class CourseDocumentMapping
             document.Status,
             AsUtc(document.CreatedAtUtc),
             document.PublishedAtUtc is { } published ? AsUtc(published) : null,
+            CancellationOf(document),
             document.Reservations.Select(r => SeatReservation.Rehydrate(
                 r.Id, r.StudentId, r.IdempotencyKey, r.Status, AsUtc(r.CreatedAtUtc), AsUtc(r.HeldUntilUtc))),
             document.Version);
+
+    private static CourseCancellation? CancellationOf(CourseDocument document)
+    {
+        if (document.CancelledAtUtc is not { } cancelledAt)
+        {
+            return null;
+        }
+
+        DateTimeOffset? announcedAt = document.CancellationAnnouncedAtUtc is { } announced ? AsUtc(announced) : null;
+        return new CourseCancellation(AsUtc(cancelledAt), announcedAt);
+    }
 
     private static DateTimeOffset AsUtc(DateTime value) =>
         new(DateTime.SpecifyKind(value, DateTimeKind.Utc));

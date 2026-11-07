@@ -385,6 +385,21 @@ namespace Dev4u.CampusHub.Catalog.FrontendApi.Sdk
         /// <exception cref="RestException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<CourseDto> PublishAsync(System.Guid courseId, System.Threading.CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Cancel a course before it starts (its teacher only); the enrolled students are refunded and notified.
+        /// </summary>
+        /// <returns>OK</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<CourseDto> CancelAsync(System.Guid courseId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Cancel a course before it starts (its teacher only); the enrolled students are refunded and notified.
+        /// </summary>
+        /// <returns>OK</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<CourseDto> CancelAsync(System.Guid courseId, System.Threading.CancellationToken cancellationToken);
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -829,6 +844,100 @@ namespace Dev4u.CampusHub.Catalog.FrontendApi.Sdk
                     urlBuilder_.Append("frontend/courses/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(courseId, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/publish");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<CourseDto>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new RestException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new RestException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new RestException<ProblemDetails>("An error occured and is RFC 7807 (problem details).", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Cancel a course before it starts (its teacher only); the enrolled students are refunded and notified.
+        /// </summary>
+        /// <returns>OK</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<CourseDto> CancelAsync(System.Guid courseId)
+        {
+            return CancelAsync(courseId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Cancel a course before it starts (its teacher only); the enrolled students are refunded and notified.
+        /// </summary>
+        /// <returns>OK</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<CourseDto> CancelAsync(System.Guid courseId, System.Threading.CancellationToken cancellationToken)
+        {
+            if (courseId == null)
+                throw new System.ArgumentNullException("courseId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Content = new System.Net.Http.StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json");
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "frontend/courses/{courseId}/cancel"
+                    urlBuilder_.Append("frontend/courses/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(courseId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/cancel");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 

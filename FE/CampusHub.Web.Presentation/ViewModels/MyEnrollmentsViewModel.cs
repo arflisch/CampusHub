@@ -8,8 +8,10 @@ using Dev4u.CampusHub.Web.Presentation.Services;
 namespace Dev4u.CampusHub.Web.Presentation.ViewModels;
 
 /// <summary>
-/// The student's enrollments. While at least one saga is still running (Requested or SeatHeld), the list is polled
-/// every <see cref="PollInterval"/> until every enrollment is settled; leaving the page cancels the polling.
+/// The student's enrollments. Every change pushed by the server (live connection) reloads the list at once; while
+/// at least one saga is still running, the list is also polled every <see cref="PollInterval"/> as a safety net, in
+/// case the live connection is down. Leaving the page cancels the polling. A confirmed enrollment can be cancelled
+/// (and refunded) until the course starts.
 /// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable",
     Justification = "Disposed in Deactivate. ViewModels are not IDisposable on purpose: the DI container would keep every transient disposable alive until the app closes.")]
@@ -19,14 +21,19 @@ public sealed partial class MyEnrollmentsViewModel : ViewModelBase
 
     private readonly IEnrollmentService _enrollments;
     private readonly TimeProvider _timeProvider;
+    private readonly ILiveUpdates _live;
     private CancellationTokenSource? _polling;
 
-    public MyEnrollmentsViewModel(IEnrollmentService enrollments, TimeProvider timeProvider)
+    public MyEnrollmentsViewModel(IEnrollmentService enrollments, TimeProvider timeProvider, ILiveUpdates live)
     {
         _enrollments = enrollments;
         _timeProvider = timeProvider;
+        _live = live;
         Enrollments = [];
     }
+
+    [ObservableProperty]
+    public partial string? InfoMessage { get; private set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsEmpty))]
@@ -40,10 +47,15 @@ public sealed partial class MyEnrollmentsViewModel : ViewModelBase
     /// <summary>The running polling loop, if any (exposed for tests).</summary>
     internal Task? PollingTask { get; private set; }
 
-    public override async Task InitializeAsync(CancellationToken cancellationToken) => await LoadCommand.ExecuteAsync(null);
+    public override async Task InitializeAsync(CancellationToken cancellationToken)
+    {
+        _live.EnrollmentChanged += OnEnrollmentChanged;
+        await LoadCommand.ExecuteAsync(null);
+    }
 
     public override void Deactivate()
     {
+        _live.EnrollmentChanged -= OnEnrollmentChanged;
         LoadCommand.Cancel();
         _polling?.Cancel();
         _polling?.Dispose();
@@ -112,6 +124,37 @@ public sealed partial class MyEnrollmentsViewModel : ViewModelBase
         {
             IsPolling = false;
         }
+    }
+
+    private void OnEnrollmentChanged(object? sender, EnrollmentChange change)
+    {
+        if (!LoadCommand.IsRunning)
+        {
+            LoadCommand.Execute(null);
+        }
+    }
+
+    public bool CanCancel(EnrollmentItem? enrollment) =>
+        enrollment is { State: EnrollmentState.Confirmed, CourseStartsAt: { } startsAt } && _timeProvider.GetUtcNow() < startsAt;
+
+    [RelayCommand(CanExecute = nameof(CanCancel))]
+    private async Task CancelAsync(EnrollmentItem enrollment, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(enrollment);
+        ErrorMessage = null;
+        InfoMessage = null;
+
+        var result = await _enrollments.CancelAsync(enrollment.Id, cancellationToken);
+        if (result.IsFailed)
+        {
+            ShowErrors(result.Errors);
+            return;
+        }
+
+        Enrollments = [.. Enrollments.Select(e => e.Id == enrollment.Id ? result.Value : e)];
+        InfoMessage = enrollment.CoursePriceInCents > 0
+            ? $"Your enrollment in \"{enrollment.CourseTitle}\" is cancelled and {Money.Format(enrollment.CoursePriceInCents)} refunded."
+            : $"Your enrollment in \"{enrollment.CourseTitle}\" is cancelled.";
     }
 
     /// <summary>Text explaining a rejection, from its code.</summary>

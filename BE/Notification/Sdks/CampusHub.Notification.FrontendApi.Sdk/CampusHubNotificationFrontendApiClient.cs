@@ -311,6 +311,36 @@ namespace Dev4u.CampusHub.Notification.FrontendApi.Sdk
     public partial interface INotificationsClient
     {
         /// <summary>
+        /// Mark all my notifications as read.
+        /// </summary>
+        /// <returns>No Content</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task MarkAllReadAsync();
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Mark all my notifications as read.
+        /// </summary>
+        /// <returns>No Content</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task MarkAllReadAsync(System.Threading.CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Mark one of my notifications as read.
+        /// </summary>
+        /// <returns>No Content</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task MarkReadAsync(System.Guid notificationId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Mark one of my notifications as read.
+        /// </summary>
+        /// <returns>No Content</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task MarkReadAsync(System.Guid notificationId, System.Threading.CancellationToken cancellationToken);
+
+        /// <summary>
         /// My latest notifications.
         /// </summary>
         /// <returns>OK</returns>
@@ -358,6 +388,177 @@ namespace Dev4u.CampusHub.Notification.FrontendApi.Sdk
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, string url);
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, System.Text.StringBuilder urlBuilder);
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
+
+        /// <summary>
+        /// Mark all my notifications as read.
+        /// </summary>
+        /// <returns>No Content</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task MarkAllReadAsync()
+        {
+            return MarkAllReadAsync(System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Mark all my notifications as read.
+        /// </summary>
+        /// <returns>No Content</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task MarkAllReadAsync(System.Threading.CancellationToken cancellationToken)
+        {
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Content = new System.Net.Http.StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json");
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "frontend/notifications/read"
+                    urlBuilder_.Append("frontend/notifications/read");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 204)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new RestException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new RestException<ProblemDetails>("An error occured and is RFC 7807 (problem details).", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Mark one of my notifications as read.
+        /// </summary>
+        /// <returns>No Content</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task MarkReadAsync(System.Guid notificationId)
+        {
+            return MarkReadAsync(notificationId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Mark one of my notifications as read.
+        /// </summary>
+        /// <returns>No Content</returns>
+        /// <exception cref="RestException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task MarkReadAsync(System.Guid notificationId, System.Threading.CancellationToken cancellationToken)
+        {
+            if (notificationId == null)
+                throw new System.ArgumentNullException("notificationId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Content = new System.Net.Http.StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json");
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "frontend/notifications/{notificationId}/read"
+                    urlBuilder_.Append("frontend/notifications/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(notificationId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/read");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 204)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new RestException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new RestException<ProblemDetails>("An error occured and is RFC 7807 (problem details).", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
 
         /// <summary>
         /// My latest notifications.

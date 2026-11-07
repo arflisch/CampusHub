@@ -101,6 +101,7 @@
     <ProjectReference Include="..\..\..\..\Shared\ServiceDefaults\CampusHub.ServiceDefaults.csproj" />
     <ProjectReference Include="..\..\CampusHub.Catalog.FrontendApi\CampusHub.Catalog.FrontendApi.csproj" />
     <ProjectReference Include="..\..\CampusHub.Catalog.ServiceApi\CampusHub.Catalog.ServiceApi.csproj" />
+    <ProjectReference Include="..\..\Sdks\CampusHub.Catalog.IntegrationEvents\CampusHub.Catalog.IntegrationEvents.csproj" />
     <ProjectReference Include="..\..\CampusHub.Catalog.Infrastructure.Courses\CampusHub.Catalog.Infrastructure.Courses.csproj" />
   </ItemGroup>
 

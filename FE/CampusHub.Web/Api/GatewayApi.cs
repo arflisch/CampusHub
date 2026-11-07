@@ -50,6 +50,25 @@ internal static class GatewayApi
         }
     }
 
+    /// <summary>A call whose success has no body (204): only the failures are read.</summary>
+    public static async Task<Result> SendAsync(HttpClient http, Func<HttpRequestMessage> createRequest, CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var request = createRequest();
+            using var response = await http.SendAsync(request, cancellationToken);
+            return response.IsSuccessStatusCode ? Result.Ok() : Result.Fail(await ToErrorAsync(response, cancellationToken));
+        }
+        catch (HttpRequestException)
+        {
+            return Result.Fail(UiError.Unavailable());
+        }
+        catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return Result.Fail(UiError.Unavailable());
+        }
+    }
+
     private static UiError UnexpectedResponse() =>
         new("api.unexpected_response", "The server sent an unexpected answer. Please try again later.", isTransient: true);
 

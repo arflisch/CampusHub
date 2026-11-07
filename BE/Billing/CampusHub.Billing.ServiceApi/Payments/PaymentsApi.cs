@@ -32,7 +32,7 @@ public static class PaymentsApi
                           .MapToApiVersion(ApiVersions.V1)
                           .WithGroupName("service")
                           .WithTags("Payments")
-                          .RequireAuthorization(nameof(Access.AccessApplication));
+                          .RequireAuthorization(nameof(Access.CallServiceApis)); // service accounts only
 
         payments.MapPost("", async Task<Results<Ok<PaymentDto>, ProblemHttpResult>> (
                 [FromBody] ChargeEnrollmentCommand command, [FromServices] ChargeEnrollment useCase, CancellationToken cancellationToken) =>

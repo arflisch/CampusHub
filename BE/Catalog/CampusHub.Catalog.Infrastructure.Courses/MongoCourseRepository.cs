@@ -44,6 +44,16 @@ public sealed class MongoCourseRepository(IMongoClientFactory<DatabaseContext> c
         return [.. documents.Select(d => d.ToDomain())];
     }
 
+    public async Task<IReadOnlyList<Course>> ListCancellationsToAnnounceAsync(int take, CancellationToken cancellationToken)
+    {
+        var documents = await Courses.Find(c => c.Status == CourseStatus.Cancelled && c.CancellationAnnouncedAtUtc == null)
+                                     .SortBy(c => c.CancelledAtUtc)
+                                     .Limit(take)
+                                     .ToListAsync(cancellationToken)
+                                     .ConfigureAwait(false);
+        return [.. documents.Select(d => d.ToDomain())];
+    }
+
     public async Task<Result> AddAsync(Course course, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(course);

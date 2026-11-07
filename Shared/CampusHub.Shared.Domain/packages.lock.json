@@ -240,13 +240,13 @@
       },
       "Microsoft.Extensions.Configuration": {
         "type": "CentralTransitive",
-        "requested": "[11.0.0-rc.2.26504.105, )",
+        "requested": "[11.0.0-rc.3.26522.148, )",
         "resolved": "11.0.0-rc.2.26504.105",
         "contentHash": "jA9ENNmv5gfDFG0DnimIgGdD6RUDRIR+ozqn5S0dzCLlZdU0NFHJIRBA0pl2tP8P8wItosXen4ZvCkv9KweTUA=="
       },
       "Microsoft.Extensions.Configuration.Json": {
         "type": "CentralTransitive",
-        "requested": "[11.0.0-rc.2.26504.105, )",
+        "requested": "[11.0.0-rc.3.26522.148, )",
         "resolved": "11.0.0-rc.2.26504.105",
         "contentHash": "0YGJvNOT8/vYMx8qruZkwm0zokt0zhGvwhcZZgHL8u4Pp66RHFEnfnzc35v8f8uzRym8XeKBHKw5YIbz9M7uXg==",
         "dependencies": {
@@ -256,7 +256,7 @@
       },
       "Microsoft.Extensions.DependencyInjection": {
         "type": "CentralTransitive",
-        "requested": "[11.0.0-rc.2.26504.105, )",
+        "requested": "[11.0.0-rc.3.26522.148, )",
         "resolved": "11.0.0-rc.2.26504.105",
         "contentHash": "yjotWRNS6RNuJE1UNlVWgRTPfEhavYoGMdORt3Y90rB8bJo+GNVAsrnvclyPn830Ws2etLC94QcYBZ13Naszgw=="
       }

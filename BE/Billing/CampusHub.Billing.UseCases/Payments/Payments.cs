@@ -2,6 +2,7 @@ using Arc4u.Dependency.Attribute;
 using Dev4u.CampusHub.Billing.Domain.Payments;
 using Dev4u.CampusHub.Errors;
 using FluentResults;
+using Dev4u.CampusHub.Billing.UseCases.Common;
 
 namespace Dev4u.CampusHub.Billing.UseCases.Payments;
 
@@ -55,7 +56,18 @@ public sealed class ChargeEnrollment(IPaymentRepository payments, IPaymentProvid
             : Payment.Declined(command.EnrollmentId, command.StudentId!, command.CourseId, command.AmountInCents,
                                charge.Value.DeclineReason ?? "declined", now);
 
-        if (!await payments.AddIfAbsentAsync(payment.Value, cancellationToken).ConfigureAwait(false))
+        if (await payments.AddIfAbsentAsync(payment.Value, cancellationToken).ConfigureAwait(false))
+        {
+            if (payment.Value.Status == PaymentStatus.Captured)
+            {
+                BillingMetrics.RecordCaptured(payment.Value.AmountInCents);
+            }
+            else
+            {
+                BillingMetrics.RecordDeclined(payment.Value.DeclineReason ?? "declined");
+            }
+        }
+        else
         {
             // A concurrent attempt stored its outcome first (same idempotency key at the provider): use it.
             existing = await payments.GetAsync(command.EnrollmentId, cancellationToken).ConfigureAwait(false);
@@ -96,6 +108,11 @@ public sealed class RefundEnrollment(IPaymentRepository payments, IPaymentProvid
 
         payment.MarkRefunded(timeProvider.GetUtcNow());
         var saved = await payments.SaveAsync(payment, cancellationToken).ConfigureAwait(false);
+        if (saved.IsSuccess)
+        {
+            BillingMetrics.RecordRefunded(payment.AmountInCents);
+        }
+
         // Lost the race to a concurrent refund of the same payment: the money is back either way.
         return saved.IsFailed && saved.Errors.HasCode(PaymentErrors.ConcurrencyConflictCode) ? Result.Ok() : saved;
     }

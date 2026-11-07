@@ -51,4 +51,23 @@ public class CampusHubRolesTests
         CampusHubRoles.RolesOf(Token("anyone"), new RoleOptions { Teachers = "*" })
                       .Should().Equal(CampusHubRoles.User, CampusHubRoles.Teacher);
     }
+
+    [Fact]
+    public void A_service_account_gets_the_service_apis_and_no_user_right()
+    {
+        var options = new RoleOptions { ServiceClients = "svc-1", Teachers = "*", Admins = "*" };
+
+        var roles = CampusHubRoles.RolesOf(Token("svc-1", "access.application"), options);
+
+        roles.Should().Equal(CampusHubRoles.Service);
+        CampusHubRoles.OperationsOf(roles).Should().Equal(Access.AccessApplication, Access.CallServiceApis);
+    }
+
+    [Fact]
+    public void A_person_never_gets_the_service_apis()
+    {
+        var options = new RoleOptions { ServiceClients = "svc-1", Teachers = "*", Admins = "*" };
+
+        CampusHubRoles.OperationsOf(CampusHubRoles.RolesOf(Token("u1"), options)).Should().NotContain(Access.CallServiceApis);
+    }
 }

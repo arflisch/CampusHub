@@ -3,6 +3,7 @@ using Arc4u.Validation;
 using Dev4u.CampusHub.Catalog.Domain.Courses;
 using FluentResults;
 using FluentValidation;
+using Dev4u.CampusHub.Catalog.UseCases.Common;
 
 namespace Dev4u.CampusHub.Catalog.UseCases.Courses;
 
@@ -47,6 +48,11 @@ public sealed class CreateCourse(ICourseRepository courses, TimeProvider timePro
         }
 
         var added = await courses.AddAsync(course.Value, cancellationToken).ConfigureAwait(false);
+        if (added.IsSuccess)
+        {
+            CatalogMetrics.RecordCreated();
+        }
+
         return added.IsFailed
             ? added.ToResult<CourseDto>()
             : Result.Ok(course.Value.ToDto(now));

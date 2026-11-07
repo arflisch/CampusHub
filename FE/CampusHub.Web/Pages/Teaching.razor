@@ -87,10 +87,57 @@
                             · @Money.Format(course.PriceInCents) · @course.Capacity seats · @(course.Capacity - course.SeatsLeft) taken
                         </div>
                     </div>
-                    <StatusBadge Course="course.State" />
-                    @if (course.State == CourseState.Draft)
+                    <div class="row-actions">
+                        <StatusBadge Course="course.State" />
+                        @if (course.State == CourseState.Draft)
+                        {
+                            <CommandButton Command="ViewModel.PublishCommand" Parameter="course" CssClass="btn btn-primary" BusyText="Publishing…">Publish</CommandButton>
+                        }
+                        @if (course.State != CourseState.Draft)
+                        {
+                            <CommandButton Command="ViewModel.ToggleParticipantsCommand" Parameter="course" CssClass="btn btn-ghost" BusyText="Loading…">
+                                @(ViewModel.ShownParticipantsOf == course.Id ? "Hide participants" : "Participants")
+                            </CommandButton>
+                        }
+                        @if (ViewModel.CanCancelCourse(course))
+                        {
+                            if (_confirming == course.Id)
+                            {
+                                <CommandButton Command="ViewModel.CancelCourseCommand" Parameter="course" CssClass="btn btn-danger" BusyText="Cancelling…">
+                                    Confirm: refund everyone
+                                </CommandButton>
+                                <button type="button" class="btn btn-ghost" @onclick="() => _confirming = null">Keep it</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-ghost" @onclick="() => _confirming = course.Id">Cancel course</button>
+                            }
+                        }
+                    </div>
+                    @if (ViewModel.ShownParticipantsOf == course.Id)
                     {
-                        <CommandButton Command="ViewModel.PublishCommand" Parameter="course" CssClass="btn btn-primary" BusyText="Publishing…">Publish</CommandButton>
+                        <div class="participants">
+                            @if (ViewModel.Participants.Count == 0)
+                            {
+                                <span class="muted small">Nobody enrolled yet.</span>
+                            }
+                            else
+                            {
+                                <table>
+                                    <thead><tr><th>Student</th><th>Requested</th><th>Status</th></tr></thead>
+                                    <tbody>
+                                        @foreach (var participant in ViewModel.Participants)
+                                        {
+                                            <tr @key="participant.EnrollmentId">
+                                                <td>@participant.DisplayName</td>
+                                                <td class="muted">@participant.RequestedAt.ToLocalTime().ToString("g")</td>
+                                                <td><StatusBadge Enrollment="participant.State" /></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                        </div>
                     }
                 </li>
             }
@@ -99,6 +146,9 @@
 </section>
 
 @code {
+    // Two-step cancellation of a course: the first click asks to confirm.
+    private Guid? _confirming;
+
     // Submitting with Enter goes through the command too, so CanExecute is honoured either way.
     private async Task CreateAsync()
     {

@@ -1,0 +1,75 @@
+@page "/account"
+@inherits ViewModelComponentBase<AccountViewModel>
+
+<PageTitle>My account · CampusHub</PageTitle>
+
+<div class="page-head">
+    <div>
+        <h1>My account</h1>
+        <p class="muted">Payments come from the Billing service, certificates from the Grading service.</p>
+    </div>
+    <CommandButton Command="ViewModel.LoadCommand" CssClass="btn btn-ghost" BusyText="Refreshing…">Refresh</CommandButton>
+</div>
+
+<Banner Message="@ViewModel.ErrorMessage" OnDismiss="() => ViewModel.DismissErrorCommand.Execute(null)" />
+
+<section class="panel">
+    <h2>
+        Payments
+        @if (ViewModel.TotalPaidInCents > 0)
+        {
+            <span class="muted small">· @Money.Format(ViewModel.TotalPaidInCents) paid</span>
+        }
+    </h2>
+    @if (ViewModel.Payments.Count == 0)
+    {
+        <p class="muted small">No payment yet: free courses are not charged.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead><tr><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody>
+                @foreach (var payment in ViewModel.Payments)
+                {
+                    <tr @key="payment.EnrollmentId">
+                        <td>@payment.CreatedAt.ToLocalTime().ToString("g")</td>
+                        <td>@Money.Format(payment.AmountInCents)</td>
+                        <td>
+                            <span class="badge @(payment.State switch { PaymentState.Captured => "badge-success", PaymentState.Declined => "badge-danger", _ => "badge-neutral" })">
+                                @payment.State
+                            </span>
+                            @if (payment.RefundedAt is { } refundedAt)
+                            {
+                                <span class="muted small"> on @refundedAt.ToLocalTime().ToString("d")</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</section>
+
+<section class="panel">
+    <h2>Certificates</h2>
+    @if (ViewModel.Certificates.Count == 0)
+    {
+        <p class="muted small">Certificates are issued when a course you took has ended.</p>
+    }
+    else
+    {
+        <ul class="list">
+            @foreach (var certificate in ViewModel.Certificates)
+            {
+                <li class="row certificate" @key="certificate.Number">
+                    <div>
+                        <div class="row-title">🎓 @certificate.CourseTitle</div>
+                        <div class="muted small">Completed on @certificate.CourseEndedAt.ToString("d MMM yyyy") · issued @certificate.IssuedAt.ToString("d MMM yyyy")</div>
+                    </div>
+                    <span class="code">@certificate.Number</span>
+                </li>
+            }
+        </ul>
+    }
+</section>

@@ -75,9 +75,9 @@
       },
       "Microsoft.AspNetCore.OpenApi": {
         "type": "Direct",
-        "requested": "[11.0.0-rc.2.26504.105, )",
-        "resolved": "11.0.0-rc.2.26504.105",
-        "contentHash": "VjRpS18c8/vEfOGyUHHUhATIbIy9nXByxG897KQ+LYQxRpvyt5wn0GgSQEKKYnJzy2P5OGrFu56GfXXReW/IWA==",
+        "requested": "[11.0.0-rc.3.26522.148, )",
+        "resolved": "11.0.0-rc.3.26522.148",
+        "contentHash": "5EoqFnsLPpZGN3V/1TngE2+nunsmUrb+jHWo7vfy40ydFYRQvEhb/rgmKrsWWL7DKLwNRHZJ/0AUWt5YUv+aKw==",
         "dependencies": {
           "Microsoft.OpenApi": "[3.10.2, 4.0.0)"
         }

@@ -239,33 +239,33 @@
       },
       "Microsoft.AspNetCore.OpenApi": {
         "type": "Direct",
-        "requested": "[11.0.0-rc.2.26504.105, )",
-        "resolved": "11.0.0-rc.2.26504.105",
-        "contentHash": "VjRpS18c8/vEfOGyUHHUhATIbIy9nXByxG897KQ+LYQxRpvyt5wn0GgSQEKKYnJzy2P5OGrFu56GfXXReW/IWA==",
+        "requested": "[11.0.0-rc.3.26522.148, )",
+        "resolved": "11.0.0-rc.3.26522.148",
+        "contentHash": "5EoqFnsLPpZGN3V/1TngE2+nunsmUrb+jHWo7vfy40ydFYRQvEhb/rgmKrsWWL7DKLwNRHZJ/0AUWt5YUv+aKw==",
         "dependencies": {
           "Microsoft.OpenApi": "[3.10.2, 4.0.0)"
         }
       },
       "Microsoft.Extensions.ApiDescription.Server": {
         "type": "Direct",
-        "requested": "[11.0.0-rc.2.26504.105, )",
-        "resolved": "11.0.0-rc.2.26504.105",
-        "contentHash": "X3KPTaWGkavfCgBOwTsYuySPGLIszL5tCd1nwATrm8RRTHGEkQj/8FcdlyxLNdmHsD8ViIpwKZCN6j0u2Dnw+w=="
+        "requested": "[11.0.0-rc.3.26522.148, )",
+        "resolved": "11.0.0-rc.3.26522.148",
+        "contentHash": "GxupUXrtTdG9bumz2VSHIabNjLs9cgAq0HkJvrMEouq22cbpXhn75b/AG2nXLT68n8DtCptIoaJscLxGf8OK5w=="
       },
       "Microsoft.Extensions.Hosting.WindowsServices": {
         "type": "Direct",
-        "requested": "[11.0.0-rc.2.26504.105, )",
-        "resolved": "11.0.0-rc.2.26504.105",
-        "contentHash": "MXtbnD7MJSBnhSAxDRFNa4/gp8t8RRPr0JZFSPcCgspxtJDgq99UpJXSgJYRBwEP7Oy5tXzK2CXDfQbAy19uag==",
+        "requested": "[11.0.0-rc.3.26522.148, )",
+        "resolved": "11.0.0-rc.3.26522.148",
+        "contentHash": "BX1BrFBj2LXhMiGx5BQQAFqUSg/5P/w/lgxjSR0wjvCsb033MeDNTAzrGNz1fIaB8l83dLmg20tZx2oSC+thtg==",
         "dependencies": {
-          "System.ServiceProcess.ServiceController": "11.0.0-rc.2.26504.105"
+          "System.ServiceProcess.ServiceController": "11.0.0-rc.3.26522.148"
         }
       },
       "Microsoft.Extensions.Http.Polly": {
         "type": "Direct",
-        "requested": "[11.0.0-rc.2.26504.105, )",
-        "resolved": "11.0.0-rc.2.26504.105",
-        "contentHash": "2UnNmwN//QkXsmPB2xZSRuScO4ZNtcwe5ynhGsY9uw0wQz6x1n8ohHNpDvbYDtncTuNj5+eTWx4imfnN+m9edQ==",
+        "requested": "[11.0.0-rc.3.26522.148, )",
+        "resolved": "11.0.0-rc.3.26522.148",
+        "contentHash": "dcqyDOEuqQNtBjFXP5qQ+/QoM0JLrHpPQtszTzH1YHtUe6SX18ZOiWRFNfXdtCIcBgPYD5FZ3gKbi7ghzPU7yA==",
         "dependencies": {
           "Polly": "7.2.4",
           "Polly.Extensions.Http": "3.0.0"
@@ -771,8 +771,8 @@
       },
       "System.ServiceProcess.ServiceController": {
         "type": "Transitive",
-        "resolved": "11.0.0-rc.2.26504.105",
-        "contentHash": "VMlO+jTqLc1TPDNNwLPv8VFg7qpJq/yAu3FBoW255t5GeSbz7WqACoxIZhXScfOg1LZi+u5ohbe7vO3kmPlpCg=="
+        "resolved": "11.0.0-rc.3.26522.148",
+        "contentHash": "fZXnKrc0Ve/YLIV78w+w+NxCG2A+LICnIUGkF4m+f95+hQM1YpKERP/VzA1jlg/y5jgIN3cDtrf0uRGMDVfssA=="
       },
       "YamlDotNet": {
         "type": "Transitive",
@@ -803,7 +803,7 @@
           "CampusHub.Shared.Domain": "[1.0.0, )",
           "Google.Protobuf": "[3.36.2, )",
           "Grpc": "[2.46.6, )",
-          "Microsoft.AspNetCore.Authentication.OpenIdConnect": "[11.0.0-rc.2.26504.105, )"
+          "Microsoft.AspNetCore.Authentication.OpenIdConnect": "[11.0.0-rc.3.26522.148, )"
         }
       },
       "campushub.billing.infrastructure.payments": {
@@ -845,7 +845,7 @@
           "Arc4u.Results": "[9.0.0-preview38, )",
           "AspNetCore.HealthChecks.UI.Client": "[9.0.0, )",
           "CampusHub.Shared.Domain": "[1.0.0, )",
-          "Microsoft.AspNetCore.OpenApi": "[11.0.0-rc.2.26504.105, )",
+          "Microsoft.AspNetCore.OpenApi": "[11.0.0-rc.3.26522.148, )",
           "Microsoft.Extensions.Http.Resilience": "[10.10.0, )",
           "Microsoft.Extensions.ServiceDiscovery": "[10.10.0, )",
           "OpenTelemetry.Exporter.OpenTelemetryProtocol": "[1.19.1, )",
@@ -1019,9 +1019,9 @@
       },
       "Microsoft.AspNetCore.Authentication.OpenIdConnect": {
         "type": "CentralTransitive",
-        "requested": "[11.0.0-rc.2.26504.105, )",
-        "resolved": "11.0.0-rc.2.26504.105",
-        "contentHash": "mREAnS2XvtnDhrJHiUgnwLhQ8+VrIpG7Ahz+FaSpWFcPQGyYWGqBKCN7ESraWJ0sZKqH05YY5WUrhLpMq3wd8Q==",
+        "requested": "[11.0.0-rc.3.26522.148, )",
+        "resolved": "11.0.0-rc.3.26522.148",
+        "contentHash": "KrGWmvkoopr8WXD5yw76ku5REH9lrOdd3tuB/ziLbCqytilNJTId9tvrbIjiO031lcGSHIptFuoQXIV01xyzUw==",
         "dependencies": {
           "Microsoft.IdentityModel.Protocols.OpenIdConnect": "8.19.2"
         }
