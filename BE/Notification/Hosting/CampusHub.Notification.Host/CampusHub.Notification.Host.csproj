@@ -21,6 +21,8 @@
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="MongoDB.Bson" />
+    <PackageReference Include="MongoDB.Driver" />
     <PackageReference Include="NSwag.AspNetCore" />
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Server">
       <PrivateAssets>all</PrivateAssets>
@@ -39,6 +41,9 @@
     </PackageReference>
     <PackageReference Include="Arc4u.MongoDB" />
     <PackageReference Include="Arc4u.AspNetCore.Versioning" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="SharpCompress" />
   </ItemGroup>
 
   <PropertyGroup>
